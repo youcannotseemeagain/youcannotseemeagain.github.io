@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Empire笔记 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "title: Empire\u7b14\u8bb0 date: 2021-1-15 10:13:20", url: "#_top", children: [
+          ]},
+          {title: "\u5f00\u542f\u76d1\u542c", url: "#_1", children: [
+          ]},
+          {title: "\u9009\u62e9\u8f7d\u8377", url: "#_2", children: [
+          ]},
+          {title: "agent\u64cd\u4f5c", url: "#agent", children: [
+              {title: "code_execution", url: "#code_execution" },
+              {title: "collection", url: "#collection" },
+              {title: "credentials", url: "#credentials" },
+              {title: "exfiltration", url: "#exfiltration" },
+              {title: "lateral_movement", url: "#lateral_movement" },
+              {title: "management", url: "#management" },
+              {title: "persistence", url: "#persistence" },
+              {title: "privesc", url: "#privesc" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Exchange攻击面
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../DACL%20%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../DACL%20%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        DACL 攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h3 id="title-empire-date-2021-1-15-101320">title: Empire笔记 date: 2021-1-15 10:13:20</h3>
+<h2 id="_1">开启监听</h2>
+<pre><code class="language-text-plain">(Empire) &gt; listeners
+(Empire: listeners) &gt; uselistener
+dbx     Dropbox的监听
+http    http监听【常用】
+http_com    https监听，需要指定证书
+http_foreign    派生类监听，用于接收给别的派生【跟cs的兼容性不太好】
+http_hop        用于监听器的跳转
+http_malleable  自定义C2
+http_mapi       暂未研究
+meterpreter     用于派生给msf？
+onedrive        onedrive监听器
+redirector      重定向？
+</code></pre>
+<p>有10种可选，常用的基本就是http</p>
+<h2 id="_2">选择载荷</h2>
+<pre><code class="language-text-plain">multi/bash      生成python的执行马，可选powershell和python
+multi/launcher  生成一句话，可选powershell和python
+multi/macro     生成恶意宏代码
+multi/pyinstaller  用pyinstaller打包的可执行文件，由于empire是在Linux下运行的，所以打包的是Linux的可执行文件
+multi/war       生成可发布的war包，执行后java调用powershell或python上线
+windows/bunny   bunny执行文件
+windows/ducky   ducky执行文件
+windows/csharp_exe  生成C#源码
+windows/launcher_lnk    为指定的应用程序生成一个恶意lnk
+windows/teensy  teensy执行文件
+windows/wmic    生成xsl
+</code></pre>
+<p>其实这里的载荷原理大同小异，核心代码都是multi/launcher里的，可以针对性做免杀</p>
+<h2 id="agent">agent操作</h2>
+<p>interact进入agent</p>
+<p>基本命令shell、upload、list、info。</p>
+<p>在interact种，核心是模块</p>
+<h3 id="code_execution">code_execution</h3>
+<p>字面意思，代码执行。</p>
+<p>Assembly指定程序</p>
+<h4 id="code_executioninvoke_assembly">code_execution/invoke_assembly</h4>
+<p>从内存执行donet程序，可以绕过一些防护</p>
+<h4 id="code_executioninvoke_dllinjection">code_execution/invoke_dllinjection</h4>
+<p>dll注入，使用的PowerSploit里的。</p>
+<p>ProcessID指定要注入的ID</p>
+<p>DLL指定要注入的dll</p>
+<h4 id="code_executioninvoke_metasploitpayload">code_execution/invoke_metasploitpayload</h4>
+<p>使用msf的web_delivery模块注入</p>
+<p>URL指定web_delivery的URL</p>
+<h4 id="code_executioninvoke_ntsd">code_execution/invoke_ntsd</h4>
+<p>使用NTSD派生一个agent</p>
+<h4 id="code_executioninvoke_reflectivepeinjection">code_execution/invoke_reflectivepeinjection</h4>
+<p>PowerSploit里的反射型注入，你问这个注入有什么不一样的地方，我也不知道。</p>
+<h4 id="code_executioninvoke_shellcode">code_execution/invoke_shellcode</h4>
+<p>还是PowerSploit里的模块，执行shellcode。要c#的</p>
+<p>Shellcode指定shellcode</p>
+<h4 id="code_executioninvoke_shellcodemsil">code_execution/invoke_shellcodemsil</h4>
+<p>在powershell种不调用win32 API来执行shellcode的方式，对shellcode要求严格</p>
+<p>还是别用这个了</p>
+<h3 id="collection">collection</h3>
+<p>字面意思，信息搜集</p>
+<h4 id="collectionchromedump">collection/ChromeDump</h4>
+<p>尝试获取Chrome密码</p>
+<h4 id="collectionfoxdump">collection/FoxDump</h4>
+<h4 id="collectionsharpchromium">collection/SharpChromium</h4>
+<h4 id="collectionusbkeylogger">collection/USBKeylogger</h4>
+<p>看UK的日志</p>
+<h4 id="collectionwebcamrecorder">collection/WebcamRecorder</h4>
+<p>摄像头</p>
+<h4 id="collectionbrowser_data">collection/browser_data</h4>
+<p>浏览器数据</p>
+<h4 id="collectionclipboard_monitor">collection/clipboard_monitor</h4>
+<p>粘贴板监控</p>
+<h4 id="collectionfile_finder">collection/file_finder</h4>
+<p>查找IPC共享文件</p>
+<h4 id="find_interesting_file">find_interesting_file</h4>
+<p>一样</p>
+<h4 id="collectionget-winupdates">collection/get-winupdates</h4>
+<p>获取更新历史</p>
+<h4 id="collectionget_indexed_item">collection/get_indexed_item</h4>
+<h4 id="collectionget_sql_column_sample_data">collection/get_sql_column_sample_data</h4>
+<h4 id="collectionget_sql_query">collection/get_sql_query</h4>
+<p>后面不写了都是获取各种信息的东西</p>
+<h3 id="credentials">credentials</h3>
+<p>获取凭证和token的</p>
+<h3 id="exfiltration">exfiltration</h3>
+<p>扫端口</p>
+<h3 id="lateral_movement">lateral_movement</h3>
+<p>横向</p>
+<h3 id="management">management</h3>
+<h3 id="persistence">persistence</h3>
+<p>权限维持的</p>
+<h3 id="privesc">privesc</h3>
+<p>提权</p>
+<p>recon</p>
+<p>situational_awareness</p>
+<p>trollsploit</p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Exchange攻击面
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../DACL%20%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../DACL%20%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        DACL 攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

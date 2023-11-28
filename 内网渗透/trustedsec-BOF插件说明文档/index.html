@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>trustedsec BOF插件说明文档 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "Situational-Awareness", url: "#_top", children: [
+              {title: "SA.cna", url: "#sacna" },
+          ]},
+          {title: "\u8ba1\u5212\u4efb\u52a1\u51fd\u6570schtaskscreate\u7684\u4f7f\u7528", url: "#schtaskscreate", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E5%9C%A8%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%8A%E7%BA%BF%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F-Windows/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E5%9C%A8%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%8A%E7%BA%BF%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F-Windows/" class="btn btn-xs btn-link">
+        在命令执行的情况下上线的几种方式 Windows
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Windows技巧
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="situational-awareness">Situational-Awareness</h2>
+<h3 id="sacna">SA.cna</h3>
+<h4 id="dir">dir</h4>
+<p>查看当前目录</p>
+<h4 id="env">env</h4>
+<p>查看环境变量</p>
+<h4 id="ldapsearch">ldapsearch</h4>
+<p>ldapsearch工具</p>
+<pre><code class="language-text-plain">beacon&gt; ldapsearch
+[-] ldapsearch &lt;query&gt; [comma_separated_attributes] [result_count] [DC hostname or IP] [Distingished Name to use]
+    &quot;&quot; works as a default for attributes (get all) DC hostname / IP (use Primary DC) and distingished name (use Base domain Level)
+    0 works as default for result_count (get all)
+
+Useful queries:
+
+- Kerberoastable:
+(&amp;(samAccountType=805306368)(servicePrincipalName=*)(!samAccountName=krbtgt)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))
+
+- AS-REP Roastable:
+(&amp;(samAccountType=805306368)(userAccountControl:1.2.840.113556.1.4.803:=4194304))
+
+- Passwords stored with reversible encryption:
+(&amp;(objectClass=user)(objectCategory=user)(userAccountControl:1.2.840.113556.1.4.803:=128))
+
+If this fails with an error about paging not being supported you can try tou se nonpagedldapsearch instead (its unregistered but has the same arguments)
+</code></pre>
+<h4 id="ipconfig">ipconfig</h4>
+<p>看网络</p>
+<h4 id="arp">arp</h4>
+<p>看arp表</p>
+<h4 id="resources">resources</h4>
+<p>磁盘空间</p>
+<h4 id="uptime">uptime</h4>
+<p>开机时间</p>
+<h4 id="tasklist">tasklist</h4>
+<h4 id="nslookup">nslookup</h4>
+<pre><code class="language-text-plain">beacon&gt; nslookup
+[-] Synopsis: nslookup &lt;lookup value&gt; &lt;lookup server&gt; &lt;TYPE&gt; 
+
+Perform a DNS Query:
+&lt;lookup value&gt; is the ip or hostname you want to query
+&lt;lookup server&gt; is the server you want to query (use 0 or exclude for system default)
+&lt;TYPE&gt; record type to query 
+
+</code></pre>
+<h4 id="listdns">listdns</h4>
+<p>查看dns缓存</p>
+<h4 id="listmods">listmods</h4>
+<p>查看进程加载的模块</p>
+<h4 id="locale">locale</h4>
+<p>查看日期时间国家</p>
+<h4 id="adcs_enumadcs_enum_comadcs_enum_com2">adcs_enum、adcs_enum_com、adcs_enum_com2</h4>
+<p>枚举adcs服务器的CA模板</p>
+<h4 id="vssenum">vssenum</h4>
+<p>枚举快照</p>
+<h4 id="get_password_policy">get_password_policy</h4>
+<p>密码策略</p>
+<h4 id="probe">probe</h4>
+<p>端口扫描</p>
+<h4 id="notepad">notepad</h4>
+<p>从打开的记事本中获取文本</p>
+<h4 id="netuse_add">netuse_add</h4>
+<p>建立一个IPC连接</p>
+<pre><code class="language-text-plain">Example:
+    Bind IPC$ of a remote computer using current user context
+        netuse_add \\somedc.somedomain.local\IPC$ &quot;&quot; &quot;&quot;
+
+    Map a Share without creating a specific device mapping using current user context 
+        netuse_add \\fileshare.somedomain.local\adminstuff &quot;&quot; &quot;&quot;
+
+    Map a Share without creating a specific device mapping, using a diferent set of credentials
+        netuse_add \\fileshare.somedomain.local\adminstuff someuser SomeUsersPassword /DEVICE:F
+
+    Map a persistent share in the current user context
+        netuse_add \\fileshare.somedomain.local\userdrive &quot;&quot; &quot;&quot; /PERSIST
+
+</code></pre>
+<h4 id="netuse_list">netuse_list</h4>
+<p>查看IPC连接</p>
+<h4 id="netuse_delete">netuse_delete</h4>
+<p>删除IPC连接</p>
+<h4 id="netuser">netuser</h4>
+<p>查看用户信息</p>
+<h4 id="windowlist">windowlist</h4>
+<p>查看可见窗口</p>
+<h4 id="netstat">netstat</h4>
+<p>查看网络连接</p>
+<h4 id="routeprint">routeprint</h4>
+<p>查看路由</p>
+<h4 id="whoami">whoami</h4>
+<h4 id="userenum">userenum</h4>
+<p>枚举用户</p>
+<h4 id="domainenum">domainenum</h4>
+<p>枚举域</p>
+<h4 id="driversigs">driversigs</h4>
+<p>查看edr</p>
+<h4 id="enum_filter_driver">enum_filter_driver</h4>
+<p>查看杀毒</p>
+<h4 id="netsharesnetsharesadmin">netshares、netsharesAdmin</h4>
+<p>查看网络共享</p>
+<h4 id="netgrouplist">netGroupList</h4>
+<p>查看域组</p>
+<h4 id="netgrouplistmembers">netGroupListMembers</h4>
+<p>查看域组所属</p>
+<pre><code class="language-text-plain">netGroupListMembers: &lt;Group Name&gt; &lt;opt: domainname&gt;
+</code></pre>
+<h4 id="netlocalgrouplist">netLocalGroupList</h4>
+<p>查看组</p>
+<h4 id="netlocalgrouplistmembers">netLocalGroupListMembers</h4>
+<h4 id="schtasksenum">schtasksenum</h4>
+<p>枚举计划任务</p>
+<h4 id="schtasksquery">schtasksquery</h4>
+<p>查询指定计划任务</p>
+<h4 id="cacls">cacls</h4>
+<p>查看程序的权限</p>
+<h4 id="sc_query">sc_query</h4>
+<p>查看服务</p>
+<h4 id="sc_qc">sc_qc</h4>
+<p>查询服务配置</p>
+<h4 id="sc_qdescription">sc_qdescription</h4>
+<p>查询服务描述</p>
+<h4 id="sc_qfailure">sc_qfailure</h4>
+<h4 id="sc_qtriggerinfo">sc_qtriggerinfo</h4>
+<h4 id="sc_enum">sc_enum</h4>
+<h4 id="reg_query">reg_query</h4>
+<h4 id="reg_query_recursive">reg_query_recursive</h4>
+<h4 id="netview">netview</h4>
+<h4 id="wmi_query">wmi_query</h4>
+<h4 id="netsession">netsession</h4>
+<h4 id="adv_audit_policies">adv_audit_policies</h4>
+<h4 id="listpipes">listpipes</h4>
+<h4 id="findloadedmodule">findLoadedModule</h4>
+<h2 id="schtaskscreate">计划任务函数schtaskscreate的使用</h2>
+<p>注意修改xml文件-PT50M.xml</p>
+<p>大部分不用动，需要修改的地方有</p>
+<p><Interval>PT50M</Interval>  每隔50分钟启动执行一次</p>
+<p><UserId>S-1-5-21-1083132562-1065254770-2819855764-1000</UserId>  以哪个用户执行 需要查看当前用户的UID</p>
+<p><Command>c:\windows\system32\SyspartRepair.exe</Command>   执行文件的路径</p>
+<p>其他可改的有计划任务名称，开始时间结束时间等等。这个跟计划任务的路径一样，设置得越越混淆，越不容易被发现。</p>
+<p>schtaskscreate需要给一个路径，这个路径不是文件的物理路径，而是<strong>计划任务的路径</strong>，类似/XXX/XXXX。路径不对bof执行会报错。</p>
+<pre><code class="language-text-xml">&lt;Task xmlns=&quot;http://schemas.microsoft.com/windows/2004/02/mit/task&quot;&gt;
+  &lt;RegistrationInfo&gt;
+    &lt;Source&gt;Microsoft Corporation.&lt;/Source&gt;
+    &lt;Author&gt;Microsoft Corporation.&lt;/Author&gt;
+    &lt;Description&gt;Keep your Microsoft software up-to-date. If this task is disabled or stopped, the Microsoft software will not be able to stay up to date, which means that possible security holes cannot be fixed, and the function may not be available. If no Microsoft software is using this task, it will uninstall itself&lt;/Description&gt;
+    &lt;SecurityDescriptor&gt;D:(A;;FA;;;SY)(A;;FRFX;;;LS)(A;;FA;;;BA)&lt;/SecurityDescriptor&gt;
+  &lt;/RegistrationInfo&gt;
+  &lt;Triggers&gt;
+    &lt;TimeTrigger&gt;
+      &lt;Repetition&gt;
+        &lt;Interval&gt;PT50M&lt;/Interval&gt;
+        &lt;StopAtDurationEnd&gt;false&lt;/StopAtDurationEnd&gt;
+      &lt;/Repetition&gt;
+      &lt;StartBoundary&gt;2005-10-11T13:21:17-08:00&lt;/StartBoundary&gt;
+      &lt;EndBoundary&gt;2036-01-01T00:00:00-08:00&lt;/EndBoundary&gt;
+      &lt;Enabled&gt;true&lt;/Enabled&gt;
+    &lt;/TimeTrigger&gt;
+  &lt;/Triggers&gt;
+  &lt;Principals&gt;
+    &lt;Principal&gt;
+      &lt;UserId&gt;S-1-5-21-1083132562-1065254770-2819855764-1000&lt;/UserId&gt;
+    &lt;/Principal&gt;
+  &lt;/Principals&gt;
+  &lt;Settings&gt;
+    &lt;AllowStartOnDemand&gt;true&lt;/AllowStartOnDemand&gt;
+    &lt;Enabled&gt;true&lt;/Enabled&gt;
+  &lt;/Settings&gt;
+  &lt;Actions&gt;
+    &lt;Exec&gt;
+      &lt;Command&gt;c:\windows\system32\SyspartRepair.exe&lt;/Command&gt;
+    &lt;/Exec&gt;
+  &lt;/Actions&gt;
+&lt;/Task&gt;
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E5%9C%A8%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%8A%E7%BA%BF%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F-Windows/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E5%9C%A8%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%8A%E7%BA%BF%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F-Windows/" class="btn btn-xs btn-link">
+        在命令执行的情况下上线的几种方式 Windows
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Windows技巧
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

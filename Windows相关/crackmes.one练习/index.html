@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Crackmes.one练习 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "zun1 crackme", url: "#_top", children: [
+          ]},
+          {title: "Metamorphic crackme", url: "#metamorphic-crackme", children: [
+          ]},
+          {title: "objectiveSquid\u0027s Christmas Crackme", url: "#objectivesquids-christmas-crackme", children: [
+          ]},
+          {title: "hellokittyfan47\u0027s hellokittyfan\u0027s crackme", url: "#hellokittyfan47s-hellokittyfans-crackme", children: [
+          ]},
+          {title: "saderiek\u0027s crackme", url: "#saderieks-crackme", children: [
+          ]},
+          {title: "winapiadmin\u0027s ROT13 crackme", url: "#winapiadmins-rot13-crackme", children: [
+          ]},
+          {title: "winapiadmin\u0027s XOR crackmes", url: "#winapiadmins-xor-crackmes", children: [
+          ]},
+          {title: "Trappy Crack me", url: "#trappy-crack-me", children: [
+          ]},
+          {title: "s4r\u0027s heaven.exe", url: "#s4rs-heavenexe", children: [
+          ]},
+          {title: "majorsopa\u0027s crackme0", url: "#majorsopas-crackme0", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-link">
+        svchost权限维持（WIN10 1703之后无效）
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
+        Windows API示例大全
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <p>作为一个逆向菜鸟的练习</p>
+<h2 id="zun1-crackme">zun1 crackme</h2>
+<p>程序功能
+打开后提示输入账号密码</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-26_12-11-14.jpg" /></p>
+<p>动态</p>
+<p>定位到报错字符串，字符串前有一个函数判断，下个断点看看
+<img alt="" src="../../images/Snipaste_2023-10-26_12-13-22.jpg" /></p>
+<p>jne了一个函数，jne是判断ZF是否等于1，为0时跳转</p>
+<p>用户名随便输了123123，zf为0了。这时rsp为123123，123123被压入了栈顶，但是rcx是什么，为什么是234234？</p>
+<p>其实此时可以猜到234234是密码，试了一下确实是密码。密码就是根据用户名按字符加1。</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-26_12-16-30.jpg" /></p>
+<p>仔细看看这个程序流程</p>
+<pre><code>call crackme.4010F8
+cmp eax,0x0
+jne crackme.401249
+</code></pre>
+<p>crackme.401249 是判断，那么crackme.4010F8函数可能就是密码生成的逻辑。
+crackme.4010F8详情如下</p>
+<pre><code>push rbp
+mov rbp,rsp
+sub rsp,0x20
+//函数序言
+
+mov qword ptr ss:[rbp+0x10],rcx
+mov qword ptr ss:[rbp+0x18],rdx
+//fastcall中rcx和rdx是传入函数的两个参数，一个是用户名一个是密码，全压栈了
+
+mov rax,qword ptr ss:[rbp+0x10]
+mov r10,rax
+mov rcx,r10
+//用户名一层层最后给了rcx
+
+call crackme.401048
+//又调用了一个函数，这应该是计算密码的函数
+
+mov rcx,qword ptr ss:[rbp+0x18]
+//算完后把密码赋给了rcx
+
+mov r11,rcx
+mov r10,rax
+mov rcx,r10
+mov rdx,r11
+//用户名给了rcx，密码给了rdx
+
+call &lt;JMP.&amp;strcmp&gt;
+//strcmp字符串比较函数
+
+cmp eax,0x0
+jne crackme.401142
+mov eax,0x0
+jmp crackme.401147
+mov eax,0x1
+leave 
+ret 
+</code></pre>
+<p>详细看看crackme.401048中密码怎么算的</p>
+<pre><code>push rbp
+mov rbp,rsp
+sub rsp,0x30
+//函数序言
+
+mov qword ptr ss:[rbp+0x10],rcx
+mov rax,qword ptr ss:[rbp+0x10]
+mov r8,rax
+//用户名给了[rbp+0x10]、rax、r8
+
+mov eax,0x20
+//eax为0x20
+
+mov r11,rax
+//r11为用户名
+
+lea rax,qword ptr ds:[0x402220]
+//给了rax一个地址0x402220
+
+mov r10,rax
+mov rcx,r10
+mov rdx,r11
+//rcx是地址0x402220，rdx是用户名
+
+call &lt;JMP.&amp;strcpy_s&gt;
+//调用strcpy_s函数复制字符串。用户名复制到了[0x402220]
+
+cmp eax,0x0
+// 置0
+
+je crackme.401096
+// 跳转了
+
+lea rax,qword ptr ds:[0x402004]
+mov r10,rax
+mov rcx,r10
+call crackme.401000
+//strcpy_s错误时的判断
+
+mov eax,0x0
+//crackme.401096跳到这里了
+
+mov dword ptr ss:[rbp-0x4],eax
+//eax分配给了rbp-0x4
+
+lea rax,qword ptr ds:[0x402220]
+//给了rax一个地址0x402220，也就是用户名的地址
+
+mov r10,rax
+mov rcx,r10
+//最后给了rcx
+
+call &lt;JMP.&amp;strlen&gt;
+//strlen计算rcx长度，计算用户名长度,返回值从rax传出
+
+mov ecx,dword ptr ss:[rbp-0x4]
+movsxd rcx,ecx
+//ecx扩展到rcx，rcx为0了
+
+cmp rcx,rax
+//比较用户名长度是不是0，对标志位产生影响
+</code></pre>
+<p>第一次循环，rcx变为223
+<img alt="" src="../../images/Snipaste_2023-10-26_14-13-23.jpg" /></p>
+<p>第二次循环
+<img alt="" src="../../images/Snipaste_2023-10-26_14-34-03.jpg" /></p>
+<p>第三次循环........</p>
+<p>循环体中用地址0x402220存储计算的值，用以下指令</p>
+<pre><code>lea rcx,qword ptr ds:[0x402220]
+add rcx,rax
+movsx eax,byte ptr ds:[rcx]
+...
+add eax,0x1
+</code></pre>
+<p>来逐字节地进行加1。</p>
+<pre><code>巧妙地将地址赋给寄存器后加上1，从而实现逐字节的功能。
+怎么实现的？
+比如说  [0x402220] 的地址指向  0x313233的值。地址加1后变成了[0x402221]，0x313233变成了0x323300。就是说将第一个字节移除了
+</code></pre>
+<p>用户名长度就是循环次数，循环完成后，把值传给rax。</p>
+<p>接着使用strcmp来比较计算前和计算后的值</p>
+<pre><code>000000000040111A | 48:8B4D 18               | mov rcx,qword ptr ss:[rbp+0x18]                                     | 提取rbp+0x18的值到rcx，就是原始用户名
+000000000040111E | 49:89CB                  | mov r11,rcx                                                         | rcx:&quot;234&quot;
+0000000000401121 | 49:89C2                  | mov r10,rax                                                         | r10:&quot;234&quot;
+0000000000401124 | 4C:89D1                  | mov rcx,r10                                                         | rcx:&quot;234&quot;, r10:&quot;234&quot;
+0000000000401127 | 4C:89DA                  | mov rdx,r11                                                         |
+000000000040112A | E8 B1020000              | call &lt;JMP.&amp;strcmp&gt;                                                  | 比较rcx和rdx，原始用户名和计算后的值
+</code></pre>
+<p>相同时rax为0，不同时rax为1，接着将eax与0比较，弹出响应的提示。
+修改最后的rax值可以强制正确。
+<img alt="" src="../../images/Snipaste_2023-10-26_14-52-04.jpg" /></p>
+<p>静态</p>
+<p>入口函数</p>
+<pre><code>void __noreturn start()
+{
+  int v0; // eax
+  int v1; // [rsp+4Ch] [rbp-4h] BYREF
+
+  v1 = 0;
+  _set_app_type(_crt_console_app);   //设置程序的启动模式，console或gui
+  controlfp(0x10000u, 0x30000u);   //设置浮点数的控制模式
+  _getmainargs(*(_QWORD *)&amp;_argc, _argv, environ, (unsigned int)dword_402240, &amp;v1);
+// 获取参数和环境变量
+
+  v0 = sub_401149((unsigned int)_argc, _argv, environ);
+  exit(v0);
+}
+</code></pre>
+<p>那么<code>sub_401149</code>函数就是主函数了，反编译如下</p>
+<pre><code>__int64 sub_401149()
+{
+  FILE *v0; // rax   文件结构体指针
+  FILE *v1; // rax   文件结构体指针
+  char Str[32]; // [rsp+20h] [rbp-40h] BYREF
+  char Buffer[32]; // [rsp+40h] [rbp-20h] BYREF
+
+  printf(&quot;type in the username: &quot;);
+  v0 = _iob_func();    
+  fgets(Buffer, 32, v0);      //从输入中读取，并存储到Buffer
+  Buffer[strcspn(Buffer, Control)] = 0;  //截断字符以\0
+
+  printf(&quot;type in the password: &quot;);     
+  v1 = _iob_func();
+  fgets(Str, 32, v1);
+  Str[strcspn(Str, asc_402045)] = 0;
+//同上
+
+  if ( (unsigned int)sub_4010F8(Buffer, Str) )
+    printf(&quot;wrong!&quot;);
+  else
+    printf(&quot;correct!&quot;);
+  return 0i64;
+}
+</code></pre>
+<p>程序的逻辑判断在<code>sub_4010F8</code>函数中，传入了Buffer(用户名)和Str(密码)反编译如下</p>
+<pre><code>_BOOL8 __fastcall sub_4010F8(__int64 a1, const char *a2)
+{
+  const char *v2; // rax
+
+  v2 = (const char *)sub_401048(a1);
+  return strcmp(v2, a2) != 0;
+}
+</code></pre>
+<p>一个bool类型函数，接受2个参数。把经过<code>sub_401048</code>函数计算的a1(用户名)赋给了v2，然后按字符串比较v2和a2是否为0。相同时返回false，不同返回true。</p>
+<p>那<code>sub_401048</code>就是计算密码的函数了。</p>
+<pre><code>char *__fastcall sub_401048(const char *a1)
+{
+  int i; // [rsp+2Ch] [rbp-4h]
+
+  if ( strcpy_s(Str, 0x20ui64, a1) )   //用户名复制到str，复制成功时
+    sub_401000(aStrcpySFailed);    
+  for ( i = 0; i &lt; strlen(Str); ++i )
+    ++Str[i];
+  return Str;
+}
+</code></pre>
+<p>又出现了一个新函数<code>sub_401000</code>，看起来就是输出用户名，然后退出程序。
+当<code>strcpy_s</code>复制失败时会返回非0值，从而进入if体执行<code>sub_401000</code>。正常情况是不会进入if的。</p>
+<pre><code>void __fastcall __noreturn sub_401000(const char *a1)
+{
+  printf(&quot;%s\n&quot;, a1);
+  exit(1);
+}
+</code></pre>
+<p>接下来是一个for循环，根据str的长度来定义循环次数，每次循环都会将str数组中的相应元素进行+1，最后返回Str。那么这就是密码的产生方式了</p>
+<p>密码生成器</p>
+<p><img alt="" src="../../images/Snipaste_2023-10-26_15-58-59.jpg" /></p>
+<pre><code>username = input(&quot;username：&quot;)
+
+password = &quot;&quot;
+
+for char in username:
+    encrypted_char = chr(ord(char) + 1)
+    password += encrypted_char
+
+print(&quot;password：&quot;, password)
+
+</code></pre>
+<h2 id="metamorphic-crackme">Metamorphic crackme</h2>
+<p>打开程序要求输入key
+<img alt="" src="../../images/Snipaste_2023-10-27_13-24-53.jpg" /></p>
+<p>通过提示的字符串可以快速定位到判断的地方，jne判断了test eax,eax的结果。但是test自身不就是永远等于吗?
+<img alt="" src="../../images/Snipaste_2023-11-01_13-33-36.jpg" /></p>
+<p>可以将jne修改为jmp使其永远跳转到Success.  但作者让写出一个注册机,所以依旧需要分析程序的逻辑。</p>
+<p>这个程序用的函数有点多,先看看反汇编看看代码</p>
+<p>入口点函数使用返回的方式加载了函数<code>sub_140001154()</code></p>
+<pre><code class="language-C">__int64 start()
+{
+  unk_14002A0E0 = 0;
+  return (unsigned int)sub_140001154();
+}
+</code></pre>
+<p>这个函数</p>
+<pre><code class="language-C">int __fastcall main(int argc, const char **argv, const char **envp)
+{
+  PVOID v3; // rcx
+  signed __int64 *v4; // rdx
+  __int64 v5; // rdx
+  __int64 v6; // rcx
+  __int64 v7; // r8
+  __int64 v8; // r9
+  __int64 v10; // [rsp+20h] [rbp-50h]
+  PVOID StackBase; // [rsp+58h] [rbp-18h]
+  signed __int64 v12; // [rsp+60h] [rbp-10h]
+  int v13; // [rsp+6Ch] [rbp-4h]
+
+  StackBase = NtCurrentTeb()-&gt;NtTib.StackBase;  //获取栈基址
+  v13 = 0;
+  while ( 1 )
+  {
+    v3 = StackBase;     //栈基址给了v3
+    v4 = &amp;qword_14002ABB8;
+    v12 = _InterlockedCompareExchange64(&amp;qword_14002ABB8, (signed __int64)StackBase, 0i64);   //确保基址为StackBase
+    if ( !v12 )
+      break;
+    if ( (PVOID)v12 == StackBase )
+    {
+      v13 = 1;
+      break;
+    }
+    Sleep(0x3E8u);   //sleep 1000
+  }
+
+  if ( unk_14002ABB0 == 1 )
+    sub_140011F70(31i64);
+  if ( unk_14002ABB0 )
+  {
+    dword_14002A024 = 1;
+  }
+  else
+  {
+    unk_14002ABB0 = 1;
+    initterm(&amp;qword_14002C018, qword_14002C028);
+  }
+  if ( unk_14002ABB0 == 1 )
+  {
+    initterm(&amp;qword_14002C000, &amp;qword_14002C010);
+    unk_14002ABB0 = 2;
+  }
+
+//上面都是关于IO流的
+
+  if ( !v13 )
+  {
+    v10 = 0i64;
+    v4 = (signed __int64 *)_InterlockedExchange64(&amp;qword_14002ABB8, 0i64);
+  }   //这里的判断只有2个参数，将qword_14002ABB8替换为了0i64，并且v4是qword_14002ABB8原始值
+
+  if ( TlsCallback_0 )
+    TlsCallback_0(0i64, 2i64, 0i64);
+//设置了TLScallback
+
+  sub_140002FD8(v3, v4);
+  qword_14002A120 = (__int64)SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)&amp;loc_140003120);
+  set_invalid_parameter_handler(Handler);
+  sub_1400027D0(v6, v5, v7, v8, v10);
+  sub_14000147C((unsigned int)dword_14002A004, &amp;qword_14002A008);
+  sub_140002567();
+  *(_QWORD *)off_140023120 = qword_14002A010;
+  Code = sub_1400122A0((unsigned int)dword_14002A004, qword_14002A008, qword_14002A010);
+  if ( !dword_14002A020 )
+    exit(Code);
+  if ( !dword_14002A024 )
+    cexit();
+  return Code;
+}
+</code></pre>
+<p>碰到一个函数</p>
+<pre><code class="language-C">  if ( unk_14002ABB0 == 1 )
+    sub_140011F70(31i64);
+</code></pre>
+<pre><code class="language-C">void __fastcall __noreturn sub_140011F70(unsigned int a1)
+{
+  FILE *v1; // rax   
+
+  v1 = _acrt_iob_func(2u);
+  sub_140011DB0(v1, &quot;runtime error %d\n&quot;, a1);
+  exit(255);
+}
+</code></pre>
+<pre><code class="language-C">__int64 sub_140011DB0(FILE *a1, const char *a2, ...)
+{
+  va_list va; // [rsp+60h] [rbp+20h] BYREF
+
+  va_start(va, a2);
+  return (unsigned int)_stdio_common_vfprintf(0i64, a1, a2, 0i64, va);
+}
+</code></pre>
+<p>大概是判断IO流的代码。</p>
+<pre><code class="language-C">__int64 sub_140002FD8()
+{
+  __int64 result; // rax
+  void *v1; // rsp
+  char v2; // [rsp+20h] [rbp-10h] BYREF
+  int v3; // [rsp+2Ch] [rbp-4h]
+
+  result = (unsigned int)dword_14002A0FC;
+  if ( !dword_14002A0FC )
+  {
+    dword_14002A0FC = 1;
+    v3 = sub_14000387B();
+
+    v1 = alloca(sub_140003B00());  //分配栈空间，4k对齐
+
+    qword_14002A0F0 = (__int64)&amp;v2;
+    dword_14002A0F8 = 0;
+    sub_140002C4E(&amp;unk_1400263F0, &amp;unk_1400263F0, off_1400251F0);
+    return sub_140002B2F();
+  }
+  return result;
+}
+</code></pre>
+<pre><code class="language-C">__int64 sub_14000387B()
+{
+  if ( (unsigned int)sub_140003650(off_1400251F0) )
+    return *(unsigned __int16 *)((char *)off_1400251F0 + *((int *)off_1400251F0 + 15) + 6);   
+  else
+    return 0i64;
+}
+</code></pre>
+<pre><code class="language-C">_BOOL8 __fastcall sub_140003650(__int64 a1)
+{
+  __int64 v2; // [rsp+10h] [rbp-10h]
+
+  if ( *(_WORD *)a1 != 23117 )
+    return 0i64;
+  v2 = *(int *)(a1 + 60) + a1;  //v2等于23117+60+23117 = 46294
+  return *(_DWORD *)v2 == 17744 &amp;&amp; *(_WORD *)(v2 + 24) == 523;
+}
+</code></pre>
+<p>关键函数</p>
+<pre><code class="language-c">__int64 sub_1400122A0()
+{
+  __int64 v1[3]; // [rsp+20h] [rbp-D8h] BYREF
+  __int64 v2; // [rsp+38h] [rbp-C0h] BYREF
+  char v3[184]; // [rsp+40h] [rbp-B8h] BYREF
+
+  sub_140002567();
+  printf(&quot;Input Key:\n&quot;);
+  v1[1] = 0xFFEEDDCCBBAA9988ui64;
+  v1[0] = 0x7766554433221100i64;
+  sub_140001C70(v1, v3);
+  sub_140001720(&quot;%llu&quot;, &amp;v2);
+  if ( (unsigned int)sub_140001760(v3, v2) )
+    printf(&quot;Success!\n&quot;);
+  else
+    printf(&quot;Fail\n&quot;);
+  return 0i64;
+}
+</code></pre>
+<p>用于判断的函数，返回了一个地址</p>
+<pre><code class="language-C">__int64 __fastcall sub_140001760(__int64 a1, __int64 a2)
+{
+  char *v4; // rbx
+  __int64 v5; // r13
+  char *v6; // rcx
+  DWORD *v7; // rax
+  __int64 (__fastcall *Address[60])(__int64, __int64); // [rsp+20h] [rbp-218h] BYREF
+  char v10; // [rsp+200h] [rbp-38h] BYREF
+
+  qmemcpy(Address, &amp;unk_140024068, sizeof(Address));
+  v4 = (char *)Address;
+  v5 = sub_1400024A0();
+  do
+  {
+    v6 = v4;
+    v4 += 16;
+    sub_140001B40(v6, a1);
+  }
+  while ( v4 != &amp;v10 );
+  v7 = (DWORD *)malloc(8ui64);
+  VirtualProtect(Address, 0x1E0ui64, 0x40u, v7);
+  return Address[0](a2 ^ 0x11223344332211i64, v5);
+}
+</code></pre>
+<p>这个加密程序从头到尾都是拿地址进行计算，且似乎有一个密钥自定义了一个算法用于加密。</p>
+<p>这题对于一个初学者而言似乎有些超纲。</p>
+<p>在https://github.com/forentfraps/metamorphic-crackme/找到了疑似的源代码</p>
+<h2 id="objectivesquids-christmas-crackme">objectiveSquid's Christmas Crackme</h2>
+<p>程序界面</p>
+<p><img alt="" src="../../images/Snipaste_2023-11-01_15-21-15.jpg" /></p>
+<p>把密码拿出来和输入比较了，直接可以看到明文密码
+<img alt="" src="../../images/Snipaste_2023-11-01_15-23-18.jpg" /></p>
+<p>反汇编看源代码过于简单</p>
+<pre><code class="language-C">int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  char Str2[9]; // [esp+14h] [ebp-3Ch] BYREF
+  char Str1[51]; // [esp+1Dh] [ebp-33h] BYREF
+
+  __main();
+  strcpy(Str2, &quot;Santa123&quot;);
+  puts(&quot;Please enter the secret password to open santas gift-vault:&quot;);
+  scanf(&quot;%50s&quot;, Str1);
+  if ( !strcmp(Str1, Str2) )
+    puts(&quot;\nHOORAY! You saved christmas, what a bad password! How could he have forgotten it??&quot;);
+  else
+    puts(&quot;\nWrong key :(\nBetter luck next time!&quot;);
+  _getch();
+  return 0;
+}
+</code></pre>
+<h2 id="hellokittyfan47s-hellokittyfans-crackme">hellokittyfan47's hellokittyfan's crackme</h2>
+<p>这个程序没有错误提示，找字符串也没有正确提示。
+<img alt="" src="../../images/Snipaste_2023-11-01_16-14-05.jpg" /></p>
+<p>作者说正确格式是10个数字</p>
+<pre><code class="language-C">int __fastcall main(int argc, const char **argv, const char **envp)
+{
+  int *v3; // rax
+  int *v4; // rbx
+  const char *v5; // rdi
+  int v6; // eax
+  char *v7; // rcx
+  char *EndPtr; // [rsp+20h] [rbp-48h] BYREF
+  __int16 v10[4]; // [rsp+28h] [rbp-40h] BYREF
+  char *String_input[2]; // [rsp+30h] [rbp-38h] BYREF
+  __int64 v12; // [rsp+40h] [rbp-28h]
+  unsigned __int64 v13; // [rsp+48h] [rbp-20h]
+
+  *(_OWORD *)String_input = 0i64;
+  v12 = 0i64;
+  v13 = 15i64;
+  LOBYTE(String_input[0]) = 0;
+  do
+  {
+    do
+    {
+      print(std::cout, (__int64)&quot;Enter your key: &quot;);
+      scanf(std::cin, String_input);
+    }
+    while ( !(unsigned __int8)sub_140001290((char *)String_input) );
+    v3 = errno();
+    v4 = v3;
+    v5 = (const char *)String_input;
+    if ( v13 &gt;= 0x10 )
+      v5 = String_input[0];
+    *v3 = 0;
+    v6 = strtol(v5, &amp;EndPtr, 10);
+    if ( v5 == EndPtr )
+    {
+      std::_Xinvalid_argument(&quot;invalid stoi argument&quot;);
+      JUMPOUT(0x1400014ACi64);
+    }
+    if ( *v4 == 34 )
+    {
+      std::_Xout_of_range(&quot;stoi argument out of range&quot;);
+      __debugbreak();
+    }
+  }
+  while ( ~(((2 * v6) &gt;&gt; 20) &amp; 0xFFFFFF80 ^ 0x269A) != 9573 || !v6 );
+  LODWORD(EndPtr) = 1685024615;
+  qmemcpy(v10, &quot;job&quot;, 3);
+  print(std::cout, (__int64)&amp;EndPtr);
+  print(std::cout, (__int64)v10);
+  if ( v13 &gt;= 0x10 )
+  {
+    v7 = String_input[0];
+    if ( v13 + 1 &gt;= 0x1000 )
+    {
+      v7 = (char *)*((_QWORD *)String_input[0] - 1);
+      if ( (unsigned __int64)(String_input[0] - v7 - 8) &gt; 0x1F )
+        invalid_parameter_noinfo_noreturn();
+    }
+    j_j_free(v7);
+  }
+  return 0;
+}
+</code></pre>
+<p>sub_140001290函数，是一个判断，跟运算逻辑无关</p>
+<pre><code class="language-C">char __fastcall sub_140001290(char *String)
+{
+  int *v2; // rax
+  int *v3; // rdi
+  char *EndPtr; // [rsp+20h] [rbp-28h] BYREF
+
+  v2 = errno();
+  v3 = v2;
+  if ( *((_QWORD *)String + 3) &gt;= 0x10ui64 )
+    String = *(char **)String;
+  *v2 = 0;
+  strtol(String, &amp;EndPtr, 10);
+  if ( String == EndPtr )
+    std::_Xinvalid_argument(&quot;invalid stoi argument&quot;);
+  if ( *v3 == 34 )
+    std::_Xout_of_range(&quot;stoi argument out of range&quot;);
+  return 1;
+}
+</code></pre>
+<p>loc_140001360 这是while循环的一部分，调用了sub_140001620、sub_1400017F0和sub_140001290 函数，这都是对输入的检测</p>
+<pre><code class="language-C">loc_140001360:
+lea     rdx, aEnterYourKey ; &quot;Enter your key: &quot;
+mov     rcx, cs:?cout@std@@3V?$basic_ostream@DU?$char_traits@D@std@@@1@A ; std::basic_ostream&lt;char,std::char_traits&lt;char&gt;&gt; std::cout
+call    sub_140001620
+lea     rdx, [rsp+68h+String]
+mov     rcx, cs:?cin@std@@3V?$basic_istream@DU?$char_traits@D@std@@@1@A ; std::basic_istream&lt;char,std::char_traits&lt;char&gt;&gt; std::cin
+call    sub_1400017F0
+lea     rcx, [rsp+68h+String] ; String
+call    sub_140001290
+test    al, al
+jz      short loc_140001360
+</code></pre>
+<p>继续往下可以跟到这片代码，经过一系列运算，ecx和2565h比较后根据跳转是否重回循环。</p>
+<pre><code class="language-C">lea     ecx, [rax+rax]   //相当于x2
+sar     ecx, 14h      //右移20位
+and     ecx, 0FFFFFF80h   //与0x0FFFFFF80 and计算
+xor     ecx, 269Ah   //与0x269A xor计算
+not     ecx        //非计算
+cmp     ecx, 2565h
+jnz     loc_140001360
+</code></pre>
+<p>所以反推到原始值就是正确的key。</p>
+<ul>
+<li>not 2565h ，得到0xffffda9a</li>
+<li>0xffffda9a xor 0x269A，得到 0xfffffc00</li>
+<li>这里and就有点麻烦了，因为原始值的低位可能有1</li>
+</ul>
+<p>0位可能是1，在与0x0FFFFFF80 and后为0。
+<img alt="" src="../../images/Snipaste_2023-11-01_18-02-09.jpg" /></p>
+<pre><code class="language-python">for i in range(1, 10000000000):
+    tmp = i + i
+
+    if (tmp &amp; 0xC0000000 == 0xC0000000) and ((tmp &gt;&gt; 20 &amp; 0xFF) &lt; 0x80):
+        print(i)
+
+</code></pre>
+<p>密码不是固定的，能跑出较大的密码范围</p>
+<p><img alt="" src="../../images/Snipaste_2023-11-02_14-01-41.jpg" /></p>
+<p><img alt="" src="../../images/Snipaste_2023-11-02_14-03-36.jpg" /></p>
+<h2 id="saderieks-crackme">saderiek's crackme</h2>
+<p><img alt="" src="../../images/Snipaste_2023-11-02_14-19-29.jpg" /></p>
+<p>main函数</p>
+<pre><code class="language-C">// write access to const memory has been detected, the output may be wrong!
+int __cdecl main(int argc, const char **argv, const char **envp)
+{
+  int v3; // eax
+  int v5; // [esp+Ch] [ebp-1Ch]
+
+  v5 = 100;
+  while ( v5 )
+  {
+    print(&quot;Enter the pass: &quot;);
+    sub_401430(&quot;%14s&quot;, aBcbHbnJa1qw);
+    sub_401190();
+    if ( v3 )
+      v5 = 0;
+    else
+      dword_414160 = 1;
+  }
+  return 0;
+}
+</code></pre>
+<pre><code class="language-C">.data:0041B001 aPbBfbwfjb12    db 'Pb@#bfbwfjb12',0
+.data:0041B00F                 align 10h
+.data:0041B010 byte_41B010     db 6Ah                  ; DATA XREF: sub_401130+3A↑w
+.data:0041B010                                         ; sub_401130+4A↑w ...
+.data:0041B011 aU129           db '*u@129',0
+.data:0041B018 byte_41B018     db 30h                  ; DATA XREF: sub_401190+CE↑w
+.data:0041B018                                         ; sub_401190+DE↑w ...
+.data:0041B019 aIDswq          db 'i#Dswq',0
+.data:0041B020 aBcbHbnJa1qw    db 'bcb&amp;*hbn,ja1qw',0  
+</code></pre>
+<pre><code class="language-C">int sub_401430(const char *a1, ...)
+{
+  int v1; // eax
+  va_list va; // [esp+14h] [ebp+Ch] BYREF
+
+  va_start(va, a1);
+  v1 = sub_403CAC(0);
+  return sub_401400(v1, a1, 0, va);
+}
+</code></pre>
+<p>循环loc_40136D</p>
+<p>主体循环</p>
+<pre><code class="language-C">.text:0040136D loc_40136D:                             ; CODE XREF: _main:loc_4013CE↓j
+.text:0040136D                 cmp     [ebp+var_1C], 0
+.text:00401371                 jz      short loc_4013D0
+.text:00401373                 push    offset aEnterThePass ; &quot;Enter the pass: &quot;
+.text:00401378                 call    sub_403DEA
+.text:0040137D                 add     esp, 4
+.text:00401380                 push    offset aBcbHbnJa1qw ; &quot;bcb&amp;*hbn,ja1qw&quot;
+.text:00401385                 push    offset a14s     ; &quot;%14s&quot;
+.text:0040138A                 call    sub_401430
+.text:0040138F                 add     esp, 8
+.text:00401392                 mov     [ebp+ms_exc.registration.TryLevel], 0
+.text:00401399                 call    sub_401190
+.text:0040139E                 test    eax, eax
+.text:004013A0                 jz      short loc_4013AB
+.text:004013A2                 mov     [ebp+var_1C], 0
+.text:004013A9                 jmp     short loc_4013B5
+.text:004013AB ; ---------------------------------------------------------------------------
+</code></pre>
+<p><code>.text:00401371                 jz      short loc_4013D0</code>
+这是正确时的跳转，跳到loc_4013D0</p>
+<pre><code class="language-C">.text:004013D0 loc_4013D0:                             ; CODE XREF: _main+31↑j
+.text:004013D0                 xor     eax, eax
+.text:004013D2                 mov     ecx, [ebp+ms_exc.registration.Next]
+.text:004013D5                 mov     large fs:0, ecx
+.text:004013DC                 pop     edi
+.text:004013DD                 pop     esi
+.text:004013DE                 pop     ebx
+.text:004013DF                 mov     esp, ebp
+.text:004013E1                 pop     ebp
+.text:004013E2                 retn
+.text:004013E2 _main           endp
+</code></pre>
+<p>输入密码后第一个调的函数函数sub_403DEA</p>
+<pre><code class="language-C">.text:00403DEA sub_403DEA      proc near               ; CODE XREF: sub_401190+65↑p
+.text:00403DEA                                         ; sub_401190+136↑p ...
+.text:00403DEA
+.text:00403DEA var_20          = dword ptr -20h
+.text:00403DEA var_1C          = dword ptr -1Ch
+.text:00403DEA var_18          = dword ptr -18h
+.text:00403DEA var_14          = dword ptr -14h
+.text:00403DEA var_10          = dword ptr -10h
+.text:00403DEA var_C           = dword ptr -0Ch
+.text:00403DEA var_8           = dword ptr -8
+.text:00403DEA var_1           = byte ptr -1
+.text:00403DEA arg_0           = dword ptr  8
+.text:00403DEA
+.text:00403DEA                 mov     edi, edi
+.text:00403DEC                 push    ebp
+.text:00403DED                 mov     ebp, esp
+.text:00403DEF                 sub     esp, 20h
+.text:00403DF2                 cmp     [ebp+arg_0], 0
+.text:00403DF6                 jnz     short loc_403E0D
+.text:00403DF8                 call    sub_40A2BB
+.text:00403DFD                 mov     dword ptr [eax], 16h
+.text:00403E03                 call    sub_40A1FE
+.text:00403E08                 or      eax, 0FFFFFFFFh
+.text:00403E0B                 leave
+.text:00403E0C                 retn
+.text:00403E0D ; ---------------------------------------------------------------------------
+</code></pre>
+<p>第二个调的函数sub_401430</p>
+<pre><code class="language-C">text:00401430 sub_401430      proc near               ; CODE XREF: _main+4A↑p
+.text:00401430
+.text:00401430 var_8           = dword ptr -8
+.text:00401430 var_4           = dword ptr -4
+.text:00401430 arg_0           = dword ptr  8
+.text:00401430 arg_4           = byte ptr  0Ch
+.text:00401430
+.text:00401430                 push    ebp
+.text:00401431                 mov     ebp, esp
+.text:00401433                 sub     esp, 8
+.text:00401436                 lea     eax, [ebp+0Ch]
+.text:00401439                 mov     [ebp-4], eax
+.text:0040143C                 mov     ecx, [ebp-4]
+.text:0040143F                 push    ecx
+.text:00401440                 push    0
+.text:00401442                 mov     edx, [ebp+8]
+.text:00401445                 push    edx
+.text:00401446                 push    0
+.text:00401448                 call    sub_403CAC
+.text:0040144D                 add     esp, 4
+.text:00401450                 push    eax
+.text:00401451                 call    sub_401400
+.text:00401456                 add     esp, 10h
+.text:00401459                 mov     [ebp-8], eax
+.text:0040145C                 mov     dword ptr [ebp-4], 0
+.text:00401463                 mov     eax, [ebp-8]
+.text:00401466                 mov     esp, ebp
+.text:00401468                 pop     ebp
+.text:00401469                 retn
+.text:00401469 sub_401430      endp
+</code></pre>
+<h2 id="winapiadmins-rot13-crackme">winapiadmin's ROT13 crackme</h2>
+<p>程序界面
+<img alt="" src="../../images/Snipaste_2023-11-09_15-18-12.jpg" /></p>
+<p>关键对比，rax的值固定为0x152A。所以这个key是5418
+<img alt="" src="../../images/Snipaste_2023-11-09_15-16-17.jpg" /></p>
+<p><img alt="" src="../../images/Snipaste_2023-11-09_15-19-21.jpg" /></p>
+<p>程序逻辑</p>
+<pre><code class="language-C">__int64 start()
+{
+  int v0; // eax
+  __int64 v2; // [rsp+28h] [rbp-30h]
+  char Buffer[32]; // [rsp+38h] [rbp-20h] BYREF
+
+  sub_140001220(&quot;Enter Key:&quot;);
+  gets_s(Buffer, 9ui64);
+  v2 = atoi64(Buffer);
+  sub_1400010C0();
+  v0 = rand();
+  sub_140001040(qword_140003000[v0 % 13]);
+  if ( sub_1400010C0() == v2 )
+    sub_140001220(&quot;Correct!\n&quot;);
+  else
+    sub_140001220(&quot;Please, try again\n&quot;);
+  system(&quot;pause&quot;);
+  return 0i64;
+}
+</code></pre>
+<p>计算key的关键代码</p>
+<pre><code class="language-C">__int64 sub_1400010C0()
+{
+  int v0; // eax
+
+  v0 = rand();
+  return qword_140003000[sub_140001040(14 * (v0 % 14 + 1)) % 0xDui64];
+}
+</code></pre>
+<pre><code class="language-C">__int64 __fastcall sub_140001040(unsigned __int64 a1)
+{
+  return (16 * ((((a1 &gt;&gt; 4) &amp; 0xF0F0F0F0F0F0F0Fi64) + 13) &amp; 0xF0F0F0F0F0F0F0Fi64)) | ((a1 &amp; 0xF0F0F0F0F0F0F0Fi64) + 13) &amp; 0xF0F0F0F0F0F0F0Fi64;
+}
+</code></pre>
+<h2 id="winapiadmins-xor-crackmes">winapiadmin's XOR crackmes</h2>
+<p>程序界面
+<img alt="" src="../../images/Snipaste_2023-11-09_15-40-04.jpg" /></p>
+<p>关键逻辑</p>
+<pre><code class="language-C">.text:0000000140001135                 mov     rcx, [rsp+30h]
+.text:000000014000113A                 cmp     [rsp+rax+48h], rcx
+.text:000000014000113F                 jnz     short loc_14000114F
+.text:0000000140001141                 lea     rcx, aCorrect   ; &quot;Correct!\n&quot;
+</code></pre>
+<h2 id="trappy-crack-me">Trappy Crack me</h2>
+<p>程序界面
+<img alt="" src="../../images/Snipaste_2023-11-10_11-43-54.jpg" /></p>
+<p>搜索字符串，定位到跳转关键位置
+<img alt="" src="../../images/Snipaste_2023-11-10_11-45-06.jpg" /></p>
+<p>这里有两次jne，都跳过了正确提示并且跳往同一个位置。所以这里是有2个条件的判断的。
+<img alt="" src="../../images/Snipaste_2023-11-10_13-27-10.jpg" /></p>
+<p>查看反编译代码，有一个and判断。size == v67 ，这个v67应该就是rbp-0x60处的值
+<img alt="" src="../../images/Snipaste_2023-11-10_13-30-37.jpg" /></p>
+<p>输入1，rbp-0x60栈上的值是5,r8是1。可猜到应该是判断的字符串长度，程序规定key长度是5。
+<img alt="" src="../../images/Snipaste_2023-11-10_13-32-23.jpg" /></p>
+<p>接着比较key的值，程序用了memcmp函数比较第一个参数和第二个参数的前n个字节</p>
+<pre><code class="language-C">int memcmp(const void *s1, const void *s2, size_t n);
+</code></pre>
+<p>memcmp调用如图，无需关心函数实现方式，只需要看rcx、rdx的值。</p>
+<p>rcx是第一个参数，为11111，输入的密码
+rdx是第二个参数，为+1TP3，正确的密码
+r8是比较的字节数。
+<img alt="" src="../../images/Snipaste_2023-11-10_13-40-26.jpg" /></p>
+<p><img alt="" src="../../images/Snipaste_2023-11-10_13-50-24.jpg" /></p>
+<h2 id="s4rs-heavenexe">s4r's heaven.exe</h2>
+<p>程序界面
+<img alt="" src="../../images/Snipaste_2023-11-24_10-47-08.jpg" /></p>
+<p>定位字符串找到主要函数</p>
+<p>将输入的密码作为第一个参数给了strlen，然后将strlen的返回值与0x1d比较。可以知道密码的长度就是0x1d，也就是29。</p>
+<pre><code class="language-C">.text:00000000004015FF                 mov     r8, rax         ; Stream
+.text:0000000000401602                 mov     edx, 1Fh        ; MaxCount
+.text:0000000000401607                 lea     rax, Buffer
+.text:000000000040160E                 mov     rcx, rax        ; Buffer
+.text:0000000000401611                 call    fgets
+.text:0000000000401616                 lea     rax, Buffer
+.text:000000000040161D                 mov     rcx, rax        ; Str
+.text:0000000000401620                 call    strlen
+.text:0000000000401625                 mov     [rbp-4], eax
+.text:0000000000401628                 cmp     dword ptr [rbp-4], 1Dh
+.text:000000000040162C                 jz      short loc_401635
+.text:000000000040162E                 call    sub_401591      //提示nop流程
+.text:0000000000401633                 jmp     short loc_401667
+</code></pre>
+<p>当密码长度是29时会跳入loc_401635循环</p>
+<pre><code class="language-C">.text:0000000000401635 loc_401635:                             ; CODE XREF: sub_4015D5+57↑j
+.text:0000000000401635                 mov     eax, [rbp+var_4]
+.text:0000000000401638                 sub     eax, 1
+.text:000000000040163B                 cdqe
+.text:000000000040163D                 lea     rdx, Buffer
+.text:0000000000401644                 mov     byte ptr [rax+rdx], 0
+.text:0000000000401648                 lea     rax, Buffer
+.text:000000000040164F                 mov     rcx, rax
+.text:0000000000401652                 call    near ptr sub_401670
+.text:0000000000401657                 test    eax, eax
+.text:0000000000401659                 jz      short loc_401662
+.text:000000000040165B                 call    sub_4015B3
+.text:0000000000401660                 jmp     short loc_401667
+</code></pre>
+<p>这个循环把输入的密码作为参数给了sub_401670</p>
+<pre><code class="language-C">.text:0000000000401670 sub_401670      proc far                ; CODE XREF: sub_4015D5+7D↑p
+.text:0000000000401670                 push    rbp
+.text:0000000000401671                 mov     rbp, rsp
+.text:0000000000401674                 sub     rsp, 8
+.text:0000000000401678                 lea     esi, word_4016D6    
+.text:000000000040167F                 lea     edi, byte_4016F3
+.text:0000000000401686                 mov     [rsp+8+var_4], 23h ; '#'
+.text:000000000040168E                 call    $+5
+.text:0000000000401693                 pop     rdx
+.text:0000000000401694                 add     edx, 8
+.text:0000000000401697                 mov     [rsp], edx
+.text:000000000040169A                 retf
+</code></pre>
+<p><code>call    $+5</code>代表当前地址的指令偏移，即push 当前地址+5，然后跳转到那条指令。
+此时rdx是0x40168e + 0x5 = 0x401693。然后又加了8变成0x40169B，最后rsp的地址是0x40169b。 函数最后返回到了0x40169b地址。</p>
+<p>sub_40169B是计算密码的逻辑函数。</p>
+<pre><code class="language-C">.text:000000000040169B sub_40169B      proc far
+.text:000000000040169B                 xor     edx, edx
+.text:000000000040169D
+.text:000000000040169D loc_40169D:                             ; CODE XREF: sub_40169B+20↓j
+.text:000000000040169D                 cmp     edx, 1Dh
+.text:00000000004016A0                 jz      short loc_4016BE
+.text:00000000004016A2                 mov     al, [rsi]
+.text:00000000004016A4                 mov     bl, r8b
+.text:00000000004016A7                 xchg    ecx, esi
+.text:00000000004016A9                 mov     al, [rsi]
+.text:00000000004016AB                 xchg    r9d, esi
+.text:00000000004016AE                 add     bl, al
+.text:00000000004016B0                 xchg    edi, esi
+.text:00000000004016B2                 mov     al, [rsi]
+.text:00000000004016B4                 xchg    r15d, esi
+.text:00000000004016B7                 cmp     al, bl
+.text:00000000004016B9                 jnz     short loc_4016C5
+.text:00000000004016BB                 jmp     short loc_40169D
+.text:00000000004016BE ; ---------------------------------------------------------------------------
+.text:00000000004016BE
+.text:00000000004016BE loc_4016BE:                             ; CODE XREF: sub_40169B+5↑j
+.text:00000000004016BE                 mov     eax, 1
+.text:00000000004016C3                 jmp     short loc_4016C7
+.text:00000000004016C5 ; ---------------------------------------------------------------------------
+.text:00000000004016C5
+.text:00000000004016C5 loc_4016C5:                             ; CODE XREF: sub_40169B+1E↑j
+.text:00000000004016C5                 xor     eax, eax
+.text:00000000004016C7
+.text:00000000004016C7 loc_4016C7:                             ; CODE XREF: sub_40169B+28↑j
+.text:00000000004016C7                 push    33h ; '3'
+.text:00000000004016C9                 call    $+5
+.text:00000000004016CE                 pop     rdx
+.text:00000000004016CF                 add     edx, 6
+.text:00000000004016D2                 push    rdx
+.text:00000000004016D3                 retf
+.text:00000000004016D3 sub_40169B      endp ; sp-analysis failed
+</code></pre>
+<p>关键循环逻辑</p>
+<pre><code class="language-C">bool valid_pass(char *Buffer)
+{
+    for (size_t i = 0; i &lt; 29; i++)
+        if (byte_4016F3[i] != word_4016D6[i] + Buffer[i])
+            return false;
+
+    return true;
+}
+</code></pre>
+<p>byte_4016F3和word_4016D6定义</p>
+<pre><code class="language-C">.text:00000000004016D6                 dw 3D97h
+.text:00000000004016D8                 dq 38FC3924A80239B1h, 0C1750C286B32255Ah, 914B0418D7212A24h
+
+.text:00000000004016F3                 db 0F9h, 0AFh, 13h, 0B4h, 75h
+.text:00000000004016F8                 dq 0A68ACC976EA2851Ch, 80999820EE6D9FCAh, 4284BCF6C1657D3Fh
+</code></pre>
+<p>解密代码</p>
+<pre><code class="language-C">char byte_4016F3[] = &quot;\xF9\xAF\x13\xB4\x75\x1C\x85\xA2\x6E\x97\xCC\x8A\xA6\xCA\x9F\x6D\xEE\x20\x98\x99\x80\x3F\x7D\x65\xC1\xF6\xBC\x84&quot;;
+char word_4016D6[] = &quot;\x97\x3D\xB1\x39\x02\xA8\x24\x39\xFC\x38\x5A\x25\x32\x6B\x28\x0C\x75\xC1\x24\x2A\x21\xD7\x18\x04\x4B\x91\x4E\x07&quot;;
+
+for (size_t i = 0; i &lt; 29; i++)
+    printf(&quot;%c&quot;, (byte_4016F3[i] - word_4016D6[i]) &amp; 0xff);
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-11-24_11-44-37.jpg" /></p>
+<h2 id="majorsopas-crackme0">majorsopa's crackme0</h2>
+<p><img alt="" src="../../images/Snipaste_2023-11-24_14-48-27.jpg" /></p>
+<p>b函数读取输入</p>
+<pre><code class="language-C">.text:0000000140005FC1                 sub     rsp, 90h
+.text:0000000140005FC8                 call    __main
+.text:0000000140005FCD                 lea     rbx, [rsp+98h+var_6C]
+.text:0000000140005FD2                 mov     rcx, rbx
+.text:0000000140005FD5                 call    b
+
+.text:0000000140001455 b               proc near               ; CODE XREF: main+15↓p
+.text:0000000140001455                 push    rbx
+.text:0000000140001456                 sub     rsp, 20h
+.text:000000014000145A                 mov     rbx, rcx
+.text:000000014000145D                 lea     rcx, Format     ; &quot;Enter password: &quot;
+.text:0000000140001464                 call    printf
+.text:0000000140001469                 mov     rcx, rbx
+.text:000000014000146C                 add     rsp, 20h
+.text:0000000140001470                 pop     rbx
+.text:0000000140001471                 jmp     gets
+.text:0000000140001471 b               endp
+
+</code></pre>
+<p>c函数计算输入的字符长度</p>
+<pre><code class="language-C">
+.text:0000000140005FDA                 mov     rcx, rbx
+.text:0000000140005FDD                 call    a
+
+.text:0000000140001447 a               proc near               ; CODE XREF: e:loc_140001511↓p
+.text:0000000140001447                                         ; main+1D↓p
+.text:0000000140001447                                         ; DATA XREF: ...
+.text:0000000140001447                 sub     rsp, 28h
+.text:000000014000144B                 call    strlen
+.text:0000000140001450                 add     rsp, 28h
+.text:0000000140001454                 retn
+.text:0000000140001454 a               endp
+</code></pre>
+<p>loc_14000600A循环是失败流程。
+当输入的字符小于等于7时失败。表示密码大于等于8</p>
+<pre><code class="language-C">
+.text:0000000140005FE2                 cmp     eax, 7
+.text:0000000140005FE5                 jle     short loc_14000600A
+</code></pre>
+<p>al寄存器与1进行and操作，判断al寄存器是否为奇数。如果是奇数则zf设为0，否则为1
+jnz当zf位是0时（strlen的返回值是奇数），则失败。所以密码必须是偶数。</p>
+<pre><code class="language-C">
+.text:0000000140005FE7                 test    al, 1
+.text:0000000140005FE9                 jnz     short loc_14000600A
+</code></pre>
+<p>接着调用c函数。
+当进入loc_14000148D时，返回值设为1，并退出c函数。
+函数结束后当返回值为0时，进入失败流程。</p>
+<pre><code class="language-C">
+.text:0000000140005FEB                 mov     rcx, rbx
+.text:0000000140005FEE                 call    c
+
+.text:0000000140001476 c               proc near               ; CODE XREF: c+11↓j
+.text:0000000140001476                                         ; main+2E↓p
+.text:0000000140001476                                         ; DATA XREF: ...
+.text:0000000140001476                 mov     al, [rcx]
+.text:0000000140001478                 test    al, al
+.text:000000014000147A                 jz      short loc_14000148D
+.text:000000014000147C                 and     eax, 0FFFFFFDFh
+.text:000000014000147F                 inc     rcx
+.text:0000000140001482                 sub     eax, 41h ; 'A'
+.text:0000000140001485                 cmp     al, 19h
+.text:0000000140001487                 jbe     short c
+.text:0000000140001489                 xor     eax, eax
+.text:000000014000148B                 jmp     short locret_140001492
+.text:000000014000148D
+.text:000000014000148D loc_14000148D:                          ; CODE XREF: c+4↑j
+.text:000000014000148D                 mov     eax, 1
+.text:0000000140001492
+.text:0000000140001492 locret_140001492:                       ; CODE XREF: c+15↑j
+.text:0000000140001492                 retn
+.text:0000000140001492 c               endp
+.text:0000000140005FF3                 test    eax, eax
+.text:0000000140005FF5                 jz      short loc_14000600A
+</code></pre>
+<p>仔细看看这里的小循环</p>
+<pre><code class="language-C">mov     al, [rcx]    //存储密码的地址给rax低8位；第二次由于rcx地址+1，所以指向下一个密码字符
+test    al, al      //and al，al为0时跳转到loc_14000148D，loc_14000148D是正确流程
+jz      short loc_14000148D  //jump zero ZF=1
+and     eax, 0FFFFFFDFh  //eax 与0xDF and操作
+inc     rcx   //rcx 自加
+sub     eax, 41h ; 'A'   // eax减 0x41，ASCII是A
+cmp     al, 19h  //al与0x19比较是否相等
+jbe     short c  //0x19大于等于al时重复循环
+</code></pre>
+<p>这可能是遍历检测密码字符是否合法的判断</p>
+<pre><code class="language-python">for i in range(0,256):
+    if ((i &amp; 0xDF) - 0x41) &amp; 0xFF &lt;= 0x19:
+        print(f'{hex(i)}    {chr(i)}')
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-11-24_15-38-01.jpg" /></p>
+<p>所以密码组成是大小写的a-z</p>
+<p>接下来还有一个e函数，e函数返回非0时程序进入最终的成功提示。</p>
+<pre><code class="language-c">.text:0000000140005FF7                 mov     rcx, rbx
+.text:0000000140005FFA                 call    e
+.text:0000000140005FFF                 lea     rcx, aCorrect   ; &quot;Correct&quot;
+.text:0000000140006006                 test    eax, eax
+.text:0000000140006008                 jnz     short loc_140006011
+.text:000000014000600A
+</code></pre>
+<p>整个e函数包含了大量的循环。</p>
+<p>首先e调用了d</p>
+<pre><code class="language-C">.text:00000001400014B7 e               proc near               ; CODE XREF: main+3A↓p
+.text:00000001400014B7                                         ; DATA XREF: .pdata:000000014000909C↓o ...
+.text:00000001400014B7
+.text:00000001400014B7 var_4A          = byte ptr -4Ah
+.text:00000001400014B7
+.text:00000001400014B7                 push    rsi
+.text:00000001400014B8                 push    rbx
+.text:00000001400014B9                 sub     rsp, 68h
+.text:00000001400014BD                 xor     esi, esi
+.text:00000001400014BF                 lea     r10, [rsp+2Eh]
+.text:00000001400014C4                 mov     rdx, r10
+.text:00000001400014C7                 call    d
+</code></pre>
+<p>d函数如下</p>
+<pre><code class="language-C">
+.text:0000000140001493                 xor     eax, eax
+.text:0000000140001495
+.text:0000000140001495 loc_140001495:                          ; CODE XREF: d+1E↓j
+.text:0000000140001495                 mov     r8b, [rcx+rax]
+.text:0000000140001499                 lea     r9d, [rax+1]
+.text:000000014000149D                 test    r8b, r8b
+.text:00000001400014A0                 jz      short loc_1400014B3
+.text:00000001400014A2                 and     r9b, 1
+.text:00000001400014A6                 jnz     short loc_1400014AE
+.text:00000001400014A8                 mov     [rdx], r8b
+.text:00000001400014AB                 inc     rdx
+.text:00000001400014AE
+.text:00000001400014AE loc_1400014AE:                          ; CODE XREF: d+13↑j
+.text:00000001400014AE                 inc     rax
+.text:00000001400014B1                 jmp     short loc_140001495
+.text:00000001400014B3 ; ---------------------------------------------------------------------------
+.text:00000001400014B3
+.text:00000001400014B3 loc_1400014B3:                          ; CODE XREF: d+D↑j
+.text:00000001400014B3                 mov     byte ptr [rdx], 0
+.text:00000001400014B6                 retn
+.text:00000001400014B6 d               endp
+</code></pre>
+<p>d看起来有些复杂，但是在x64dbg中可以看到d函数通过一系列运算之后返回了偶数位的字符
+<img alt="" src="../../images/Snipaste_2023-11-24_15-57-51.jpg" /></p>
+<p>随后在loc_1400014CF循环中把d函数的返回值按位又进行了运算。</p>
+<pre><code class="language-C">
+
+.text:00000001400014CC                 mov     rdx, rcx
+.text:00000001400014CF
+.text:00000001400014CF loc_1400014CF:                          ; CODE XREF: e+27↓j
+.text:00000001400014CF                 mov     al, [rdx]
+.text:00000001400014D1                 add     rdx, 2
+.text:00000001400014D5                 test    al, al
+.text:00000001400014D7                 jz      short loc_1400014E0
+.text:00000001400014D9                 and     eax, 0Fh
+.text:00000001400014DC                 add     esi, eax
+.text:00000001400014DE                 jmp     short loc_1400014CF
+.text:00000001400014E0 ; ---------------------------------------------------------------------------
+.text:00000001400014E0
+.text:00000001400014E0 loc_1400014E0:                          ; CODE XREF: e+20↑j
+.text:00000001400014E0                 mov     rdx, r10
+.text:00000001400014E3                 xor     ebx, ebx
+.text:00000001400014E5
+</code></pre>
+<p>随后把密码的奇数位进行了判断，又将奇数位和偶数位进行%运算。复杂的运算逻辑可以直接丢GPT</p>
+<pre><code class="language-C">
+.text:00000001400014E5 loc_1400014E5:                          ; CODE XREF: e+58↓j
+.text:00000001400014E5                 mov     al, [rdx]
+.text:00000001400014E7                 test    al, al
+.text:00000001400014E9                 jz      short loc_140001511
+.text:00000001400014EB                 lea     r8d, [rax-61h]
+.text:00000001400014EF                 cmp     r8b, 5
+.text:00000001400014F3                 ja      short loc_1400014FA
+.text:00000001400014F5                 sub     eax, 57h ; 'W'
+.text:00000001400014F8                 jmp     short loc_140001507
+.text:00000001400014FA ; ---------------------------------------------------------------------------
+.text:00000001400014FA
+.text:00000001400014FA loc_1400014FA:                          ; CODE XREF: e+3C↑j
+.text:00000001400014FA                 lea     r8d, [rax-41h]
+.text:00000001400014FE                 cmp     r8b, 5
+.text:0000000140001502                 ja      short loc_140001539
+.text:0000000140001504                 sub     eax, 37h ; '7'
+.text:0000000140001507
+.text:0000000140001507 loc_140001507:                          ; CODE XREF: e+41↑j
+.text:0000000140001507                 movsx   eax, al
+.text:000000014000150A                 inc     rdx
+.text:000000014000150D                 add     ebx, eax
+.text:000000014000150F                 jmp     short loc_1400014E5
+.text:0000000140001511 ; ---------------------------------------------------------------------------
+.text:0000000140001511
+.text:0000000140001511 loc_140001511:                          ; CODE XREF: e+32↑j
+.text:0000000140001511                 call    a
+.text:0000000140001516                 mov     ecx, eax
+.text:0000000140001518                 lea     r8d, [rsi+rax]
+.text:000000014000151C                 add     ecx, ebx
+.text:000000014000151E                 cmp     esi, ebx
+.text:0000000140001520                 jge     short loc_14000152A
+.text:0000000140001522                 mov     eax, ecx
+.text:0000000140001524                 cdq
+.text:0000000140001525                 idiv    r8d
+.text:0000000140001528                 jmp     short loc_140001530
+.text:000000014000152A ; ---------------------------------------------------------------------------
+.text:000000014000152A
+.text:000000014000152A loc_14000152A:                          ; CODE XREF: e+69↑j
+.text:000000014000152A                 mov     eax, r8d
+.text:000000014000152D                 cdq
+.text:000000014000152E                 idiv    ecx
+.text:0000000140001530
+.text:0000000140001530 loc_140001530:                          ; CODE XREF: e+71↑j
+.text:0000000140001530                 xor     eax, eax
+.text:0000000140001532                 test    edx, edx
+.text:0000000140001534                 setz    al
+.text:0000000140001537                 jmp     short loc_14000153B
+.text:0000000140001539 ; ---------------------------------------------------------------------------
+.text:0000000140001539
+.text:0000000140001539 loc_140001539:                          ; CODE XREF: e+4B↑j
+.text:0000000140001539                 xor     eax, eax
+.text:000000014000153B
+.text:000000014000153B loc_14000153B:                          ; CODE XREF: e+80↑j
+.text:000000014000153B                 add     rsp, 68h
+.text:000000014000153F                 pop     rbx
+.text:0000000140001540                 pop     rsi
+.text:0000000140001541                 retn
+.text:0000000140001541 e               endp
+</code></pre>
+<p>有多个解法，但最简单的密码是8个a</p>
+<p><img alt="" src="../../images/Snipaste_2023-11-24_16-18-05.jpg" /></p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-link">
+        svchost权限维持（WIN10 1703之后无效）
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
+        Windows API示例大全
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

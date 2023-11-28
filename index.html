@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="None">
+    
+    
+    <link rel="shortcut icon" href="./img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Share Docs</title>
+    <link href="./css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="./css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="./css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="./js/jquery-3.2.1.min.js"></script>
+    <script src="./js/bootstrap-3.3.7.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    
+      <script src="./js/elasticlunr.min.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '.';
+      var is_top_frame = (window === window.parent);
+        
+        var pageToc = [
+          {title: "Welcome to the site", url: "#_top", children: [
+              {title: "\u8fd9\u662f\u4ec0\u4e48\u7ad9\u70b9", url: "#_1" },
+              {title: "\u4e3a\u4ec0\u4e48\u4f1a\u6709\u8fd9\u4e2a\u7ad9\u70b9", url: "#_2" },
+              {title: "\u4e3a\u4ec0\u4e48\u6709\u7684\u6587\u7ae0\u6709\u6392\u7248\u9519\u8bef", url: "#_3" },
+              {title: "\u4e3a\u4ec0\u4e48\u6709\u7684\u6587\u7ae0\u5f88\u7b80\u7565", url: "#_4" },
+          ]},
+        ];
+
+    </script>
+    <script src="./js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+<nav class="navbar wm-page-top-frame">
+  <div class="container-fluid wm-top-container">
+    
+    <div class="wm-top-tool pull-right wm-vcenter">
+      <form class="dropdown wm-vcentered" id="wm-search-form" action="./search.html">
+        
+        <button id="wm-search-show" class="btn btn-sm btn-default" type="submit"
+          ><i class="fa fa-search" aria-hidden="true"></i></button>
+
+        <div class="input-group input-group-sm wm-top-search">
+          <input type="text" name="q" class="form-control" id="mkdocs-search-query" placeholder="Search" autocomplete="off">
+          <span class="input-group-btn" role="search">
+            
+            <button class="btn btn-default dropdown-toggle collapse" data-toggle="dropdown" type="button"><span class="caret"></span></button>
+            <ul id="mkdocs-search-results" class="dropdown-menu dropdown-menu-right"></ul>
+            <button id="wm-search-go" class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+          </span>
+        </div>
+      </form>
+    </div>
+
+    
+    <div class="wm-top-tool wm-vcenter pull-right wm-small-left">
+      <button id="wm-toc-button" type="button" class="btn btn-sm btn-default wm-vcentered"><i class="fa fa-th-list" aria-hidden="true"></i></button>
+    </div>
+
+    
+    
+
+    
+    <a href="" class="wm-top-brand wm-top-link wm-vcenter">
+      
+      <div class="wm-top-title">
+        Share Docs<br>
+        
+      </div>
+    </a>
+  </div>
+</nav>
+
+  <div id="main-content" class="wm-page-top-frame">
+    
+<nav class="wm-toc-pane">
+  
+  <ul class="wm-toctree">
+        <li class="wm-toc-li wm-toc-lev1 "><a href="" class="wm-article-link wm-toc-text">Welcome to the site</a>
+</li>
+        <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">WAR3</span>
+</li>
+<li class="wm-toc-li-nested collapse">
+  <ul class="wm-toctree">
+      <li class="wm-toc-li wm-toc-lev2 "><a href="WAR3/%E5%9C%B0%E5%9B%BE%E5%AD%98%E6%A1%A3/" class="wm-article-link wm-toc-text">地图存档</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="WAR3/%E5%9C%B0%E5%9B%BE%E6%96%87%E4%BB%B6%E8%AF%B4%E6%98%8E/" class="wm-article-link wm-toc-text">地图文件说明</a>
+</li>
+  </ul>
+</li>
+
+        <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">Web相关</span>
+</li>
+<li class="wm-toc-li-nested collapse">
+  <ul class="wm-toctree">
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Web%E7%9B%B8%E5%85%B3/BadUSB%E7%9A%84%E4%B8%80%E4%BA%9B%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81/" class="wm-article-link wm-toc-text">BadUSB的一些示例代码</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Web%E7%9B%B8%E5%85%B3/Docker/" class="wm-article-link wm-toc-text">Docker</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Web%E7%9B%B8%E5%85%B3/K8s%E6%94%BB%E5%87%BB%E9%9D%A2/" class="wm-article-link wm-toc-text">K8s攻击面</a>
+</li>
+  </ul>
+</li>
+
+        <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">Windows相关</span>
+</li>
+<li class="wm-toc-li-nested collapse">
+  <ul class="wm-toctree">
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Windows%E7%9B%B8%E5%85%B3/%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="wm-article-link wm-toc-text">!!Windows安全笔记</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Windows%E7%9B%B8%E5%85%B3/Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="wm-article-link wm-toc-text">Windows API示例大全</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Windows%E7%9B%B8%E5%85%B3/crackmes.one%E7%BB%83%E4%B9%A0/" class="wm-article-link wm-toc-text">Crackmes.one练习</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Windows%E7%9B%B8%E5%85%B3/svchost%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%EF%BC%88WIN10%201703%E4%B9%8B%E5%90%8E%E6%97%A0%E6%95%88%EF%BC%89/" class="wm-article-link wm-toc-text">svchost权限维持（WIN10 1703之后无效）</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Windows%E7%9B%B8%E5%85%B3/%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="wm-article-link wm-toc-text">代码注入学习</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="Windows%E7%9B%B8%E5%85%B3/%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="wm-article-link wm-toc-text">反调试与反虚拟机</a>
+</li>
+  </ul>
+</li>
+
+        <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">内网渗透</span>
+</li>
+<li class="wm-toc-li-nested collapse">
+  <ul class="wm-toctree">
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="wm-article-link wm-toc-text">AD攻击面流程图</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/Certipy%E8%AF%B4%E6%98%8E/" class="wm-article-link wm-toc-text">Certipy说明</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/DACL%20%E6%94%BB%E5%87%BB%E9%9D%A2/" class="wm-article-link wm-toc-text">DACL 攻击面</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/Empire%E7%AC%94%E8%AE%B0/" class="wm-article-link wm-toc-text">Empire笔记</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/Exchange%E6%94%BB%E5%87%BB%E9%9D%A2/" class="wm-article-link wm-toc-text">Exchange攻击面</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/Linux%E6%8A%80%E5%B7%A7/" class="wm-article-link wm-toc-text">Linux技巧</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/MSF%E5%91%BD%E4%BB%A4/" class="wm-article-link wm-toc-text">MSF命令</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/Vcenter%E6%94%BB%E5%87%BB%E9%9D%A2/" class="wm-article-link wm-toc-text">Vcenter攻击面</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/Windows%E6%8A%80%E5%B7%A7/" class="wm-article-link wm-toc-text">Windows技巧</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/trustedsec-BOF%E6%8F%92%E4%BB%B6%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3/" class="wm-article-link wm-toc-text">trustedsec BOF插件说明文档</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/%E5%9C%A8%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E4%B8%8A%E7%BA%BF%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F-Windows/" class="wm-article-link wm-toc-text">在命令执行的情况下上线的几种方式 Windows</a>
+</li>
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/%E5%9F%9F%E6%B8%97%E9%80%8F/" class="wm-article-link wm-toc-text">域渗透</a>
+</li>
+  </ul>
+</li>
+
+        <li class="wm-toc-li wm-toc-lev1 wm-toc-opener"><span class="wm-toc-text">菜谱</span>
+</li>
+<li class="wm-toc-li-nested collapse">
+  <ul class="wm-toctree">
+      <li class="wm-toc-li wm-toc-lev2 "><a href="%E8%8F%9C%E8%B0%B1/%E9%BA%BB%E8%BE%A3%E9%B8%A1%E4%B8%9D/" class="wm-article-link wm-toc-text">麻辣鸡丝</a>
+</li>
+  </ul>
+</li>
+
+  </ul>
+</nav>
+
+    <div class="wm-content-pane">
+      <iframe class="wm-article" name="article"></iframe>
+    </div>
+  </div>
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="WAR3/%E5%9C%B0%E5%9B%BE%E5%AD%98%E6%A1%A3/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="WAR3/%E5%9C%B0%E5%9B%BE%E5%AD%98%E6%A1%A3/" class="btn btn-xs btn-link">
+        地图存档
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h1 id="welcome-to-the-site">Welcome to the site</h1>
+<h2 id="_1">这是什么站点</h2>
+<p>这是我自己的笔记</p>
+<h2 id="_2">为什么会有这个站点</h2>
+<p>为了发扬互联网开源精神，所以决定分享自己的学习过程与学习笔记，这里都是我的一些学习记录。</p>
+<h2 id="_3">为什么有的文章有排版错误</h2>
+<p>因为这些文章都是本地的，用静态模板套的时候会出现一些问题，等有时间再改吧。</p>
+<h2 id="_4">为什么有的文章很简略</h2>
+<p>因为都是自己的笔记，所以更多的是记录的过程。</p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="WAR3/%E5%9C%B0%E5%9B%BE%E5%AD%98%E6%A1%A3/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="WAR3/%E5%9C%B0%E5%9B%BE%E5%AD%98%E6%A1%A3/" class="btn btn-xs btn-link">
+        地图存档
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>
+<!--
+MkDocs version : 1.5.3
+Build Date UTC : 2023-11-28 03:04:32.691301+00:00
+-->

