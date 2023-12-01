@@ -52,6 +52,8 @@
           ]},
           {title: "majorsopa\u0027s crackme0", url: "#majorsopas-crackme0", children: [
           ]},
+          {title: "Dojas\u0027s find the encryptor", url: "#dojass-find-the-encryptor", children: [
+          ]},
         ];
 
     </script>
@@ -1229,6 +1231,339 @@ jbe     short c  //0x19大于等于al时重复循环
 </code></pre>
 <p>有多个解法，但最简单的密码是8个a</p>
 <p><img alt="" src="../../images/Snipaste_2023-11-24_16-18-05.jpg" /></p>
+<h2 id="dojass-find-the-encryptor">Dojas's find the encryptor</h2>
+<p><img alt="" src="../../images/Snipaste_2023-11-28_15-06-22.jpg" /></p>
+<p>搜索不到错误提示，字符被加密了
+<img alt="" src="../../images/Snipaste_2023-11-28_17-15-12.jpg" /></p>
+<p>crackme.401721 是负责加密的函数，调试到这里之后输入的密码进行了加密
+123加密成了 49 100 153
+<img alt="" src="../../images/Snipaste_2023-11-28_17-16-34.jpg" /></p>
+<p>代码如下，挺复杂的....</p>
+<pre><code class="language-C">.text:00401721 encode          proc near               ; CODE XREF: jio(std::string)+92↓p
+.text:00401721
+.text:00401721 var_68          = dword ptr -68h
+.text:00401721 var_64          = dword ptr -64h
+.text:00401721 lpuexcpt        = dword ptr -60h
+.text:00401721 fctx            = SjLj_Function_Context ptr -5Ch
+.text:00401721 var_38          = dword ptr -38h
+.text:00401721 var_34          = dword ptr -34h
+.text:00401721 var_1C          = byte ptr -1Ch
+.text:00401721 var_18          = byte ptr -18h
+.text:00401721 var_14          = dword ptr -14h
+.text:00401721 var_10          = dword ptr -10h
+.text:00401721 var_8           = byte ptr -8
+.text:00401721 arg_0           = dword ptr  8
+.text:00401721 arg_4           = dword ptr  0Ch
+.text:00401721
+.text:00401721                 push    ebp
+.text:00401722                 mov     ebp, esp
+.text:00401724                 sub     esp, 88h
+.text:0040172A                 lea     eax, [ebp+var_8]
+.text:0040172D                 mov     [ebp+fctx.personality], offset ___gxx_personality_sj0
+.text:00401734                 mov     [ebp+fctx.lsda], offset word_4868B2
+.text:0040173B                 mov     [ebp+var_38], offset loc_401838
+.text:00401742                 mov     [ebp+var_34], esp
+.text:00401745                 mov     [ebp+fctx.jbuf], eax
+.text:00401748                 lea     eax, [ebp+fctx]
+.text:0040174B                 mov     [esp], eax      ; this
+.text:0040174E                 call    __Unwind_SjLj_Register
+.text:00401753 ; __unwind { // ___gxx_personality_sj0
+.text:00401753 ;   try {
+.text:00401753                 mov     ecx, [ebp+arg_0]
+.text:00401756                 mov     [ebp+fctx.call_site], 0FFFFFFFFh
+.text:0040175D                 call    __ZNSsC1Ev      ; std::string::string(void)
+.text:00401762                 mov     eax, [ebp+arg_4]
+.text:00401765                 mov     ecx, [ebp+arg_4]
+.text:00401768                 mov     eax, [eax]
+.text:0040176A                 mov     [ebp+lpuexcpt], eax
+.text:0040176D                 call    __ZNKSs3endEv   ; std::string::end(void)
+.text:00401772                 mov     [ebp+var_68], eax
+.text:00401775
+.text:00401775 loc_401775:                             ; CODE XREF: encode+112↓j
+.text:00401775                 mov     edx, [ebp+var_68]
+.text:00401778                 cmp     [ebp+lpuexcpt], edx
+.text:0040177B                 jz      loc_40188B
+.text:00401781                 mov     eax, [ebp+lpuexcpt]
+.text:00401784                 movsx   eax, byte ptr [eax]
+.text:00401787                 mov     [ebp+var_64], eax
+.text:0040178A                 mov     eax, [ebp+arg_0]
+.text:0040178D                 mov     [esp+4], eax
+.text:00401791                 lea     eax, [ebp+var_14]
+.text:00401794                 mov     [esp], eax      ; std::string *
+.text:00401797                 mov     [ebp+fctx.call_site], 1
+.text:0040179E                 call    __Z2spRKSs      ; sp(std::string const&amp;)
+.text:004017A3                 mov     eax, [ebp+var_10]
+.text:004017A6                 sub     eax, [ebp+var_14]
+.text:004017A9                 sar     eax, 2
+.text:004017AC                 inc     eax
+.text:004017AD                 imul    eax, [ebp+var_64]
+.text:004017B1                 mov     dword ptr [esp+0Ch], offset unk_490000
+.text:004017B9                 mov     dword ptr [esp+8], 10h
+.text:004017C1                 mov     dword ptr [esp+4], offset __ZL9vsnprintfPcjPKcS_ ; char *
+.text:004017C9                 mov     [esp+10h], eax
+.text:004017CD                 lea     eax, [ebp+var_1C]
+.text:004017D0                 mov     [esp], eax
+.text:004017D3                 mov     [ebp+fctx.call_site], 2
+.text:004017DA                 call    __ZN9__gnu_cxx12__to_xstringISscEET_PFiPT0_jPKS2_PcEjS5_z ; __gnu_cxx::__to_xstring&lt;std::string,char&gt;(int (*)(char *,uint,char const*,char *),uint,char const*,...)
+.text:004017DF                 lea     ecx, [ebp+var_1C]
+.text:004017E2                 mov     dword ptr [esp], offset unk_490003 ; this
+.text:004017E9                 mov     [ebp+fctx.call_site], 3
+.text:004017F0                 call    __ZNSs6appendEPKc ; std::string::append(char const*)
+.text:004017F5                 push    ecx
+.text:004017F6                 lea     ecx, [ebp+var_18]
+.text:004017F9                 mov     [esp], eax
+.text:004017FC                 call    __ZNSsC1EOSs    ; std::string::string(std::string &amp;&amp;)
+.text:00401801                 lea     eax, [ebp+var_18]
+.text:00401804                 push    edx
+.text:00401805                 mov     [esp], eax
+.text:00401808                 mov     ecx, [ebp+arg_0]
+.text:0040180B                 mov     [ebp+fctx.call_site], 4
+.text:00401812                 call    __ZNSspLERKSs   ; std::string::operator+=(std::string const&amp;)
+.text:00401817                 lea     ecx, [ebp+var_18]
+.text:0040181A                 push    eax             ; this
+.text:0040181B                 call    __ZNSsD1Ev      ; std::string::~string()
+.text:00401820                 lea     ecx, [ebp+var_1C]
+.text:00401823                 call    __ZNSsD1Ev      ; std::string::~string()
+.text:00401828                 lea     ecx, [ebp+var_14]
+.text:0040182B                 call    __ZNSt6vectorISsSaISsEED4Ev_isra_49 ; std::vector&lt;std::string,std::allocator&lt;std::string&gt;&gt;::~vector() [clone]
+.text:00401830                 inc     [ebp+lpuexcpt]
+.text:00401833                 jmp     loc_401775
+.text:00401838 ; ---------------------------------------------------------------------------
+.text:00401838
+.text:00401838 loc_401838:                             ; DATA XREF: encode+1A↑o
+.text:00401838 ;   cleanup() // owned by 401753
+.text:00401838                 add     ebp, 8
+.text:0040183B                 mov     eax, [ebp+fctx.data]
+.text:0040183E                 mov     [ebp+lpuexcpt], eax
+.text:00401841                 mov     eax, [ebp+fctx.call_site]
+.text:00401844                 test    eax, eax
+.text:00401846                 jz      short loc_401871
+.text:00401848                 dec     eax
+.text:00401849                 jnz     short loc_401855
+.text:0040184B
+.text:0040184B loc_40184B:                             ; CODE XREF: encode+13F↓j
+.text:0040184B                 lea     ecx, [ebp+var_14]
+.text:0040184E                 call    __ZNSt6vectorISsSaISsEED4Ev_isra_49 ; std::vector&lt;std::string,std::allocator&lt;std::string&gt;&gt;::~vector() [clone]
+.text:00401853                 jmp     short loc_401871
+.text:00401855 ; ---------------------------------------------------------------------------
+.text:00401855
+.text:00401855 loc_401855:                             ; CODE XREF: encode+128↑j
+.text:00401855                 dec     eax
+.text:00401856                 jnz     short loc_401862
+.text:00401858
+.text:00401858 loc_401858:                             ; CODE XREF: encode+14C↓j
+.text:00401858                 lea     ecx, [ebp+var_1C]
+.text:0040185B                 call    __ZNSsD1Ev      ; std::string::~string()
+.text:00401860                 jmp     short loc_40184B
+.text:00401862 ; ---------------------------------------------------------------------------
+.text:00401862
+.text:00401862 loc_401862:                             ; CODE XREF: encode+135↑j
+.text:00401862                 dec     eax
+.text:00401863                 jnz     short loc_40186F
+.text:00401865                 lea     ecx, [ebp+var_18]
+.text:00401868                 call    __ZNSsD1Ev      ; std::string::~string()
+.text:0040186D                 jmp     short loc_401858
+.text:0040186F ; ---------------------------------------------------------------------------
+.text:0040186F
+.text:0040186F loc_40186F:                             ; CODE XREF: encode+142↑j
+.text:0040186F                 ud2
+.text:00401871 ; ---------------------------------------------------------------------------
+.text:00401871
+.text:00401871 loc_401871:                             ; CODE XREF: encode+125↑j
+.text:00401871                                         ; encode+132↑j
+.text:00401871                 mov     ecx, [ebp+arg_0]
+.text:00401874                 call    __ZNSsD1Ev      ; std::string::~string()
+.text:00401879                 mov     eax, [ebp+lpuexcpt]
+.text:0040187C                 mov     [esp], eax      ; lpuexcpt
+.text:0040187F                 mov     [ebp+fctx.call_site], 0FFFFFFFFh
+.text:00401886                 call    __Unwind_SjLj_Resume
+.text:0040188B ; ---------------------------------------------------------------------------
+.text:0040188B
+.text:0040188B loc_40188B:                             ; CODE XREF: encode+5A↑j
+.text:0040188B                 lea     eax, [ebp+fctx]
+.text:0040188E                 mov     [esp], eax      ; lpfctx
+.text:00401891                 call    __Unwind_SjLj_Unregister
+.text:00401896                 mov     eax, [ebp+arg_0]
+.text:00401899                 leave
+.text:0040189A                 retn
+.text:0040189A ;   } // starts at 401753
+.text:0040189A ; } // starts at 401753
+.text:0040189A encode          endp
+</code></pre>
+<p>继续调试可知道解密函数</p>
+<p><img alt="" src="../../images/Snipaste_2023-11-28_17-23-26.jpg" /></p>
+<pre><code class="language-C">text:0040189B                 push    ebp
+.text:0040189C                 mov     ebp, esp
+.text:0040189E                 push    ebx
+.text:0040189F                 lea     eax, [ebp+var_8]
+.text:004018A2                 sub     esp, 74h
+.text:004018A5                 mov     [ebp+fctx.personality], offset ___gxx_personality_sj0
+.text:004018AC                 mov     [ebp+fctx.lsda], offset word_4868BE
+.text:004018B3                 mov     [ebp+fctx.jbuf], eax
+.text:004018B6                 lea     eax, [ebp+fctx]
+.text:004018B9                 mov     [ebp+var_24], esp
+.text:004018BC                 mov     [ebp+var_28], offset loc_4019E7
+.text:004018C3                 mov     [esp], eax      ; lpfctx
+.text:004018C6                 call    __Unwind_SjLj_Register
+.text:004018CB ; __unwind { // ___gxx_personality_sj0
+.text:004018CB ;   try {
+.text:004018CB                 lea     eax, [ebp+var_C]
+.text:004018CE                 mov     dword ptr [esp], offset byte_490005 ; char *
+.text:004018D5                 mov     [esp+4], eax    ; int
+.text:004018D9                 mov     ecx, [ebp+arg_0]
+.text:004018DC                 mov     [ebp+fctx.call_site], 0FFFFFFFFh
+.text:004018E3                 call    __ZNSsC1EPKcRKSaIcE ; std::string::string(char const*,std::allocator&lt;char&gt; const&amp;)
+.text:004018E8                 push    edx
+.text:004018E9                 push    edx             ; this
+.text:004018EA                 mov     eax, [ebp+arg_4]
+.text:004018ED                 mov     eax, [eax+4]
+.text:004018F0                 mov     [ebp+lpuexcpt], eax
+.text:004018F3                 lea     eax, [ebp+var_C]
+.text:004018F6                 mov     [ebp+EndPtr], eax
+.text:004018F9
+.text:004018F9 loc_4018F9:                             ; CODE XREF: decode+112↓j
+.text:004018F9                 mov     eax, [ebp+arg_4]
+.text:004018FC                 mov     ebx, [ebp+lpuexcpt]
+.text:004018FF                 cmp     ebx, [eax]
+.text:00401901                 jz      loc_4019B2
+.text:00401907                 sub     [ebp+lpuexcpt], 4
+.text:0040190B                 mov     eax, [ebp+lpuexcpt]
+.text:0040190E                 mov     eax, [eax]
+.text:00401910                 mov     [ebp+fctx.call_site], 1
+.text:00401917                 mov     [ebp+String], eax
+.text:0040191A                 call    ds:__imp___errno
+.text:00401920                 mov     dword ptr [eax], 0
+.text:00401926                 mov     dword ptr [esp+8], 0Ah ; Radix
+.text:0040192E                 mov     eax, [ebp+EndPtr]
+.text:00401931                 mov     [esp+4], eax    ; EndPtr
+.text:00401935                 mov     eax, [ebp+String]
+.text:00401938                 mov     [esp], eax      ; String
+.text:0040193B                 call    _strtol
+.text:00401940                 mov     [ebp+var_58], eax
+.text:00401943                 mov     eax, [ebp+String]
+.text:00401946                 cmp     [ebp+var_C], eax
+.text:00401949                 jnz     short loc_401957
+.text:0040194B                 mov     dword ptr [esp], offset aStoi ; &quot;stoi&quot;
+.text:00401952                 call    __ZSt24__throw_invalid_argumentPKc ; std::__throw_invalid_argument(char const*)
+.text:00401957 ; ---------------------------------------------------------------------------
+.text:00401957
+.text:00401957 loc_401957:                             ; CODE XREF: decode+AE↑j
+.text:00401957                 mov     [ebp+fctx.call_site], 1
+.text:0040195E                 call    ds:__imp___errno
+.text:00401964                 cmp     dword ptr [eax], 22h ; '&quot;'
+.text:00401967                 jz      loc_401A0A
+.text:0040196D                 mov     eax, [ebp+arg_4]
+.text:00401970                 mov     edx, [eax+4]
+.text:00401973                 mov     eax, [eax]
+.text:00401975                 mov     byte ptr [esp+0Ch], 0
+.text:0040197A                 mov     ebx, [ebp+lpuexcpt]
+.text:0040197D                 mov     [esp+4], edx    ; char
+.text:00401981                 mov     [esp], eax
+.text:00401984                 mov     [esp+8], ebx
+.text:00401988                 call    __ZSt9__find_ifIN9__gnu_cxx17__normal_iteratorIPKSsSt6vectorISsSaISsEEEENS0_5__ops16_Iter_equals_valIS2_EEET_SB_SB_T0_St26random_access_iterator_tag ; std::__find_if&lt;__gnu_cxx::__normal_iterator&lt;std::string const*,std::vector&lt;std::string,std::allocator&lt;std::string&gt;&gt;&gt;,__gnu_cxx::__ops::_Iter_equals_val&lt;std::string const&gt;&gt;(__gnu_cxx::__normal_iterator&lt;std::string const*,std::vector&lt;std::string,std::allocator&lt;std::string&gt;&gt;&gt;,__gnu_cxx::__normal_iterator&lt;std::string const*,std::vector&lt;std::string,std::allocator&lt;std::string&gt;&gt;&gt;,__gnu_cxx::__ops::_Iter_equals_val&lt;std::string const&gt;,std::random_access_iterator_tag)
+.text:0040198D                 mov     ebx, [ebp+arg_4]
+.text:00401990                 sub     eax, [ebx]
+.text:00401992                 sar     eax, 2
+.text:00401995                 lea     ecx, [eax+1]
+.text:00401998                 mov     eax, [ebp+var_58]
+.text:0040199B                 cdq
+.text:0040199C                 idiv    ecx
+.text:0040199E                 movsx   eax, al
+.text:004019A1                 mov     [esp], eax      ; this
+.text:004019A4                 mov     ecx, [ebp+arg_0]
+.text:004019A7                 call    __ZNSs9push_backEc ; std::string::push_back(char)
+.text:004019AC                 push    eax
+.text:004019AD                 jmp     loc_4018F9
+.text:004019B2 ; ---------------------------------------------------------------------------
+.text:004019B2
+.text:004019B2 loc_4019B2:                             ; CODE XREF: decode+66↑j
+.text:004019B2                 mov     ecx, [ebp+arg_0]
+.text:004019B5                 mov     [ebp+fctx.call_site], 1
+.text:004019BC                 call    __ZNSs3endEv    ; std::string::end(void)
+.text:004019C1                 mov     ecx, [ebp+arg_0]
+.text:004019C4                 mov     [ebp+lpuexcpt], eax
+.text:004019C7                 call    __ZNSs5beginEv  ; std::string::begin(void)
+.text:004019CC                 mov     edx, [ebp+lpuexcpt]
+.text:004019CF                 dec     edx
+.text:004019D0                 cmp     eax, [ebp+lpuexcpt]
+.text:004019D3                 jz      short loc_401A1D
+.text:004019D5
+.text:004019D5 loc_4019D5:                             ; CODE XREF: decode+14A↓j
+.text:004019D5                 cmp     eax, edx
+.text:004019D7                 jnb     short loc_401A1D
+.text:004019D9                 mov     cl, [eax]
+.text:004019DB                 mov     bl, [edx]
+.text:004019DD                 inc     eax
+.text:004019DE                 dec     edx
+.text:004019DF                 mov     [eax-1], bl
+.text:004019E2                 mov     [edx+1], cl
+.text:004019E5                 jmp     short loc_4019D5
+.text:004019E7 ; ---------------------------------------------------------------------------
+.text:004019E7
+.text:004019E7 loc_4019E7:                             ; DATA XREF: decode+21↑o
+.text:004019E7 ;   cleanup() // owned by 4018CB
+.text:004019E7                 add     ebp, 8
+.text:004019EA                 mov     eax, [ebp+fctx.data]
+.text:004019ED                 mov     ecx, [ebp+arg_0]
+.text:004019F0                 mov     [ebp+lpuexcpt], eax
+.text:004019F3                 call    __ZNSsD1Ev      ; std::string::~string()
+.text:004019F8                 mov     eax, [ebp+lpuexcpt]
+.text:004019FB                 mov     [esp], eax      ; lpuexcpt
+.text:004019FE                 mov     [ebp+fctx.call_site], 0FFFFFFFFh
+.text:00401A05                 call    __Unwind_SjLj_Resume
+.text:00401A0A ; ---------------------------------------------------------------------------
+.text:00401A0A
+.text:00401A0A loc_401A0A:                             ; CODE XREF: decode+CC↑j
+.text:00401A0A                 mov     dword ptr [esp], offset aStoi ; &quot;stoi&quot;
+.text:00401A11                 mov     [ebp+fctx.call_site], 1
+.text:00401A18                 call    __ZSt20__throw_out_of_rangePKc ; std::__throw_out_of_range(char const*)
+.text:00401A1D ; ---------------------------------------------------------------------------
+.text:00401A1D
+.text:00401A1D loc_401A1D:                             ; CODE XREF: decode+138↑j
+.text:00401A1D                                         ; decode+13C↑j
+.text:00401A1D                 lea     eax, [ebp+fctx]
+.text:00401A20                 mov     [esp], eax      ; lpfctx
+.text:00401A23                 call    __Unwind_SjLj_Unregister
+.text:00401A28                 mov     eax, [ebp+arg_0]
+.text:00401A2B                 mov     ebx, [ebp+var_4]
+.text:00401A2E                 leave
+.text:00401A2F                 retn
+.text:00401A2F ;   } // starts at 4018CB
+.text:00401A2F ; } // starts at 4018CB
+.text:00401A2F decode          endp
+</code></pre>
+<p>来尝试一些bypass的办法，而不直接面对加密算法</p>
+<p>找到调用加密字符串的地方下断点
+<img alt="" src="../../images/Snipaste_2023-11-29_14-12-33.jpg" /></p>
+<p>尝试将0x49A024修改为0x49A028，看到程序返回提示变成了正确的提示
+<img alt="" src="../../images/Snipaste_2023-11-29_14-13-28.jpg" /></p>
+<p>注意，这里的地址是栈上的引用地址，原始字符串存储位置不是这个地址</p>
+<pre><code>0x49A02C 未知字符串
+&amp;&quot;49 98 162 128 250 288 392 256 450 570 539 384 676 756 780 512 901 882 912 640 1134 1144 1288 768 1350 1430 1539 896 1624 1500 1612 1024 1881 1768 1855 1152 1813 1862 2067 1920 1312 2058 2150 2376 2385 1472 2303 2496 2352 2600 1632 2548 2756 3078 2915 1792 3135 2842 3068&quot;
+
+0x49A028 成功提示的字符串
+congratulations! you did it successfully!
+&amp;&quot;99 222 330 412 570 582 812 936 972 970 1276 1260 1443 1540 1725 528 544 2178 2109 2340 672 2200 2415 2400 800 2730 3132 896 3335 3510 3069 3168 3333 3910 4025 3672 4329 4104 4212 4840 1353&quot;
+
+0x49A024  失败提示的字符串
+You made a mistake. Try again!!
+&amp;&quot;89 222 351 128 545 582 700 808 288 970 352 1308 1365 1610 1740 1552 1819 1818 874 640 1764 2508 2783 768 2425 2678 2619 2940 3190 990 1023&quot;
+
+0x49A020  pause字符串
+&amp;&quot;112 194 351 460 505&quot;
+</code></pre>
+<p>我想知道0x49A02C字符串是什么，当替换为0x49A02C时，输出的不是字符串，似乎还有一层加密
+<code>116 208 291 464 510 648 679 824 945 1150 1265 1404 1495 714</code>
+<img alt="" src="../../images/Snipaste_2023-11-29_14-27-19.jpg" /></p>
+<p>定位到存储数据的原始地址。
+同样搜索字符串可以看到，没有&amp;的表示原始数据，跟踪到内存就可以找到原始地址
+<img alt="" src="../../images/Snipaste_2023-11-29_14-59-14.jpg" /></p>
+<p>将这段数据替换错误提示的数据。
+在程序入口断点时修改内存数据，再运行。
+这时可以看到字符串二次解密为了<code>thatflagissus3</code>
+<img alt="" src="../../images/Snipaste_2023-11-29_14-55-02.jpg" /></p>
+<p>这就是密码
+<img alt="" src="../../images/Snipaste_2023-11-29_15-01-16.jpg" /></p>
 
   <br>
     
