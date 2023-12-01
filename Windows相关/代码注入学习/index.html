@@ -55,25 +55,25 @@
               {title: "TheardlessInjection", url: "#theardlessinjection" },
               {title: "Entry Point Injection", url: "#entry-point-injection" },
               {title: "DllNotificationInjection(2023/8)", url: "#dllnotificationinjection20238" },
-              {title: "NtSetInformationProcess", url: "#ntsetinformationprocess" },
+              {title: "NtSetInformationProcess(2023-10)", url: "#ntsetinformationprocess2023-10" },
           ]},
           {title: "Shellcode\u52a0\u89e3\u5bc6", url: "#shellcode_2", children: [
-              {title: "\u4ea6\u6216", url: "#_5" },
+              {title: "\u4ea6\u6216", url: "#_6" },
               {title: "\u81ea\u5b9a\u4e49RC4", url: "#rc4" },
               {title: "AES", url: "#aes" },
               {title: "\u81ea\u5b9a\u4e49AES", url: "#aes_1" },
           ]},
-          {title: "\u5176\u4ed6", url: "#_6", children: [
-              {title: "\u7a0b\u5e8f\u81ea\u5220\u9664\u529f\u80fd", url: "#_7" },
+          {title: "\u5176\u4ed6", url: "#_7", children: [
+              {title: "\u7a0b\u5e8f\u81ea\u5220\u9664\u529f\u80fd", url: "#_8" },
               {title: "\u6302\u8d77Windows\u4e8b\u4ef6\u670d\u52a1", url: "#windows" },
               {title: "\u65e0\u843d\u5730\u6587\u4ef6shellcode\uff08HTTP\u4e0b\u8f7d\uff09", url: "#shellcodehttp" },
               {title: "PEB\u5b66\u4e60", url: "#peb" },
               {title: "\u4f7f\u7528SetWinEventHook\u6765\u6267\u884c\u56de\u8c03\u4ee3\u7801", url: "#setwineventhook" },
               {title: "\u5404\u79cdshellcode", url: "#shellcode_3" },
           ]},
-          {title: "\u9632\u5fa1\u89c4\u907f", url: "#_8", children: [
-              {title: "\u8fc7\u52a8\u6001\u7684\u65b9\u5f0f", url: "#_9" },
-              {title: "\u8fc7\u9759\u6001\u7684\u65b9\u5f0f", url: "#_12" },
+          {title: "\u9632\u5fa1\u89c4\u907f", url: "#_9", children: [
+              {title: "\u8fc7\u52a8\u6001\u7684\u65b9\u5f0f", url: "#_10" },
+              {title: "\u8fc7\u9759\u6001\u7684\u65b9\u5f0f", url: "#_13" },
               {title: "\u7ed5\u6740\u8f6fhook", url: "#hook" },
           ]},
         ];
@@ -1063,7 +1063,7 @@ https://github.com/ShorSec/DllNotificationInjection
 <a href="https://shorsec.io/blog/dll-notification-injection/">https://shorsec.io/blog/dll-notification-injection/</a></p>
 <p>在远程进程中修改<code>PLDR_DLL_NOTIFICATION_ENTRY</code>成员，并使<code>Cookie</code>指向shellcode的地址。当远程进程加载dll之前会触发一个通知<code>LdrRegisterDllNotification</code>，从而触发shellcode
 <img alt="" src="../../images/20231007165719.png" /></p>
-<h2 id="ntsetinformationprocess">NtSetInformationProcess</h2>
+<h2 id="ntsetinformationprocess2023-10">NtSetInformationProcess(2023-10)</h2>
 <p>https://github.com/OtterHacker/SetProcessInjection</p>
 <p>该方式使用Nirvana调试技术，在远程进程设置了一个hook，在hook设置恶意代码。当系统每次执行syscall后会立即调用hook。
 这种方式需要<code>SE_DEBUG_PRIVILEGE</code>权限。
@@ -1325,10 +1325,42 @@ int main(void) {
 }
 
 </code></pre>
+<h3 id="_5">简单分析</h3>
+<p>虽然程序实现了自定义AES加密，但是在动态调试中依旧很容易被抓到原始shellcode。</p>
+<p>导入函数都是正常调用的，这些函数在导入表中一目了然。
+<img alt="" src="../../images/Snipaste_2023-12-01_15-10-55.jpg" /></p>
+<p>直接查找<code>WriteProcessMemory</code>的函数引用打下断点。
+windows上64位的程序调用约定是fastcall，在将要传入<code>WriteProcessMemory</code>函数的第三个参数和第四个参数r8和r9可以找到shellcode的内存地址和大小。</p>
+<pre><code class="language-C">WriteProcessMemory(
+    _In_ HANDLE hProcess,
+    _In_ LPVOID lpBaseAddress,
+    _In_reads_bytes_(nSize) LPCVOID lpBuffer,
+    _In_ SIZE_T nSize,
+    _Out_opt_ SIZE_T* lpNumberOfBytesWritten
+    );
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-12-01_15-13-29.jpg" /></p>
+<pre><code class="language-C">0000026B71178E20  FC E8 82 00 00 00 60 89 E5 31 C0 64 8B 50 30 8B  üè....`.å1Àd.P0.  
+0000026B71178E30  52 0C 8B 52 14 8B 72 28 0F B7 4A 26 31 FF AC 3C  R..R..r(.·J&amp;1ÿ¬&lt;  
+0000026B71178E40  61 7C 02 2C 20 C1 CF 0D 01 C7 E2 F2 52 57 8B 52  a|., ÁÏ..ÇâòRW.R  
+0000026B71178E50  10 8B 4A 3C 8B 4C 11 78 E3 48 01 D1 51 8B 59 20  ..J&lt;.L.xãH.ÑQ.Y   
+0000026B71178E60  01 D3 8B 49 18 E3 3A 49 8B 34 8B 01 D6 31 FF AC  .Ó.I.ã:I.4..Ö1ÿ¬  
+0000026B71178E70  C1 CF 0D 01 C7 38 E0 75 F6 03 7D F8 3B 7D 24 75  ÁÏ..Ç8àuö.}ø;}$u  
+0000026B71178E80  E4 58 8B 58 24 01 D3 66 8B 0C 4B 8B 58 1C 01 D3  äX.X$.Óf..K.X..Ó  
+0000026B71178E90  8B 04 8B 01 D0 89 44 24 24 5B 5B 61 59 5A 51 FF  ....Ð.D$$[[aYZQÿ  
+0000026B71178EA0  E0 5F 5F 5A 8B 12 EB 8D 5D 6A 01 8D 85 B2 00 00  à__Z..ë.]j...²..  
+0000026B71178EB0  00 50 68 31 8B 6F 87 FF D5 BB F0 B5 A2 56 68 A6  .Ph1.o.ÿÕ»ðµ¢Vh¦  
+0000026B71178EC0  95 BD 9D FF D5 3C 06 7C 0A 80 FB E0 75 05 BB 47  .½.ÿÕ&lt;.|..ûàu.»G  
+0000026B71178ED0  13 72 6F 6A 00 53 FF D5 63 61 6C 63 2E 65 78 65  .roj.SÿÕcalc.exe  
+0000026B71178EE0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................  
+</code></pre>
+<p>这和未加密前的shellcode是一样的
+<img alt="" src="../../images/Snipaste_2023-12-01_15-16-33.jpg" /></p>
+<p>所以想要防止被分析，还需要结合其他技术如apihash使用。虽然不能完全阻止被分析，但能大大增大分析难度。</p>
 <h1 id="shellcode_2">Shellcode加解密</h1>
 <p>安装openssl库
 <code>https://slproweb.com/products/Win32OpenSSL.html</code></p>
-<h2 id="_5">亦或</h2>
+<h2 id="_6">亦或</h2>
 <pre><code class="language-C">加密
 #define KEY 0x01     //进行亦或的字符
 
@@ -2429,8 +2461,8 @@ int main(void) {
 
 
 </code></pre>
-<h1 id="_6">其他</h1>
-<h2 id="_7">程序自删除功能</h2>
+<h1 id="_7">其他</h1>
+<h2 id="_8">程序自删除功能</h2>
 <p>这个程序只会自删除</p>
 <pre><code class="language-c">
 #include &lt;Windows.h&gt;
@@ -3011,19 +3043,19 @@ void CALLBACK OnEvent(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd,
 </code></pre>
 <h2 id="shellcode_3">各种shellcode</h2>
 <p>https://osandamalith.com/shellcodes/</p>
-<h1 id="_8">防御规避</h1>
-<h2 id="_9">过动态的方式</h2>
-<h3 id="_10">白利用</h3>
+<h1 id="_9">防御规避</h1>
+<h2 id="_10">过动态的方式</h2>
+<h3 id="_11">白利用</h3>
 <pre><code>
 </code></pre>
-<h3 id="_11">新注入技术</h3>
+<h3 id="_12">新注入技术</h3>
 <pre><code>
 </code></pre>
 <h3 id="syscall">直接/间接syscall</h3>
 <h3 id="api-hash">API HASH</h3>
 <h3 id="api">使用原生API</h3>
-<h2 id="_12">过静态的方式</h2>
-<h3 id="_13">空函数</h3>
+<h2 id="_13">过静态的方式</h2>
+<h3 id="_14">空函数</h3>
 <pre><code class="language-C">疯狂添加空函数
 void dummyFunction() {
 
@@ -3031,7 +3063,7 @@ void dummyFunction() {
 dummyFunction();
 
 </code></pre>
-<h3 id="_14">无意义语句</h3>
+<h3 id="_15">无意义语句</h3>
 <pre><code>像什么数值运算之类的
 int a = 0; 
 a = a + 1;
@@ -3040,7 +3072,7 @@ a = a + 1;
 <pre><code>Sleep函数会出现在导入表中
 Sleep(1);  //延时1毫秒
 </code></pre>
-<h3 id="_15">空循环，也是延时</h3>
+<h3 id="_16">空循环，也是延时</h3>
 <pre><code class="language-C">
 int a = 0;
 void delay() { for (volatile int i = 0; i &lt; 1000000; i++) 
@@ -3049,7 +3081,7 @@ void delay() { for (volatile int i = 0; i &lt; 1000000; i++)
 }
 delay()
 </code></pre>
-<h3 id="_16">新建函数指针间接调用</h3>
+<h3 id="_17">新建函数指针间接调用</h3>
 <pre><code class="language-C">
 代码演示创建了一个指向CreateEventW函数的函数指针类型CreateEventWPtr，通过这个类型新建createEventW来间接调用CreateEventW
 
@@ -3088,7 +3120,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h3 id="_17">多添加函数调用,产生无意义结果</h3>
+<h3 id="_18">多添加函数调用,产生无意义结果</h3>
 <p>多添加点函数，调用这些函数产生无意义的结果，让更多正常函数出现在导入表中。
 使用哪些正常函数可参照正常程序。
 不然直接看到除了OpenProcess、VirtualAlloc、memcpy、processHandle这种就没有其他的函数了，一眼就知道是马</p>
@@ -3108,7 +3140,7 @@ memcpy(shellcode, first, 1);   //把first的1个字节复制到shellcdoe里，�
 
 
 </code></pre>
-<h3 id="_18">关键字数组化处理</h3>
+<h3 id="_19">关键字数组化处理</h3>
 <p>加载dll时使用数组可打乱针对dll名称关键字的静态查杀</p>
 <p>假如<code>LoadLibraryA("NTDLL.DLL")</code>被杀，可以采用以下方式解决</p>
 <pre><code class="language-cpp">CHAR NameStr[] = {'A','D','V','A','P','I','3','2','.','D','L','L','\0'};
@@ -3130,7 +3162,7 @@ LoadLibraryA(CombinedStr);
 <h2 id="hook">绕杀软hook</h2>
 <p>这里需要明白一个基本道理，系统级别的函数都是在<code>ntdll.dll</code>中，函数调用需要在内存中找到函数的地址，然后才可以调用。</p>
 <h3 id="api-hash_1">使用API-HASH</h3>
-<pre><code>通过函数名称计算一个hash值，再反计算hash值得到函数名，再根据函数名查找函数地址，新建一个相同的函数指针来调用原函数
+<pre><code>通过函数名称计算一个hash值，调用时反计算hash值得到函数名，再根据函数名在内存中查找函数地址，新建一个相同的函数指针来调用原函数地址
 </code></pre>
 <pre><code class="language-powershell">##第一步，计算要隐藏的函数hash,其中$hash和0xab10f2ff可以自定义，以CreateProcessA为例，计算的hash是0x005882941
 
