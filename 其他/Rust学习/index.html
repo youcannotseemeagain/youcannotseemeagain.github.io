@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Rust学习 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "\u57fa\u7840", url: "#_top", children: [
+              {title: "\u9879\u76ee\u7ed3\u6784", url: "#_2" },
+              {title: "\u5b8f\u4e0e\u51fd\u6570", url: "#_3" },
+              {title: "Cargo\u57fa\u672c\u547d\u4ee4", url: "#cargo" },
+              {title: "\u53d8\u91cf", url: "#_4" },
+              {title: "\u51fd\u6570", url: "#_15" },
+              {title: "\u6d41\u7a0b\u63a7\u5236", url: "#_18" },
+              {title: "\u6240\u6709\u6743", url: "#_21" },
+              {title: "\u7ed3\u6784\u4f53", url: "#_24" },
+              {title: "\u5e38\u89c1\u96c6\u5408\u7c7b\u578b", url: "#_25" },
+              {title: "\u9519\u8bef", url: "#_26" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-link">
+        AD攻击面流程图
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../Windows%E7%9B%B8%E5%85%B3/%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../Windows%E7%9B%B8%E5%85%B3/%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-link">
+        反调试与反虚拟机
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="_1">基础</h2>
+<h3 id="_2">项目结构</h3>
+<pre><code>xx.rs   rust源文件
+
+Cargo.toml   这是cargo项目的配置文件，当rust需要用到依赖包构建较大的项目时，必须使用cargo来管理rust项目，该文件就是项目的配置文件
+
+文件示例如下
+
+[package]
+name = &quot;rust_console3&quot;
+version = &quot;0.1.0&quot;
+edition = &quot;2021&quot;
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+/////////////////////////////////////////////////
+[package]，是一个片段（section）标题，表明下面的语句用来配置一个包。随着我们在这个文件增加更多的信息，还将增加其他片段（section）
+
+name
+程序名称
+
+version
+当前程序版本
+
+edition
+Rust版本。 当前有三个可用版本：Rust 2015、Rust 2018 和 Rust 2021
+
+
+[dependencies]，是罗列项目依赖的片段的开始。在 Rust 中，代码包被称为 _crates_。这个项目并不需要其他的 crate，不过在第二章的第一个项目会用到依赖，那时会用得上这个片段。
+
+
+</code></pre>
+<h3 id="_3">宏与函数</h3>
+<pre><code>看到!就是宏，没有就是函数
+
+</code></pre>
+<h3 id="cargo">Cargo基本命令</h3>
+<pre><code>cargo b  编译可执行文件，默认是debug版
+cargo b  --release 编译发布版
+cargo r  编译并执行
+cargo c  检查代码是不是正常
+cargo n  新建一个cargo项目
+
+</code></pre>
+<h3 id="_4">变量</h3>
+<h4 id="_5">可变性</h4>
+<pre><code>let mut 是可变变量
+let 是不可变变量
+
+不可变变量不能够二次赋值，不能修改，但多次let可以修改
+</code></pre>
+<h4 id="_6">常量</h4>
+<pre><code>常量总是不可变
+使用const来申明常量
+常量名称命名约定是全大写，单词间下划线
+
+const A_B: u32 = 111 ; 
+
+</code></pre>
+<h4 id="_7">变量的作用域</h4>
+<p>let赋值的变量只在当前作用域生效，比如花括号中虽然x重新被计算，但在花括号之外，x依旧是6</p>
+<pre><code class="language-rust">fn main() {
+    let x = 5;
+
+    let x = x + 1;
+
+    {
+        let x = x * 2;
+        println!(&quot;The value of x in the inner scope is: {x}&quot;);
+    }
+
+    println!(&quot;The value of x is: {x}&quot;);
+}
+</code></pre>
+<p>变量会在以下情况离开作用域，离开了作用域，相当于被丢弃</p>
+<ul>
+<li>函数结束。</li>
+<li>代码块结束。</li>
+<li>变量被赋值给另一个变量。</li>
+<li>变量被隐式移动到另一个作用域。</li>
+</ul>
+<h4 id="_8">数据类型</h4>
+<p>rust与c、c++一样是静态类型语言，在编译时就必须知道所有变量的类型。</p>
+<p>需要明确地为变量指出变量类型时使用<code>变量 : 类型</code>来指定
+<code>let x:u64 = 5;</code></p>
+<pre><code>i32 32位数字
+u32 32位无符号数字
+
+let mut guess = String::new();  //创建一个字符类型可变变量
+let guess: u32  = xx ; //再次let
+
+</code></pre>
+<h5 id="_9">整形</h5>
+<p><strong>有符号</strong> 和 <strong>无符号</strong> 代表数字能否为负值。
+由于使用负数需要牺牲一位数作为补码表示是正数还是负数，所以无符号的正数更大，而有符号的整数则能表示负数。</p>
+<table>
+<thead>
+<tr>
+<th>长度</th>
+<th>有符号</th>
+<th>无符号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8-bit</td>
+<td><code>i8</code></td>
+<td><code>u8</code></td>
+</tr>
+<tr>
+<td>16-bit</td>
+<td><code>i16</code></td>
+<td><code>u16</code></td>
+</tr>
+<tr>
+<td>32-bit</td>
+<td><code>i32</code></td>
+<td><code>u32</code></td>
+</tr>
+<tr>
+<td>64-bit</td>
+<td><code>i64</code></td>
+<td><code>u64</code></td>
+</tr>
+<tr>
+<td>128-bit</td>
+<td><code>i128</code></td>
+<td><code>u128</code></td>
+</tr>
+<tr>
+<td>arch</td>
+<td><code>isize</code></td>
+<td><code>usize</code></td>
+</tr>
+</tbody>
+</table>
+<p>可以使用<code>_</code>连接数字
+<code>let x:isize = 98_222;</code></p>
+<p>可以使用后缀表示类型
+<code>let y = 123u8;</code></p>
+<h5 id="_10">浮点型</h5>
+<p>类型 <code>f32</code> 和 <code>f64</code></p>
+<h5 id="bool">Bool型</h5>
+<p><code>true</code> 和 <code>false</code></p>
+<h5 id="_11">字符型</h5>
+<p><code>char</code></p>
+<h5 id="_12">字符串</h5>
+<p><code>let z: String = String::from("Hello, World!");</code></p>
+<h5 id="_13">元组</h5>
+<p>元组的成员类型可以不同
+<code>let tup: (i32, f64, u8) = (500, 6.4, 1);</code></p>
+<p>访问元组的两种方式
+解构</p>
+<pre><code class="language-rust">let tup = (500, 6.4, 1); 
+let (x, y, z) = tup; 
+println!(&quot;The value of y is: {y}&quot;);
+</code></pre>
+<p>引用</p>
+<pre><code class="language-rust">let x: (i32, f64, u8) = (500, 6.4, 1); 
+let five_hundred = x.0; 
+let six_point_four = x.1; 
+let one = x.2;
+</code></pre>
+<h5 id="_14">数组</h5>
+<p>数组的元素类型必须相同，且长度是固定的，分配时既不能多也不能少。
+数组在栈上分配空间。</p>
+<pre><code class="language-rust">let a: [i32; 5] = [1, 2, 3, 4, 5];
+let a = [1, 2, 3, 4, 5];
+</code></pre>
+<p>访问数组</p>
+<pre><code class="language-rust">let a = [1, 2, 3, 4, 5]; 
+let first = a[0]; 
+let second = a[1];
+</code></pre>
+<h3 id="_15">函数</h3>
+<p><code>fn</code>声明新函数</p>
+<h4 id="_16">语句和表达式</h4>
+<p>语句没有返回值
+表达式可以返回值,表达式最后一句没有分号<code>;</code></p>
+<pre><code class="language-RUST">fn main() { 
+    let y = { 
+        let x = 3; 
+        x + 1 
+            }; 
+    println!(&quot;The value of y is: {y}&quot;); 
+}
+</code></pre>
+<h4 id="_17">函数的返回值</h4>
+<p>函数体最后一个表达式的值就是函数的返回值，使用<code>-&gt;</code>来指定函数的返回值类型</p>
+<pre><code class="language-RUST">fn five() -&gt; i32 {
+    5
+}
+
+fn main() {
+    let x = five();
+
+    println!(&quot;The value of x is: {x}&quot;);
+}
+
+</code></pre>
+<pre><code>String::new();
+::意味关联函数
+</code></pre>
+<h3 id="_18">流程控制</h3>
+<h4 id="_19">条件分支</h4>
+<p>if  - 没有多大区别</p>
+<h4 id="_20">循环</h4>
+<p>loop</p>
+<p><code>while</code></p>
+<h4 id="match">match</h4>
+<p>match语句是一种控制流结构，用于根据值的类型或值的值来执行不同的代码。
+match可以匹配变量、语句、表达式、函数。然后根据匹配的表达式的pattern值来执行相应的代码。</p>
+<p>match函数时，可以使用&amp;来引用函数，减少函数的运行次数。</p>
+<pre><code class="language-RUST">match expression { 
+    pattern =&gt; code, 
+    _ =&gt; code, 
+    }
+</code></pre>
+<h3 id="_21">所有权</h3>
+<p>一种内存管理方式。
+通过所有权系统管理内存，编译器在编译时会根据一系列的规则进行检查。如果违反了任何这些规则，程序都不能编译。在运行时，所有权系统的任何功能都不会减慢程序。</p>
+<pre><code>&gt; 1. Rust 中的每一个值都有一个 所有者（_owner_）。
+&gt; 2. 值在任一时刻有且只有一个所有者。
+&gt; 3. 当所有者（变量）离开作用域，这个值将被丢弃。
+</code></pre>
+<p>可变内存有关的数据分配，变量只在当前作用域生效。
+这样做是因为rust尽可能提高程序运行效率</p>
+<pre><code class="language-RUST">fn main() {
+    let a = 1;   //存储在栈上
+    let b = a;
+    let s1 = String::from(&quot;hello&quot;); //给了S1
+    let s2 = s1;   //S1被赋值给S2，S1离开了作用域，S1被丢弃
+
+    println!(&quot;A:{}\nB:{}\nS2:{}\nworld!&quot;, a,b,s2);
+}
+</code></pre>
+<h4 id="_22">引用与借用</h4>
+<p>其实可以尝试理解为指针
+使用<code>&amp;</code>来在不获取对象的所有权的情况下获取值。</p>
+<pre><code class="language-RUST">fn main() {
+    let s1 = String::from(&quot;hello&quot;);
+
+    let len = calculate_length(&amp;s1);    //使用&amp;s1引用s1的值，不转移所有权
+
+    println!(&quot;The length of '{}' is {}.&quot;, s1, len);  //由于s1所有权没有转移，所以s1到这里依旧可用
+}
+
+fn calculate_length(s: &amp;String) -&gt; usize {   //函数类型也要对应&amp;
+    s.len()
+}
+
+</code></pre>
+<p>一般的引用无法对引用对象进行修改，因为没有所有权</p>
+<pre><code class="language-RUST">fn main() {
+    let s = String::from(&quot;hello&quot;);
+
+    change(&amp;s);
+}
+
+fn change(some_string: &amp;String) {
+    some_string.push_str(&quot;, world&quot;);  //这里尝试修改some_string，会报错
+}
+
+</code></pre>
+<p>可变引用</p>
+<p>可变引用需要可变变量，然后使用<code>&amp;mut</code>引用</p>
+<pre><code class="language-rust">fn main() {
+    let mut s = String::from(&quot;hello&quot;);
+
+    change(&amp;mut s);
+}
+
+fn change(some_string: &amp;mut String) {
+    some_string.push_str(&quot;, world&quot;);
+}
+
+</code></pre>
+<p>悬挂引用
+同悬挂指针，内存被释放了而指针还在。这里的是内存被释放了，而引用还在。
+这是一个错误例子，由于dangle函数返回的是s的引用，dangle执行完后s的所有权没有被移交导致被释放。main函数中dangle是无法返回s的</p>
+<pre><code class="language-rust">fn main() {
+    let reference_to_nothing = dangle();
+}
+
+fn dangle() -&gt; &amp;String { // dangle 返回一个字符串的引用
+
+    let s = String::from(&quot;hello&quot;); // s 是一个新字符串
+
+    &amp;s // 返回字符串 s 的引用
+} // 这里 s 离开作用域并被丢弃。其内存被释放。
+
+</code></pre>
+<h4 id="_23">切片</h4>
+<p>Rust中的切片（slice）是指对数据值的部分引用，在不转移对象所有权的情况下对数据进行操作。</p>
+<pre><code class="language-rust">遍历切片
+let slice = &amp;[1, 2, 3, 4, 5];
+
+for x in slice {
+    println!(&quot;{}&quot;, x);
+}
+
+修改切片
+let mut slice = &amp;mut [1, 2, 3, 4, 5];
+
+slice[0] = 10;
+
+println!(&quot;{:?}&quot;, slice);
+
+
+
+</code></pre>
+<h3 id="_24">结构体</h3>
+<pre><code class="language-rust">struct User {  //结构体定义
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+
+fn main() {
+    let user1 = User {   //创建结构体实例
+        active: true,
+        username: String::from(&quot;someusername123&quot;),
+        email: String::from(&quot;someone@example.com&quot;),
+        sign_in_count: 1,
+    };
+
+    user1.email = String::from(&quot;anotheremail@example.com&quot;);  //单个值操作
+}
+</code></pre>
+<h3 id="_25">常见集合类型</h3>
+<h4 id="vector">Vector</h4>
+<pre><code class="language-rust">fn main() {
+    let v: Vec&lt;i32&gt; = Vec::new();
+}
+</code></pre>
+<h4 id="string">String</h4>
+<p>new新建</p>
+<pre><code>let mut s = String::new();
+let data = &quot;initial contents&quot;; 
+let s = data.to_string();
+</code></pre>
+<p>from新建</p>
+<pre><code>let s = String::from(&quot;initial contents&quot;);
+</code></pre>
+<p>使用<code>push_str</code>符加字符串</p>
+<pre><code>let mut s = String::from(&quot;foo&quot;);
+s.push_str(&quot;bar&quot;);
+</code></pre>
+<h4 id="hash-map">Hash Map</h4>
+<p>hash map是一个键值对</p>
+<h3 id="_26">错误</h3>
+<p>rust将错误分为可恢复的和不可恢复的，并使用宏来处理他们</p>
+<p>使用<code>panic!</code>处理不可恢复的错误。
+使用<code>Result</code>处理可恢复的错误。</p>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../../%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/AD%E6%94%BB%E5%87%BB%E9%9D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE/" class="btn btn-xs btn-link">
+        AD攻击面流程图
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../../Windows%E7%9B%B8%E5%85%B3/%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../../Windows%E7%9B%B8%E5%85%B3/%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%8E%E5%8F%8D%E8%99%9A%E6%8B%9F%E6%9C%BA/" class="btn btn-xs btn-link">
+        反调试与反虚拟机
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

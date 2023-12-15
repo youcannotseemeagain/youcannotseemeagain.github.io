@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    
+    <link rel="shortcut icon" href="../../img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Linux安全笔记 - Share Docs</title>
+    <link href="../../css/bootstrap-3.3.7.min.css" rel="stylesheet">
+    <link href="../../css/font-awesome-4.7.0.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/highlight.css">
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/bootstrap-3.3.7.min.js"></script>
+    <script src="../../js/highlight.pack.js"></script>
+    
+    <base target="_top">
+    <script>
+      var base_url = '../..';
+      var is_top_frame = false;
+        
+        var pageToc = [
+          {title: "ELF", url: "#_top", children: [
+          ]},
+          {title: "\u8c03\u7528\u7ea6\u5b9a", url: "#_1", children: [
+              {title: "cdecl", url: "#cdecl" },
+              {title: "stdcall", url: "#stdcall" },
+          ]},
+        ];
+
+    </script>
+    <script src="../../js/base.js"></script> 
+</head>
+
+<body>
+<script>
+if (is_top_frame) { $('body').addClass('wm-top-page'); }
+</script>
+
+
+
+<div class="container-fluid wm-page-content">
+  <a name="_top"></a>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
+        Windows API示例大全
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        !!Windows安全笔记
+      </a>
+    </div>
+    
+  </div>
+
+    
+
+    <h2 id="elf">ELF</h2>
+<p>https://intezer.com/blog/research/executable-linkable-format-101-part1-sections-segments/
+https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-2-symbols/
+https://intezer.com/blog/malware-analysis/executable-and-linkable-format-101-part-3-relocations/
+https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-4-dynamic-linking/</p>
+<h2 id="_1">调用约定</h2>
+<h3 id="cdecl"><strong>cdecl</strong></h3>
+<p>在 cdecl 调用约定中，前六个参数使用寄存器传递，分别是：</p>
+<ul>
+<li>rdi：第一个参数</li>
+<li>rsi：第二个参数</li>
+<li>rdx：第三个参数</li>
+<li>rcx：第四个参数</li>
+<li>r8：第五个参数</li>
+<li>r9：第六个参数</li>
+</ul>
+<pre><code>- 参数在栈上向后传递(从右到左),依照栈先入后出的规矩，先传递最后的参数，好让前面的参数先出来。不使用寄存器
+- 基指针(base pointer, RBP)被保存，以便恢复。
+- 返回值通过EAX传递，如果是返回值是字节或字符部分，则使用EAX更低位返回
+- 调用者清除堆栈。这就是cdecl的特别之处。因为调用者会清除堆栈，所以cdecl允许可变数量的参数。
+- 32位的x86，在栈上传参
+- linux上64位的x86，RDI、RSI、RDX、RCX、R8和R9中按顺序放置最多6个参数，其余参数在栈上
+</code></pre>
+<h3 id="stdcall"><strong>stdcall</strong></h3>
+<p>返回值在栈上传递</p>
+<ul>
+<li>rdi：第一个参数</li>
+<li>rsi：第二个参数</li>
+<li>rdx：第三个参数</li>
+<li>rcx：第四个参数</li>
+<li>r8：第五个参数</li>
+<li>r9：第六个参数</li>
+</ul>
+
+  <br>
+    
+
+    
+    
+      
+    
+
+  <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
+    
+    <div class="wm-article-nav pull-right">
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-right">
+        Next
+        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+      </a>
+      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
+        Windows API示例大全
+      </a>
+    </div>
+    
+    <div class="wm-article-nav">
+      <a href="../%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-left">
+        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+        Previous</a><a href="../%21%21Windows%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        !!Windows安全笔记
+      </a>
+    </div>
+    
+  </div>
+
+    <br>
+</div>
+
+<footer class="container-fluid wm-page-content">
+  <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a> using <a href="https://github.com/gristlabs/mkdocs-windmill">Windmill</a> theme by Grist Labs.</p>
+</footer>
+
+</body>
+</html>

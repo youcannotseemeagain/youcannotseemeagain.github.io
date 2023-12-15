@@ -54,8 +54,10 @@
               {title: "FunctionStomping", url: "#functionstomping" },
               {title: "TheardlessInjection", url: "#theardlessinjection" },
               {title: "Entry Point Injection", url: "#entry-point-injection" },
+              {title: "MockingJay", url: "#mockingjay" },
               {title: "DllNotificationInjection(2023/8)", url: "#dllnotificationinjection20238" },
               {title: "NtSetInformationProcess(2023-10)", url: "#ntsetinformationprocess2023-10" },
+              {title: "PoolParty(2023-12)", url: "#poolparty2023-12" },
           ]},
           {title: "Shellcode\u52a0\u89e3\u5bc6", url: "#shellcode_2", children: [
               {title: "\u4ea6\u6216", url: "#_6" },
@@ -1057,6 +1059,9 @@ hook远程进程中的指定函数，当进程执行指定函数的时执行代�
 <h2 id="entry-point-injection">Entry Point Injection</h2>
 <p>https://github.com/Kudaes/EPI</p>
 <p>修改目标进程的PEB信息，PEB中存储了dllmain信息，更改dllmain的地址为shellcode。当目标进程启动或结束一个线程时，会重新调用dllmain，此时会执行shellcode</p>
+<h2 id="mockingjay">MockingJay</h2>
+<p>利用白DLL文件的RWX空间注入
+详见0MFIle-dll项目</p>
 <h2 id="dllnotificationinjection20238">DllNotificationInjection(2023/8)</h2>
 <p>https://learn.microsoft.com/en-us/windows/win32/devnotes/ldrregisterdllnotification
 https://github.com/ShorSec/DllNotificationInjection
@@ -1357,6 +1362,28 @@ windows上64位的程序调用约定是fastcall，在将要传入<code>WriteProc
 <p>这和未加密前的shellcode是一样的
 <img alt="" src="../../images/Snipaste_2023-12-01_15-16-33.jpg" /></p>
 <p>所以想要防止被分析，还需要结合其他技术如apihash使用。虽然不能完全阻止被分析，但能大大增大分析难度。</p>
+<h2 id="poolparty2023-12">PoolParty(2023-12)</h2>
+<p>https://github.com/SafeBreach-Labs/PoolParty
+该注入技术解决了<code>CreateRemoteThread()</code>的问题。
+该技术利用<strong><em>用户模式</em></strong>下Windows线程池可信程序来解决此问题。
+线程池包括
+- <strong>工作线程</strong>
+- <strong>等待线程</strong>
+- <strong>工作队列</strong>
+- <strong>工作器工厂</strong>
+- <strong>默认线程池</strong></p>
+<p>1、利用工作器工厂
+工作器工厂是一个Windows对象，负责管理线程池工作线程。它通过监视活动或阻塞来管理工作线程，并根据监视结果创建或终止工作线程。 工作器工厂不执行任何工作项的调度或执行； 它的作用是确保工作线程的数量足够。
+覆盖现有工作器工厂的routine</p>
+<p>2、利用线程池
+向TP_WORK插入任务队列
+向TP_IO插入任务队列
+向TP_WAIT插入任务队列
+向TP_ALPC插入任务队列
+向TP_JOB插入任务队列
+向TP_DIRECT插入任务队列
+向TP_TIMER插入任务队列</p>
+<p><img alt="" src="../../images/Snipaste_2023-12-12_17-55-16.jpg" /></p>
 <h1 id="shellcode_2">Shellcode加解密</h1>
 <p>安装openssl库
 <code>https://slproweb.com/products/Win32OpenSSL.html</code></p>
@@ -3046,10 +3073,11 @@ void CALLBACK OnEvent(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd,
 <h1 id="_9">防御规避</h1>
 <h2 id="_10">过动态的方式</h2>
 <h3 id="_11">白利用</h3>
-<pre><code>
+<p>使用Spartacus来检查exe可劫持的dll并自动生成转发模板</p>
+<pre><code>`.\Spartacus-v1.2.0-x64.exe --procmon C:\Users\user\Desktop\Procmon64.exe --pml test.plm --csv ./output.csv --exports . --verbose`
 </code></pre>
 <h3 id="_12">新注入技术</h3>
-<pre><code>
+<pre><code>查看代码注入 节
 </code></pre>
 <h3 id="syscall">直接/间接syscall</h3>
 <h3 id="api-hash">API HASH</h3>
@@ -3159,6 +3187,12 @@ strcat(CombinedStr, OtherStr);
 LoadLibraryA(CombinedStr);
 
 </code></pre>
+<h3 id="_20">内联汇编</h3>
+<p>使用汇编代码强制更改程序运行逻辑
+https://blog.malicious.group/inline-assembly/</p>
+<h3 id="_21">代码混淆</h3>
+<p>Alcatraz  二进制混淆
+https://github.com/weak1337/Alcatraz</p>
 <h2 id="hook">绕杀软hook</h2>
 <p>这里需要明白一个基本道理，系统级别的函数都是在<code>ntdll.dll</code>中，函数调用需要在内存中找到函数的地址，然后才可以调用。</p>
 <h3 id="api-hash_1">使用API-HASH</h3>

