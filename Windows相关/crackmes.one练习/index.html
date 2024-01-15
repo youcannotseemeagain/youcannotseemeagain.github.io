@@ -54,6 +54,8 @@
           ]},
           {title: "Dojas\u0027s find the encryptor", url: "#dojass-find-the-encryptor", children: [
           ]},
+          {title: "aname\u0027s messy crackme", url: "#anames-messy-crackme", children: [
+          ]},
         ];
 
     </script>
@@ -1564,6 +1566,17 @@ You made a mistake. Try again!!
 <img alt="" src="../../images/Snipaste_2023-11-29_14-55-02.jpg" /></p>
 <p>这就是密码
 <img alt="" src="../../images/Snipaste_2023-11-29_15-01-16.jpg" /></p>
+<h2 id="anames-messy-crackme">aname's messy crackme</h2>
+<p>程序界面，提示输入id和密码
+<img alt="" src="../../images/Snipaste_2023-12-27_13-47-38.jpg" />
+直接搜索字符串，可看到疑似用户名密码的字符
+<img alt="" src="../../images/Snipaste_2023-12-27_13-48-33.jpg" />
+不管他，先跟一下流程,找到提示符</p>
+<p><img alt="" src="../../images/Snipaste_2024-01-15_13-55-46.jpg" /></p>
+<p>程序在<code>MOV RAX,QWORD PTR DS:[0x7FF791140008]</code>等待输入，随便输入单步跟
+<img alt="" src="../../images/Snipaste_2024-01-15_14-05-14.jpg" /></p>
+<p>单步跟，输入的id和密码被作为参数传入了<code>CALL messy_crackme.7FF765012590</code>
+<img alt="" src="../../images/Snipaste_2023-12-27_13-50-25.jpg" /></p>
 
   <br>
     

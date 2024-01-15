@@ -34,7 +34,9 @@
         var pageToc = [
           {title: "ELF", url: "#_top", children: [
           ]},
-          {title: "\u8c03\u7528\u7ea6\u5b9a", url: "#_1", children: [
+          {title: "\u5185\u6838", url: "#_1", children: [
+          ]},
+          {title: "\u8c03\u7528\u7ea6\u5b9a", url: "#_2", children: [
               {title: "cdecl", url: "#cdecl" },
               {title: "stdcall", url: "#stdcall" },
           ]},
@@ -89,7 +91,11 @@ if (is_top_frame) { $('body').addClass('wm-top-page'); }
 https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-2-symbols/
 https://intezer.com/blog/malware-analysis/executable-and-linkable-format-101-part-3-relocations/
 https://intezer.com/blog/malware-analysis/executable-linkable-format-101-part-4-dynamic-linking/</p>
-<h2 id="_1">调用约定</h2>
+<h2 id="_1">内核</h2>
+<p>https://blogs.oracle.com/linux/post/live-kernel-debugging-1
+https://blogs.oracle.com/linux/post/live-kernel-debugging-2
+https://blogs.oracle.com/linux/post/live-kernel-debugging-3</p>
+<h2 id="_2">调用约定</h2>
 <h3 id="cdecl"><strong>cdecl</strong></h3>
 <p>在 cdecl 调用约定中，前六个参数使用寄存器传递，分别是：</p>
 <ul>
